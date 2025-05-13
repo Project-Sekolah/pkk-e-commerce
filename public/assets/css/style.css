@@ -1,0 +1,138 @@
+body {
+  background-color: #ded5c6;
+  }
+
+footer{
+  background-color: #424e4e;
+}
+
+.hero {
+  margin-top: 70px;
+  background-image: url('../img/jumbotron.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 100px 20px;
+}
+
+.sidebar {
+  height: 100vh;
+  background-color: #ded5c6;
+  padding: 1rem;
+ }
+
+.sidebar a {
+  display: block;
+  padding: 10px 0;
+  color: #333;
+  text-decoration: none;
+  }
+
+.sidebar a:hover {
+  color: #4CAF50;
+ }
+
+.product-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+ }
+
+.topbar {
+  background-color: #ded5c6;
+  padding: 0.8rem 1rem;
+ }
+
+ .btn{
+  background-color: #F0E8DA;
+  color: #46555F;
+  outline: none;
+ }
+
+ .btn:hover{
+  background-color: #e4ddd3;
+  color: #46554F;
+ }
+
+.btn-cart {
+   position: relative;
+ }
+
+.btn-cart span {
+  position: absolute;
+  top: -5px;
+  right: -10px;
+  background: red;
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  padding: 2px 5px;
+ }
+
+.collection-box {
+  position: relative;
+  overflow: hidden;/* ganti dengan nama gambar kamu */
+  cursor: pointer;
+  height: 100%;
+ }
+.collection-box img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+ }
+.collection-content {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  color: black;
+ }
+
+.collection-content h5 {
+  font-weight: bold;
+ }
+
+.collection-content a {
+  text-decoration: none;
+  font-weight: 500;
+  color: #000;
+ }
+
+/* Mengatur font sidebar dan menengahkan menu */
+.offcanvas {
+  width: 250px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.offcanvas-header {
+  background-color: #f8f9fa;
+  padding: 10px 15px;
+  text-align: center;
+}
+
+.offcanvas .sidebar-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 auto;
+}
+
+.offcanvas a {
+  text-decoration: none;
+  color: black;
+  font-weight: 500;
+  text-align: center;
+  display: block;
+  padding: 8px 0;
+  transition: color 0.3s ease;
+}
+
+.offcanvas a:hover {
+  color: #007bff;
+}
+
+
+#menu-toggle {
+  outline: none;
+  box-shadow: none;
+}

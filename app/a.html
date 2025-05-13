@@ -1,0 +1,97 @@
+<html lang="en">  
+  <head>  
+    <meta charset="utf-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1">  
+    <title>Lunerburg & Co</title>  
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">  
+    <link rel="stylesheet" href="styles.css">  
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">  
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">  
+  </head>  
+  <body>  
+
+
+    <!-- Sidebar (Offcanvas) -->  
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">  
+      <div class="offcanvas-header">  
+        <img src="img/logotoko.png" alt="Lunerburg & Co" class="img-fluid" style="height: 40px;">  
+        <h5 class="ms-3">Lunerburg & Co</h5>  
+      </div><!-- Garis Pemisah -->  
+  <hr>    <!-- Menu Login -->    <div class="px-3 py-2">  
+    <h6>Login</h6>  <form id="login-form">  
+  <div class="mb-3">  
+    <label for="email" class="form-label">Gmail</label>  
+    <input type="email" class="form-control" id="email" placeholder="Masukkan email" required>  
+  </div>  
+  <div class="mb-3">  
+    <label for="password" class="form-label">Password</label>  
+    <input type="password" class="form-control" id="password" placeholder="Masukkan password" required>
+    <a href="registrasi.html" style="font-size:14px; display:block; margin-top:8px;">Belum punya akun? Daftar di sini</a>
+  </div>  
+  <button type="submit" class="btn btn-primary w-100">Login</button>  
+</form>  
+<div id="login-message" class="mt-2"></div>  
+      </div><!-- User Info Section -->  
+  <div class="px-3 py-2">    <h6>Informasi Lengkap</h6>  
+  <div id="user-info" class="text-success"></div>  
+  <button class="btn btn-link w-100" data-bs-toggle="modal" data-bs-target="#userInfoModal">Lihat Informasi Lengkap</button>  
+</div><hr>    <!-- Navigation Links -->    <div class="px-3">  
+    <a href="index.html" class="d-flex align-items-center mb-3">  
+      <i class="bi bi-house-door-fill"></i>  
+      <span class="ms-2">Home</span>  
+    </a>  
+    <a href="#produk" class="d-flex align-items-center mb-3">  
+      <i class="bi bi-bag-fill"></i>  
+      <span class="ms-2">Produk</span>  
+    </a>  
+    <a href="women.html" class="d-flex align-items-center mb-3">  
+      <i class="bi bi-gender-female" style="color: deeppink;"></i>  
+      <span class="ms-2">Produk Wanita</span>  
+    </a>  
+    <a href="men.html" class="d-flex align-items-center mb-3">  
+      <i class="bi bi-gender-male" style="color: dodgerblue;"></i>  
+      <span class="ms-2">Produk Pria</span>  
+    </a>  
+    <a href="#" class="d-flex align-items-center mb-3">  
+      <i class="bi bi-credit-card-fill"></i>  
+      <span class="ms-2">Pembayaran</span>  
+    </a>  
+    <hr>  
+    <a href="logout.html" class="d-flex align-items-center mb-3">  
+      <i class="bi bi-box-arrow-right"></i>  
+      <span class="ms-2">Logout</span>  
+    </a>    </div>  
+</div>  
+
+<!-- Navbar with Sidebar Toggle and Cart Icon -->  
+<nav class="navbar navbar-expand-lg topbar fixed-top ">  
+  <div class="container-fluid">  
+    <button class="btn " id="menu-toggle" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">  
+      ☰  
+    </button>  
+    <a class="navbar-brand ms-4">Lunerburg & Co</a>     <!-- Cart Icon with Badge -->  <button class="btn btn-cart  ms-auto" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart">  
+  <i class="fas fa-shopping-cart"></i>  
+  <span id="cart-count" class="badge rounded-circle">0</span>  
+</button>
+
+  </div>  
+</nav>    
+
+<!-- Cart Offcanvas -->  
+ <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">  
+  <div class="offcanvas-header">  
+    <h5 id="offcanvasCartLabel">Shopping Cart</h5>  
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>  
+  </div>  
+  <div class="offcanvas-body">  
+    <ul class="list-group" id="cart-items">  
+      <!-- Cart items will be dynamically added here -->  
+    </ul>  
+    <div class="mt-4 d-flex justify-content-between">  
+      <span><strong>Total:</strong> $<span id="total-price">0.00</span></span>  
+      <button class="btn btn-primary">Checkout</button>  
+    </div>  
+  </div>  
+</div>  
+
+
