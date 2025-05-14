@@ -21,6 +21,7 @@
 /* General Styles */
 body {
   background-color: var(--color-bg-body);
+  
 }
 
 footer {
@@ -100,8 +101,7 @@ footer {
 .collection-box {
   position: relative;
   overflow: hidden;
-  cursor: pointer;
-  height: 100%;
+  height: auto;
 }
 
 .collection-box img {
@@ -109,6 +109,7 @@ footer {
   height: auto;
   object-fit: cover;
 }
+
 
 .collection-content {
   position: absolute;
@@ -137,7 +138,7 @@ footer {
   background-color: var(--color-offcanvas-bg);
   padding: 10px 15px;
   text-align: center;
-}
+} 
 
 .offcanvas .sidebar-title {
   font-size: 20px;
