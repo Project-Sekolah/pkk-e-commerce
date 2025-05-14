@@ -52,7 +52,7 @@
 
 <!-- Popular Products -->
 <div class="container">
-  <h4 id="produk" class="mb-3 py-4">Popular Product--color-bg-bodys</h4>
+  <h4 id="produk" class="mb-3 py-4">Popular Product</h4>
   <div class="row row-cols-1 row-cols-md-4 g-4">
     <?php foreach ($data['products'] as $product): ?>
       <div class="col product-item"

@@ -1,39 +1,43 @@
 <!-- Product Section -->
-<div class="container mb-4 mt-3">
-  <h4 id="produk" class="mb-3 py-4">Popular Products</h4>
+<div class="container my-5">
+  <h4 id="produk" class="mb-4">Popular Products</h4>
 
   <!-- Filter Section -->
-  <div class="row mb-4">
-  <div class="col-12 col-md-6 mb-3 mb-md-0">
-    <input type="text" id="searchInput" class="form-control" placeholder="Search Products..." onkeyup="searchProducts()">
-  </div>
-  <div class="col-12 col-md-6 text-md-end">
-    <div class="btn-group" role="group">
-      <!-- Default Filter: "All" -->
-      <button class="btn btn-outline-light" id="allFilterBtn" onclick="clearFilters()">All</button>
+  <div class="row g-3 mb-4">
+    <!-- Search Input -->
+    <div class="col-12 col-md-6">
+      <input type="text" id="searchInput" class="form-control" placeholder="Search Products..." onkeyup="searchProducts()">
+    </div>
 
-      <!-- Dynamic Filter Buttons for Categories -->
-      <?php foreach ($data['categories'] as $category): ?>
-        <button class="btn btn-outline-light category-filter" data-category="<?= strtolower($category['slug']); ?>" onclick="toggleFilter('category', '<?= strtolower($category['slug']); ?>')">
-          <?= htmlspecialchars($category['name']); ?>
-        </button>
-      <?php endforeach; ?>
+    <!-- Filter Buttons -->
+    <div class="col-12 col-md-6">
+      <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+        <!-- All Filter -->
+        <button class="btn btn-outline-dark" id="allFilterBtn" onclick="clearFilters()">All</button>
 
-      <!-- Filter for Gender -->
-      <button class="btn btn-outline-light gender-filter" data-gender="pria" onclick="toggleFilter('gender', 'pria')">Pria</button>
-      <button class="btn btn-outline-light gender-filter" data-gender="wanita" onclick="toggleFilter('gender', 'wanita')">Wanita</button>
+        <!-- Category Filters -->
+        <?php foreach ($data['categories'] as $category): ?>
+          <button class="btn btn-outline-dark category-filter"
+                  data-category="<?= strtolower($category['slug']); ?>"
+                  onclick="toggleFilter('category', '<?= strtolower($category['slug']); ?>')">
+            <?= htmlspecialchars($category['name']); ?>
+          </button>
+        <?php endforeach; ?>
+
+        <!-- Gender Filters -->
+        <button class="btn btn-outline-dark gender-filter" data-gender="pria" onclick="toggleFilter('gender', 'pria')">Pria</button>
+        <button class="btn btn-outline-dark gender-filter" data-gender="wanita" onclick="toggleFilter('gender', 'wanita')">Wanita</button>
+      </div>
     </div>
   </div>
-</div>
-
 
   <!-- Product Cards -->
-  <div class="row row-cols-1 row-cols-md-4 g-4" id="productGrid">
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" id="productGrid">
     <?php foreach ($data['products'] as $product): ?>
       <div class="col product-item"
            data-category="<?= strtolower($product['category_slug']); ?>"
            data-gender="<?= strtolower($product['gender']); ?>">
-        <div class="card border card-3d interactive">
+        <div class="card border card-3d interactive h-100">
           <img src="<?= BASEURL; ?>/assets/img/<?= explode(',', $product['images'])[0]; ?>"
                class="card-img-top product-img"
                alt="product"
@@ -58,20 +62,21 @@
   </div>
 
   <!-- Pagination -->
-  <nav class="mt-4 d-flex justify-content-center">
+  <nav class="mt-5 d-flex justify-content-center">
     <ul class="pagination">
-        <li class="page-item <?= ($data['currentPage'] > 1) ? '' : 'disabled'; ?>">
-            <a class="page-link" href="<?= BASEURL; ?>/product/index/<?= $data['currentPage'] - 1; ?>">Previous</a>
+      <li class="page-item <?= ($data['currentPage'] > 1) ? '' : 'disabled'; ?>">
+        <a class="page-link" href="<?= BASEURL; ?>/product/index/<?= $data['currentPage'] - 1; ?>">Previous</a>
+      </li>
+
+      <?php for ($i = 1; $i <= $data['totalPages']; $i++): ?>
+        <li class="page-item <?= ($i == $data['currentPage']) ? 'active' : ''; ?>">
+          <a class="page-link" href="<?= BASEURL; ?>/product/index/<?= $i; ?>"><?= $i; ?></a>
         </li>
-        <?php for ($i = 1; $i <= $data['totalPages']; $i++): ?>
-            <li class="page-item <?= ($i == $data['currentPage']) ? 'active' : ''; ?>">
-                <a class="page-link" href="<?= BASEURL; ?>/product/index/<?= $i; ?>"><?= $i; ?></a>
-            </li>
-        <?php endfor; ?>
-        <li class="page-item <?= ($data['currentPage'] < $data['totalPages']) ? '' : 'disabled'; ?>">
-            <a class="page-link" href="<?= BASEURL; ?>/product/index/<?= $data['currentPage'] + 1; ?>">Next</a>
-        </li>
+      <?php endfor; ?>
+
+      <li class="page-item <?= ($data['currentPage'] < $data['totalPages']) ? '' : 'disabled'; ?>">
+        <a class="page-link" href="<?= BASEURL; ?>/product/index/<?= $data['currentPage'] + 1; ?>">Next</a>
+      </li>
     </ul>
   </nav>
 </div>
-
