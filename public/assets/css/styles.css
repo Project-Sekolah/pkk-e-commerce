@@ -41,6 +41,15 @@ footer {
 }
 
 /* ==========================
+   Navbar Brand (Lunerburg & Co)
+========================== */
+.navbar-brand {
+  margin-left: 0; 
+  margin-right: auto; 
+}
+
+
+/* ==========================
    Sidebar
 ========================== */
 .sidebar {
@@ -254,4 +263,75 @@ footer {
 
 .offcanvas a:hover {
   color: var(--color-offcanvas-link-hover);
+}
+
+
+
+
+/* ==========================
+   Faq Style
+========================== */
+.faq-container {
+    margin-top: 100px;
+}
+
+.lang-btn {
+    font-weight: bold;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50rem;
+    transition: background-color 0.3s ease;
+}
+
+.faq-title {
+    color: var(--color-btn-text);
+}
+
+.faq-description {
+    color: #6c757d;
+}
+
+.faq-item {
+    background-color: var(--color-bg-body);
+    border: none;
+    margin-bottom: 1rem;
+}
+
+.faq-header-btn {
+    background-color: var(--color-bg-btn);
+    color: var(--color-btn-text);
+}
+
+.faq-body {
+    color: var(--color-link);
+}
+
+.feedback-card {
+    background-color: var(--color-bg-body);
+}
+
+.feedback-title {
+    color: var(--color-btn-text);
+}
+
+.feedback-label {
+    color: var(--color-btn-text);
+}
+
+.feedback-input,
+.feedback-textarea {
+    background-color: var(--color-bg-btn);
+    border-color: var(--color-border-card);
+    border-radius: 50rem;
+    padding-left: 1rem;
+}
+
+.feedback-textarea {
+    border-radius: 1rem;
+}
+
+.feedback-btn {
+    background-color: var(--color-badge-bg);
+    border-color: var(--color-badge-bg);
+    border-radius: 50rem;
+    padding: 0.5rem 1.5rem;
 }

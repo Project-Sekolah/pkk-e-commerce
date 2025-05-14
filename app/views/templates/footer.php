@@ -16,7 +16,7 @@
 </div>
 
 <!-- Footer -->
-<footer class="text-white pt-4 pb-3 mt-0 bg-dark">
+<footer class="text-white pt-4 pb-3 bg-dark">
   <div class="container">
     <div class="row">
       <!-- Company Info -->

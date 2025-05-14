@@ -149,10 +149,15 @@
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg topbar fixed-top shadow-sm">
   <div class="container-fluid d-flex justify-content-between px-3">
+    <!-- Tombol hamburger (menu) -->
     <button class="btn border-0 me-2" id="menu-toggle" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
       <i class="bi bi-list" style="font-size: 1.5rem;"></i>
     </button>
+
+    <!-- Nama brand yang posisinya di sebelah tombol hamburger -->
     <a class="navbar-brand fw-bold" href="#">Lunerburg & Co</a>
+
+    <!-- Cart button -->
     <div class="me-3">
       <button class="btn btn-cart position-relative" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart">
         <i class="fas fa-shopping-cart"></i>
@@ -161,6 +166,8 @@
     </div>
   </div>
 </nav>
+
+
 
 <!-- Shopping Cart Offcanvas -->
 <div class="offcanvas offcanvas-end" id="offcanvasCart">
