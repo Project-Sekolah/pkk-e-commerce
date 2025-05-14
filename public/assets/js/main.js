@@ -1,17 +1,17 @@
-// Cart logic with quantity
+// === Cart Logic ===
 const cart = [];
 const cartItemsElement = document.getElementById('cart-items');
 const cartCountElement = document.getElementById('cart-count');
 const totalPriceElement = document.getElementById('total-price');
 
-//cart
 function renderCartItems() {
     cartItemsElement.innerHTML = '';
     let total = 0;
-    let itemCount = 0; // Track the total quantity of items in the cart
+    let itemCount = 0;
+
     cart.forEach((item, index) => {
-        total += item.price * item.quantity; // Perhitungan total berdasarkan quantity
-        itemCount += item.quantity; // Menambahkan jumlah kuantitas item
+        total += item.price * item.quantity;
+        itemCount += item.quantity;
 
         const li = document.createElement('li');
         li.className = 'list-group-item d-flex justify-content-between align-items-center';
@@ -23,15 +23,16 @@ function renderCartItems() {
         `;
         cartItemsElement.appendChild(li);
     });
+
     totalPriceElement.textContent = total.toFixed(2);
-    cartCountElement.textContent = itemCount; // Update total quantity of items in cart
+    cartCountElement.textContent = itemCount;
 }
 
 function updateItemQuantity(index, newQuantity) {
     if (newQuantity <= 0) {
         removeFromCart(index);
     } else {
-        cart[index].quantity = newQuantity;
+        cart[index].quantity = parseInt(newQuantity);
         updateCart();
     }
 }
@@ -41,144 +42,109 @@ function removeFromCart(index) {
     updateCart();
 }
 
+function updateCart() {
+    renderCartItems();
+}
 
 
-// Global filter criteria
+
+// === Filter Logic ===
 const filters = {
-    category: [], // Stores selected categories
-    gender: []    // Stores selected genders
+    category: [],
+    gender: []
 };
 
-// Function to apply filters based on selected category and gender
 function filterProducts() {
     const items = document.querySelectorAll('.product-item');
-    
     items.forEach(item => {
         const category = item.getAttribute('data-category').toLowerCase();
         const gender = item.getAttribute('data-gender').toLowerCase();
-        
-        // Check if item matches all selected filters
-        const isCategoryMatch = filters.category.length === 0 || filters.category.includes(category);
-        const isGenderMatch = filters.gender.length === 0 || filters.gender.includes(gender);
-
-        if (isCategoryMatch && isGenderMatch) {
-            item.style.display = 'block'; // Show item if matches filters
-        } else {
-            item.style.display = 'none'; // Hide item if doesn't match filters
-        }
+        const matchCategory = filters.category.length === 0 || filters.category.includes(category);
+        const matchGender = filters.gender.length === 0 || filters.gender.includes(gender);
+        item.style.display = (matchCategory && matchGender) ? 'block' : 'none';
     });
 }
 
-// Toggle category or gender filter
 function toggleFilter(type, value) {
     const index = filters[type].indexOf(value);
-    const filterButtons = document.querySelectorAll(`.${type}-filter`);
-
-    if (index === -1) {
-        // Add filter
-        filters[type].push(value);
-        // Add active class to the selected button
-        toggleButtonActive(type, value, true);
-    } else {
-        // Remove filter
-        filters[type].splice(index, 1);
-        // Remove active class from the deselected button
-        toggleButtonActive(type, value, false);
-    }
-
-    // Apply the filters after toggling
+    index === -1 ? filters[type].push(value) : filters[type].splice(index, 1);
+    toggleButtonActive(type, value, index === -1);
     filterProducts();
 }
 
-// Toggle active class on buttons
 function toggleButtonActive(type, value, isActive) {
     const button = document.querySelector(`.${type}-filter[data-${type}="${value}"]`);
-    if (isActive) {
-        button.classList.add('active');
-    } else {
-        button.classList.remove('active');
-    }
+    button.classList.toggle('active', isActive);
 }
 
-// Clear all filters (reset to "All")
 function clearFilters() {
     filters.category = [];
     filters.gender = [];
-    // Remove active class from all filter buttons
-    document.querySelectorAll('.btn-outline-light').forEach(button => {
-        button.classList.remove('active');
-    });
-    filterProducts(); // Apply "All" filter (show all items)
+    document.querySelectorAll('.btn-outline-light').forEach(btn => btn.classList.remove('active'));
+    filterProducts();
 }
 
-// Search products based on input
+
+
+// === Search Logic ===
 function searchProducts() {
     const searchInput = document.getElementById('searchInput').value.toLowerCase();
     const items = document.querySelectorAll('.product-item');
-    
+
     items.forEach(item => {
         const title = item.querySelector('.card-title').textContent.toLowerCase();
         const description = item.querySelector('.card-text').textContent.toLowerCase();
-        if (title.includes(searchInput) || description.includes(searchInput)) {
-            item.style.display = 'block';
-            highlightSearchTerm(item, searchInput);
-        } else {
-            item.style.display = 'none';
-        }
+        const match = title.includes(searchInput) || description.includes(searchInput);
+
+        item.style.display = match ? 'block' : 'none';
+        if (match) highlightSearchTerm(item, searchInput);
     });
 }
 
-function highlightSearchTerm(item, searchTerm) {
-    const title = item.querySelector('.card-title');
-    const description = item.querySelector('.card-text');
-
-    // Remove existing highlights
-    title.innerHTML = title.textContent;
-    description.innerHTML = description.textContent;
-
-    // Highlight the search term in the title and description
-    if (title.textContent.toLowerCase().includes(searchTerm)) {
-        const regex = new RegExp(`(${searchTerm})`, 'gi');
-        title.innerHTML = title.textContent.replace(regex, '<span class="highlight">$1</span>');
-    }
-    if (description.textContent.toLowerCase().includes(searchTerm)) {
-        const regex = new RegExp(`(${searchTerm})`, 'gi');
-        description.innerHTML = description.textContent.replace(regex, '<span class="highlight">$1</span>');
-    }
+function highlightSearchTerm(item, term) {
+    ['card-title', 'card-text'].forEach(cls => {
+        const el = item.querySelector(`.${cls}`);
+        el.innerHTML = el.textContent.replace(new RegExp(`(${term})`, 'gi'), '<span class="highlight">$1</span>');
+    });
 }
 
-   
 
 
-
-
-
-//modal
-
-// Set modal content dynamically
+// === Modal Logic ===
 $('#productModal').on('show.bs.modal', function (event) {
-    var button = $(event.relatedTarget); // Button that triggered the modal
-    var title = button.data('title');
-    var price = button.data('price');
-    var category = button.data('category');
-    var description = button.data('description');
-    var gender = button.data('gender');
-    var image = button.data('image');
-    var stock = button.data('stock');
-
-    var modal = $(this);
-    modal.find('#modalTitle').text(title);
-    modal.find('#modalPrice').text(price);
-    modal.find('#modalCategory').text(category);
-    modal.find('#modalDescription').text(description);
-    modal.find('#modalGender').text(gender);
-    modal.find('#modalImage').attr('src', image);
-    modal.find('#modalStock').text(stock);
+    const button = $(event.relatedTarget);
+    const modal = $(this);
+    modal.find('#modalTitle').text(button.data('title'));
+    modal.find('#modalPrice').text(button.data('price'));
+    modal.find('#modalCategory').text(button.data('category'));
+    modal.find('#modalDescription').text(button.data('description'));
+    modal.find('#modalGender').text(button.data('gender'));
+    modal.find('#modalImage').attr('src', button.data('image'));
+    modal.find('#modalStock').text(button.data('stock'));
 });
 
-// Tambahkan event listener setelah DOM ready
+
+
+// === 3D Card Hover Effect ===
+document.querySelectorAll('.card-3d.interactive').forEach(card => {
+    card.addEventListener('mousemove', e => {
+        const img = card.querySelector('img');
+        const rect = card.getBoundingClientRect();
+        const rotateX = (rect.height / 2 - (e.clientY - rect.top)) / 10;
+        const rotateY = ((e.clientX - rect.left) - rect.width / 2) / 10;
+        img.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    });
+
+    card.addEventListener('mouseleave', () => {
+        card.querySelector('img').style.transform = 'rotateX(0) rotateY(0)';
+    });
+});
+
+
+
+// === DOM Ready Actions ===
 document.addEventListener('DOMContentLoaded', () => {
-    // Modal detail produk
+    // Product Image Click - Modal Detail
     document.querySelectorAll('.product-img').forEach(img => {
         img.addEventListener('click', function () {
             document.getElementById('modalTitle').textContent = this.dataset.title;
@@ -191,13 +157,24 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Add to Cart Button
     document.querySelectorAll('.add-to-cart').forEach(btn => {
         btn.addEventListener('click', () => {
-            let productName, productPrice, productImage;
+            if (!isLoggedIn) {
+                Swal.fire({
+                    title: "Login Required",
+                    text: "Please login to add items to the cart.",
+                    icon: "warning",
+                    confirmButtonText: "OK"
+                });
+                return;
+            }
 
+            let productName, productPrice, productImage;
             if (btn.closest('.product-item')) {
-                productName = btn.parentElement.querySelector('.card-title').textContent;
-                productPrice = parseFloat(btn.parentElement.querySelector('.card-text').textContent.replace('$', ''));
+                const parent = btn.parentElement;
+                productName = parent.querySelector('.card-title').textContent;
+                productPrice = parseFloat(parent.querySelector('.card-text').textContent.replace('$', ''));
                 productImage = btn.closest('.product-item').querySelector('.product-img').src;
             }
 
@@ -208,53 +185,41 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (productPrice && productName) {
-                // Check if product already exists in cart
-                const existingProduct = cart.find(item => item.name === productName);
-                
-                if (existingProduct) {
-                    // Increase quantity if product exists
-                    existingProduct.quantity += 1;
-                } else {
-                   
-                                        // Tambahkan produk baru ke keranjang
-                    cart.push({
-                        name: productName,
-                        price: productPrice,
-                        image: productImage,
-                        quantity: 1
-                    });
-                }
+                const existing = cart.find(item => item.name === productName);
+                existing ? existing.quantity++ : cart.push({ name: productName, price: productPrice, image: productImage, quantity: 1 });
                 updateCart();
             }
         });
     });
 });
 
-function updateCart() {
-    renderCartItems();
-}
+
+
+// === Auth Section Visibility ===
+document.addEventListener("DOMContentLoaded", () => {
+    const show = (id) => document.getElementById(id).style.display = "block";
+    const hide = (id) => document.getElementById(id).style.display = "none";
+
+    if (isLoggedIn) {
+        hide("auth-section");
+        show("user-info-section");
+        document.getElementById("logout-link").style.display = "flex";
+    } else {
+        show("auth-section");
+        hide("user-info-section");
+        hide("logout-link");
+    }
+});
 
 
 
 
-document.querySelectorAll('.card-3d.interactive').forEach(card => {
-    const img = card.querySelector('img');
+function showRegister() {
+    document.getElementById("login-section").style.display = "none";
+    document.getElementById("register-section").style.display = "block";
+  }
 
-    card.addEventListener('mousemove', e => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-
-      const rotateX = (centerY - y) / 10;
-      const rotateY = (x - centerX) / 10;
-
-      img.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-    });
-
-    card.addEventListener('mouseleave', () => {
-      img.style.transform = 'rotateX(0deg) rotateY(0deg)';
-    });
-  });
-
+  function showLogin() {
+    document.getElementById("register-section").style.display = "none";
+    document.getElementById("login-section").style.display = "block";
+  }

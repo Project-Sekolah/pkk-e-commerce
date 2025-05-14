@@ -53,12 +53,17 @@
 
 
 <!-- JavaScript -->
+
+<!-- Memuat jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- In the head section of your main template (e.g., layout.php) -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script> -->
  <script src="<?= BASEURL; ?>/assets/js/bootstrap/bootstrap.bundle.min.js"></script>
 
 
-<!-- Memuat jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="<?= BASEURL; ?>/assets/js/main.js"></script>
 </body>
 </html>

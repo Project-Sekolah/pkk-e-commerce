@@ -1,42 +1,48 @@
+/* ==========================
+   Root Variables (Color Palette)
+========================== */
 :root {
-  --color-bg-body: #ded5c6; /* Background body */
-  --color-bg-footer: #424e4e; /* Footer background */
-  --color-bg-topbar: #ded5c6; /* Topbar background */
-  --color-bg-btn: #F0E8DA; /* Button background */
-  --color-bg-btn-hover: #e4ddd3; /* Button hover background */
-  --color-btn-text: #46555F; /* Button text color */
-  --color-btn-text-hover: #3e4a4e; /* Button text hover color */
-  --color-link: #333; /* Link text color */
-  --color-link-hover: #8b9a6d; /* Link hover color - soft greenish */
-  --color-border-card: #e0e0e0; /* Card border color */
-  --color-offcanvas-bg: #f8f9fa; /* Offcanvas background */
-  --color-offcanvas-text: #333; /* Offcanvas text color */
-  --color-collection-text: #000; /* Collection text color */
-  --color-badge-bg: #f8b400; /* Badge background - warm gold */
-  --color-badge-text: white; /* Badge text color */
-  --color-offcanvas-link-hover: #6c757d; /* Offcanvas link hover color - muted gray */
-  --color-bg-dark-brown: #3e2a47; /* Dark brown color */
+  --color-bg-body: #ded5c6;
+  --color-bg-footer: #424e4e;
+  --color-bg-topbar: #ded5c6;
+  --color-bg-btn: #F0E8DA;
+  --color-bg-btn-hover: #e4ddd3;
+  --color-btn-text: #46555F;
+  --color-btn-text-hover: #3e4a4e;
+  --color-link: #333;
+  --color-link-hover: #8b9a6d;
+  --color-border-card: #e0e0e0;
+  --color-offcanvas-bg: #f8f9fa;
+  --color-offcanvas-text: #333;
+  --color-collection-text: #000;
+  --color-badge-bg: #f8b400;
+  --color-badge-text: white;
+  --color-offcanvas-link-hover: #6c757d;
+  --color-bg-dark-brown: #3e2a47;
 }
-/* General Styles */
+
+/* ==========================
+   General & Layout Styles
+========================== */
 body {
   background-color: var(--color-bg-body);
-  
 }
 
 footer {
   background-color: var(--color-bg-footer);
 }
 
-.hero {
-  margin-top: 70px;
-  background-image: url('../img/jumbotron4.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  padding: 100px 20px;
+/* ==========================
+   Topbar
+========================== */
+.topbar {
+  background-color: var(--color-bg-topbar);
+  padding: 0.8rem 1rem;
 }
 
-/* Sidebar Styles */
+/* ==========================
+   Sidebar
+========================== */
 .sidebar {
   min-height: 100vh;
   background-color: var(--color-bg-body);
@@ -54,12 +60,74 @@ footer {
   color: var(--color-link-hover);
 }
 
-/* Product Card */
+/* ==========================
+   Hero Section
+========================== */
+.hero {
+  margin-top: 70px;
+  background-image: url('../img/jumbotron4.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 100px 20px;
+}
+
+/* ==========================
+   Buttons
+========================== */
+.btn {
+  background-color: var(--color-bg-btn);
+  color: var(--color-btn-text);
+  outline: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: var(--color-bg-btn-hover);
+  color: var(--color-btn-text-hover);
+}
+
+.btn-cart {
+  position: relative;
+  transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-cart:hover {
+  transform: scale(1.05);
+  background-color: var(--color-bg-btn-hover);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.btn-cart span {
+  position: absolute;
+  top: -5px;
+  right: -10px;
+  background: var(--color-badge-bg);
+  color: var(--color-badge-text);
+  border-radius: 50%;
+  font-size: 12px;
+  padding: 2px 5px;
+}
+
+#menu-toggle {
+  outline: none;
+  box-shadow: none;
+}
+
+.btn-outline-light.active {
+  background-color: var(--color-bg-dark-brown);
+  color: var(--color-badge-text);
+}
+
+/* ==========================
+   Product Card
+========================== */
 .product-card {
   border: 1px solid var(--color-border-card);
   border-radius: 10px;
   padding: 1rem;
   text-align: center;
+  cursor: pointer;
 }
 
 .card {
@@ -68,7 +136,6 @@ footer {
   overflow: hidden;
 }
 
-/* Hover effect for card image */
 .card:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
@@ -80,9 +147,12 @@ footer {
 
 .card:hover .card-title,
 .card:hover .card-text {
-  color: var(--color-btn-text-hover); 
+  color: var(--color-btn-text-hover);
 }
 
+/* ==========================
+   3D Card
+========================== */
 .card-3d {
   perspective: 1000px;
   transition: transform 0.3s ease;
@@ -96,83 +166,27 @@ footer {
   transform-style: preserve-3d;
   transition: transform 0.2s ease, box-shadow 0.3s ease;
   will-change: transform;
+  cursor: pointer;
 }
 
 .card-3d:hover img {
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
 }
 
-
-
-/* Topbar */
-.topbar {
-  background-color: var(--color-bg-topbar);
-  padding: 0.8rem 1rem;
-}
-
-/* Button Styles */
-.btn {
-  background-color: var(--color-bg-btn);
-  color: var(--color-btn-text);
-  outline: none;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.btn:hover {
-  background-color: var(--color-bg-btn-hover);
-  color: var(--color-btn-text-hover);
-}
-
-/* Cart Button Badge */
-.btn-cart {
-  position: relative;
-}
-
-.btn-cart span {
-  position: absolute;
-  top: -5px;
-  right: -10px;
-  background: var(--color-badge-bg);
-  color: var(--color-badge-text);
-  border-radius: 50%;
-  font-size: 12px;
-  padding: 2px 5px;
-}
-
-/* Collection Box */
+/* ==========================
+   Collection Section
+========================== */
 .collection-box {
   position: relative;
   overflow: hidden;
   height: auto;
-   border-radius: 10px;
+  border-radius: 10px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .collection-box:hover {
-  transform: scale(1.02); /* Slight zoom effect *//* Cart Button */
-}
-
-/* Cart Button */
-.btn-cart {
-  position: relative;
-  transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.btn-cart:hover {
-  transform: scale(1.05); /* Slight zoom effect */
-  background-color: var(--color-bg-btn-hover); /* Change background on hover */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Shadow effect */
-}
-
-.btn-cart span {
-  position: absolute;
-  top: -5px;
-  right: -10px;
-  background: var(--color-badge-bg);
-  color: var(--color-badge-text);
-  border-radius: 50%;
-  font-size: 12px;
-  padding: 2px 5px;
+  transform: scale(1.02);
+  filter: grayscale(100%);
 }
 
 .collection-box img {
@@ -191,7 +205,7 @@ footer {
 }
 
 .collection-box:hover .collection-content {
-  opacity: 1; /* Make content visible on hover */
+  opacity: 1;
 }
 
 .collection-content h5 {
@@ -204,7 +218,9 @@ footer {
   color: var(--color-collection-text);
 }
 
-/* Offcanvas Sidebar */
+/* ==========================
+   Offcanvas Sidebar
+========================== */
 .offcanvas {
   width: 250px;
   font-family: 'Poppins', sans-serif;
@@ -214,7 +230,7 @@ footer {
   background-color: var(--color-offcanvas-bg);
   padding: 10px 15px;
   text-align: center;
-} 
+}
 
 .offcanvas .sidebar-title {
   font-size: 20px;
@@ -235,16 +251,4 @@ footer {
 
 .offcanvas a:hover {
   color: var(--color-offcanvas-link-hover);
-}
-
-/* Menu Toggle Button */
-#menu-toggle {
-  outline: none;
-  box-shadow: none;
-}
-
-/* Active Button State */
-.btn-outline-light.active {
-  background-color: var(--color-bg-dark-brown);
-  color: var(--color-badge-text);
 }

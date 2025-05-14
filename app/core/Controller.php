@@ -10,4 +10,11 @@ class Controller{
         return new $model;
     }
 
+    function checkLogin() {
+    if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+        header('Location: ' . BASEURL . '/user/login');
+        exit; // Stop further execution
+        }
+    }
+
 }

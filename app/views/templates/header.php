@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">  
   <title><?= $data['judul']; ?></title>  
    <link rel="icon" href="<?= BASEURL; ?>/assets/img/logotoko.png" type="image/x-icon">
+
+<!-- Load SweetAlert script once in the layout (head or just before closing body tag) -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  //cek session login
+    const isLoggedIn = <?= isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true ? 'true' : 'false' ?>;
+</script>
+
+
   <!-- Bootstrap CSS -->
   <link href="<?= BASEURL; ?>/assets/css/bootstrap/bootstrap.min.css" rel="stylesheet">   
 
@@ -34,65 +44,113 @@
   <hr>
 
   <!-- Login/Register Section -->
+<div id="auth-section" <?= isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true ? 'style="display: none;"' : '' ?>>
+  
   <div class="px-3 py-2">
+
     <!-- Login Form -->
-    <div id="login-section">
+    <div id="login-section" <?= isset($_POST['register']) ? 'style="display: none;"' : '' ?>>
       <h5 class="mb-3">Login</h5>
-      <form action="" method="POST">
-    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? ''; ?>">
-    <div class="mb-3">
-        <label for="login-email" class="form-label">Email</label>
-        <input type="email" class="form-control" id="login-email" name="email" required>
-    </div>
-    <div class="mb-3">
-        <label for="login-password" class="form-label">Password</label>
-        <input type="password" class="form-control" id="login-password" name="password" required>
-    </div>
-    <button type="submit" class="btn btn-primary w-100">Login</button>
-</form>
+      <?php if (!empty($data['error']) && empty($_POST['register'])): ?>
+        <p class="text-danger"><?= $data['error']; ?></p>
+      <?php endif; ?>
+
+      <form action="<?= BASEURL; ?>/user/login" method="POST">
+        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? ''; ?>">
+        <div class="mb-3">
+          <label for="login-email" class="form-label">Email</label>
+          <input type="email" class="form-control" id="login-email" name="email" required>
+        </div>
+        <div class="mb-3">
+          <label for="login-password" class="form-label">Password</label>
+          <input type="password" class="form-control" id="login-password" name="password" required>
+        </div>
+        <button type="submit" name="login" class="btn btn-primary w-100">Login</button>
+      </form>
+
       <div class="mt-2 text-center">
-        <span class="toggle-link" onclick="showRegister()" style="font-size: 14px; cursor: pointer; color: blue;">Belum punya akun? Daftar</span>
+        <span class="toggle-link" onclick="showRegister()" style="font-size: 14px; cursor: pointer; color: blue;">
+          Belum punya akun? Daftar
+        </span>
       </div>
     </div>
 
     <!-- Register Form -->
-    <div id="register-section" style="display: none;">
+    <div id="register-section" <?= isset($_POST['register']) ? '' : 'style="display: none;"' ?>>
       <h5 class="mb-3">Register</h5>
-      <form action="" method="POST">
-    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? ''; ?>">
-    <div class="mb-3">
-        <label for="reg-username" class="form-label">Username</label>
-        <input type="text" class="form-control" id="reg-username" name="username" required>
-    </div>
-    <div class="mb-3">
-        <label for="reg-email" class="form-label">Email</label>
-        <input type="email" class="form-control" id="reg-email" name="email" required>
-    </div>
-    <div class="mb-3">
-        <label for="reg-password" class="form-label">Password</label>
-        <input type="password" class="form-control" id="reg-password" name="password" required>
-    </div>
-    <input type="hidden" name="role" value="buyer">
-    <button type="submit" class="btn btn-success w-100">Daftar</button>
-</form>
+      <?php if (!empty($data['error']) && !empty($_POST['register'])): ?>
+        <p class="text-danger"><?= $data['error']; ?></p>
+      <?php endif; ?>
+
+      <form action="<?= BASEURL; ?>/user/register" method="POST">
+        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?? ''; ?>">
+
+        <div class="mb-3">
+          <label for="reg-username" class="form-label">Username</label>
+          <input type="text" class="form-control" id="reg-username" name="username" required>
+        </div>
+        <div class="mb-3">
+          <label for="reg-fullname" class="form-label">Full Name</label>
+          <input type="text" class="form-control" id="reg-fullname" name="full_name" required>
+        </div>
+        <div class="mb-3">
+          <label for="reg-email" class="form-label">Email</label>
+          <input type="email" class="form-control" id="reg-email" name="email" required>
+        </div>
+        <div class="mb-3">
+          <label for="reg-password" class="form-label">Password</label>
+          <input type="password" class="form-control" id="reg-password" name="password" required>
+        </div>
+        <div class="mb-3">
+          <label for="reg-confirm-password" class="form-label">Confirm Password</label>
+          <input type="password" class="form-control" id="reg-confirm-password" name="confirm_password" required>
+        </div>
+
+        <input type="hidden" name="role" value="buyer">
+
+        <button type="submit" name="register" class="btn btn-success w-100">Daftar</button>
+      </form>
+
       <div class="mt-2 text-center">
-        <span class="toggle-link" onclick="showLogin()" style="font-size: 14px; cursor: pointer; color: blue;">Sudah punya akun? Login</span>
+        <span class="toggle-link" onclick="showLogin()" style="font-size: 14px; cursor: pointer; color: blue;">
+          Sudah punya akun? Login
+        </span>
       </div>
     </div>
-  </div>
 
-  <hr>
+  </div>
+    <hr>
+</div>
+
+
+<?php if (isset($_SESSION['alert'])): ?>
+    <script>
+        Swal.fire({
+            title: "<?= $_SESSION['alert']['type'] === 'success' ? 'Success!' : 'Error!' ?>",
+            text: "<?= $_SESSION['alert']['message'] ?>",
+            icon: "<?= $_SESSION['alert']['type'] ?>",
+            confirmButtonText: "OK"
+        });
+    </script>
+    <?php unset($_SESSION['alert']);?>
+<?php endif; ?>
+
+
+
+
 
   <!-- User Info Section -->
-  <div class="px-3 py-2">
-    <h6>Informasi Lengkap</h6>
-    <div id="user-info" class="text-success"></div>
-    <button class="btn btn-link w-100" data-bs-toggle="modal" data-bs-target="#userInfoModal">
-      Lihat Informasi Lengkap
-    </button>
-  </div>
+<div class="px-3 py-2" id="user-info-section" style="display: none;">
+  <h6>Informasi Lengkap</h6>
+  <div id="user-info" class="text-success"></div>
+  <button class="btn btn-link w-100" data-bs-toggle="modal" data-bs-target="#userInfoModal">
+    Lihat Informasi Lengkap
+  </button>
 
-  <hr>
+    <hr>
+</div>
+
+
 
   <!-- Navigation Links -->
   <div class="px-3">
@@ -117,10 +175,13 @@
       <span class="ms-2">Faq</span>
     </a>
     <hr>
-    <a href="<?= BASEURL ?>/user/logout"class="d-flex align-items-center mb-3">
-      <i class="bi bi-door-closed-fill"></i>
-      <span class="ms-2">Logout</span>
-    </a>
+    <?php if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true): ?>
+  <a href="<?= BASEURL ?>/user/logout" id="logout-link" class="d-flex align-items-center mb-3">
+    <i class="bi bi-door-closed-fill"></i>
+    <span class="ms-2">Logout</span>
+  </a>
+<?php endif; ?>
+
   </div>
 </div>
 
