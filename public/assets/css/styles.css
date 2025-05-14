@@ -1,0 +1,173 @@
+:root {
+  --color-bg-body: #ded5c6; /* Background body */
+  --color-bg-footer: #424e4e; /* Footer background */
+  --color-bg-topbar: #ded5c6; /* Topbar background */
+  --color-bg-btn: #F0E8DA; /* Button background */
+  --color-bg-btn-hover: #e4ddd3; /* Button hover background */
+  --color-btn-text: #46555F; /* Button text color */
+  --color-btn-text-hover: #3e4a4e; /* Button text hover color */
+  --color-link: #333; /* Link text color */
+  --color-link-hover: #8b9a6d; /* Link hover color - soft greenish */
+  --color-border-card: #e0e0e0; /* Card border color */
+  --color-offcanvas-bg: #f8f9fa; /* Offcanvas background */
+  --color-offcanvas-text: #333; /* Offcanvas text color */
+  --color-collection-text: #000; /* Collection text color */
+  --color-badge-bg: #f8b400; /* Badge background - warm gold */
+  --color-badge-text: white; /* Badge text color */
+  --color-offcanvas-link-hover: #6c757d; /* Offcanvas link hover color - muted gray */
+  --color-bg-dark-brown: #3e2a47; /* Dark brown color */
+}
+
+/* General Styles */
+body {
+  background-color: var(--color-bg-body);
+}
+
+footer {
+  background-color: var(--color-bg-footer);
+}
+
+.hero {
+  margin-top: 70px;
+  background-image: url('../img/jumbotron4.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 100px 20px;
+}
+
+/* Sidebar Styles */
+.sidebar {
+  min-height: 100vh;
+  background-color: var(--color-bg-body);
+  padding: 1rem;
+}
+
+.sidebar a {
+  display: block;
+  padding: 10px 0;
+  color: var(--color-link);
+  text-decoration: none;
+}
+
+.sidebar a:hover {
+  color: var(--color-link-hover);
+}
+
+/* Product Card */
+.product-card {
+  border: 1px solid var(--color-border-card);
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+}
+
+/* Topbar */
+.topbar {
+  background-color: var(--color-bg-topbar);
+  padding: 0.8rem 1rem;
+}
+
+/* Button Styles */
+.btn {
+  background-color: var(--color-bg-btn);
+  color: var(--color-btn-text);
+  outline: none;
+}
+
+.btn:hover {
+  background-color: var(--color-bg-btn-hover);
+  color: var(--color-btn-text-hover);
+}
+
+/* Cart Button Badge */
+.btn-cart {
+  position: relative;
+}
+
+.btn-cart span {
+  position: absolute;
+  top: -5px;
+  right: -10px;
+  background: var(--color-badge-bg);
+  color: var(--color-badge-text);
+  border-radius: 50%;
+  font-size: 12px;
+  padding: 2px 5px;
+}
+
+/* Collection Box */
+.collection-box {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  height: 100%;
+}
+
+.collection-box img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.collection-content {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  color: var(--color-collection-text);
+}
+
+.collection-content h5 {
+  font-weight: bold;
+}
+
+.collection-content a {
+  text-decoration: none;
+  font-weight: 500;
+  color: var(--color-collection-text);
+}
+
+/* Offcanvas Sidebar */
+.offcanvas {
+  width: 250px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.offcanvas-header {
+  background-color: var(--color-offcanvas-bg);
+  padding: 10px 15px;
+  text-align: center;
+}
+
+.offcanvas .sidebar-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-offcanvas-text);
+  margin: 0 auto;
+}
+
+.offcanvas a {
+  text-decoration: none;
+  color: var(--color-collection-text);
+  font-weight: 500;
+  text-align: center;
+  display: block;
+  padding: 8px 0;
+  transition: color 0.3s ease;
+}
+
+.offcanvas a:hover {
+  color: var(--color-offcanvas-link-hover);
+}
+
+/* Menu Toggle Button */
+#menu-toggle {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Active Button State */
+.btn-outline-light.active {
+  background-color: var(--color-bg-dark-brown);
+  color: var(--color-badge-text);
+}
