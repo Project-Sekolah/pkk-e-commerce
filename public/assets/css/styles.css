@@ -335,3 +335,19 @@ footer {
     border-radius: 50rem;
     padding: 0.5rem 1.5rem;
 }
+
+
+
+/* ==========================
+   Profile Style
+========================== */
+.profile-container{
+  margin-top: 100px;
+}
+
+.edit-profile-btn {
+  background-color: white;
+  border-radius: 50%;
+  padding: 5px 8px;
+  font-size: 14px;
+}

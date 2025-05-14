@@ -136,5 +136,6 @@ class Product_model {
         $this->db->bind(':limit', (int)$limit, PDO::PARAM_INT);
         return $this->db->resultSet();
     }
+
 }
 ?>

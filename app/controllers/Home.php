@@ -15,6 +15,7 @@ class Home extends Controller {
 
         $this->view('templates/modal', $data);
         $this->view('templates/header', $data);
+        $this->view('templates/hero');
         $this->view('home/index', $data);
         $this->view('templates/footer');
     }

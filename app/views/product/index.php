@@ -27,6 +27,7 @@
         <!-- Gender Filters -->
         <button class="btn btn-outline-dark gender-filter" data-gender="pria" onclick="toggleFilter('gender', 'pria')">Pria</button>
         <button class="btn btn-outline-dark gender-filter" data-gender="wanita" onclick="toggleFilter('gender', 'wanita')">Wanita</button>
+        <button class="btn btn-outline-dark gender-filter" data-gender="all" onclick="toggleFilter('gender', 'all')">Pria & Wanita</button>
       </div>
     </div>
   </div>
@@ -51,7 +52,7 @@
                data-image="<?= BASEURL; ?>/assets/img/<?= explode(',', $product['images'])[0]; ?>"
                data-stock="<?= $product['stock']; ?>">
 
-          <div class="card-body text-center" style="background-color: #847e7b;">
+         <div class="card-body text-center" style="background-color: #847e7b;">
             <h6 class="card-title"><?= htmlspecialchars($product['title']); ?></h6>
             <p class="card-text">$<?= number_format($product['price'], 2); ?></p>
             <button class="btn btn-sm add-to-cart">Add to Cart</button>

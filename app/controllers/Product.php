@@ -32,6 +32,7 @@ class Product extends Controller {
 
         $this->view('templates/modal', $data);
         $this->view('templates/header', $data);
+        $this->view('templates/hero');
         $this->view('product/index', $data);
         $this->view('templates/footer');
     }

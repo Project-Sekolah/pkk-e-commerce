@@ -73,7 +73,8 @@ CREATE TABLE IF NOT EXISTS `products` (
   `stock` int(11) DEFAULT 0,
   `description` text NOT NULL,
   `category_id` char(36) NOT NULL,
-  `gender` ENUM('pria', 'wanita', 'all') NOT NULL DEFAULT 'all',  
+  `gender` ENUM('pria', 'wanita') NOT NULL DEFAULT 'pria',  
+  `rating` DECIMAL(3,2) DEFAULT 0, 
   `is_active` tinyint(1) DEFAULT 1,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
@@ -137,12 +138,12 @@ CREATE TABLE IF NOT EXISTS `product_discounts` (
 
 -- --------------------------------------------------------
 
+-- Struktur dari tabel `product_ratings`
 CREATE TABLE IF NOT EXISTS `product_ratings` (
   `id` CHAR(36) NOT NULL,
   `user_id` CHAR(36) NOT NULL,
   `product_id` CHAR(36) NOT NULL,
   `rating` TINYINT NOT NULL CHECK (`rating` BETWEEN 1 AND 5),
-  `review_text` TEXT DEFAULT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_user_product` (`user_id`, `product_id`),
@@ -151,7 +152,6 @@ CREATE TABLE IF NOT EXISTS `product_ratings` (
   CONSTRAINT `fk_rating_user` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_rating_product` FOREIGN KEY (`product_id`) REFERENCES `products`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 
 
 -- --------------------------------------------------------
@@ -202,22 +202,21 @@ CREATE TABLE IF NOT EXISTS `orders` (
   CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-
 -- --------------------------------------------------------
 
 -- Struktur dari tabel `order_items`
 CREATE TABLE IF NOT EXISTS `order_items` (
   `id` char(36) NOT NULL,
   `order_id` char(36) NOT NULL,
-  `product_id` char(36) NOT NULL,  
+  `product_id` char(36) DEFAULT NULL,
   `quantity` int(11) NOT NULL,
   `price` decimal(10,2) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_order_id` (`order_id`),
   KEY `idx_order_product_id` (`product_id`),
-  CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE
+  CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `order_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 
 -- --------------------------------------------------------
 
