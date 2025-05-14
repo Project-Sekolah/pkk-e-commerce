@@ -1,6 +1,6 @@
 <?php
 
-define('BASEURL', 'http://localhost/project-6/public');
+define('BASEURL', 'https://pkk-e-commerce-production.up.railway.app');
 
 class Database
 {
