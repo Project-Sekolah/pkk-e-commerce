@@ -1,19 +1,5 @@
-
-
-
-
-<!-- Hero Section -->
-<section class="hero d-flex align-items-center text-white">
-  <div class="container text-start">
-    <h1 class="display-4 fw-bold" id="home">Effortless Style</h1>
-    <h1 class="display-4 fw-bold">Endless Comfort</h1>
-    <p class="lead">Made with love, nature's colors, and a touch of warmth.</p>
-    <a href="#produk" class="btn px-4 py-2 mt-3">Discover Now</a> 
-  </div>
-</section>
-
 <!-- Product Section -->
-<div class="container mb-4">
+<div class="container mb-4 mt-3">
   <h4 id="produk" class="mb-3 py-4">Popular Products</h4>
 
   <!-- Filter Section -->
@@ -47,7 +33,7 @@
       <div class="col product-item"
            data-category="<?= strtolower($product['category_slug']); ?>"
            data-gender="<?= strtolower($product['gender']); ?>">
-        <div class="card border">
+        <div class="card border card-3d interactive">
           <img src="<?= BASEURL; ?>/assets/img/<?= explode(',', $product['images'])[0]; ?>"
                class="card-img-top product-img"
                alt="product"

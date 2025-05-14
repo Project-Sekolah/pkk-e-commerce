@@ -58,7 +58,7 @@
       <div class="col product-item"
            data-category="<?= strtolower($product['category_slug']); ?>"
            data-gender="<?= strtolower($product['gender']); ?>">
-        <div class="card border">
+        <div class="card border card-3d interactive">
           <img src="<?= BASEURL; ?>/assets/img/<?= explode(',', $product['images'])[0]; ?>"
                class="card-img-top product-img"
                alt="product"
@@ -94,7 +94,5 @@
 </div>
 
    
-
-
 
 

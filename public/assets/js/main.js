@@ -233,3 +233,28 @@ document.addEventListener('DOMContentLoaded', () => {
 function updateCart() {
     renderCartItems();
 }
+
+
+
+
+document.querySelectorAll('.card-3d.interactive').forEach(card => {
+    const img = card.querySelector('img');
+
+    card.addEventListener('mousemove', e => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+
+      const rotateX = (centerY - y) / 10;
+      const rotateY = (x - centerX) / 10;
+
+      img.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    });
+
+    card.addEventListener('mouseleave', () => {
+      img.style.transform = 'rotateX(0deg) rotateY(0deg)';
+    });
+  });
+

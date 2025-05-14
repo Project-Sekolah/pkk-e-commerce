@@ -17,7 +17,6 @@
   --color-offcanvas-link-hover: #6c757d; /* Offcanvas link hover color - muted gray */
   --color-bg-dark-brown: #3e2a47; /* Dark brown color */
 }
-
 /* General Styles */
 body {
   background-color: var(--color-bg-body);
@@ -63,6 +62,48 @@ footer {
   text-align: center;
 }
 
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Hover effect for card image */
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.card-title, .card-text {
+  transition: color 0.3s ease;
+}
+
+.card:hover .card-title,
+.card:hover .card-text {
+  color: var(--color-btn-text-hover); 
+}
+
+.card-3d {
+  perspective: 1000px;
+  transition: transform 0.3s ease;
+  background-color: var(--color-bg-body);
+}
+
+.card-3d img {
+  display: block;
+  width: 100%;
+  height: auto;
+  transform-style: preserve-3d;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  will-change: transform;
+}
+
+.card-3d:hover img {
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+}
+
+
+
 /* Topbar */
 .topbar {
   background-color: var(--color-bg-topbar);
@@ -74,6 +115,7 @@ footer {
   background-color: var(--color-bg-btn);
   color: var(--color-btn-text);
   outline: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .btn:hover {
@@ -102,6 +144,35 @@ footer {
   position: relative;
   overflow: hidden;
   height: auto;
+   border-radius: 10px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.collection-box:hover {
+  transform: scale(1.02); /* Slight zoom effect *//* Cart Button */
+}
+
+/* Cart Button */
+.btn-cart {
+  position: relative;
+  transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-cart:hover {
+  transform: scale(1.05); /* Slight zoom effect */
+  background-color: var(--color-bg-btn-hover); /* Change background on hover */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Shadow effect */
+}
+
+.btn-cart span {
+  position: absolute;
+  top: -5px;
+  right: -10px;
+  background: var(--color-badge-bg);
+  color: var(--color-badge-text);
+  border-radius: 50%;
+  font-size: 12px;
+  padding: 2px 5px;
 }
 
 .collection-box img {
@@ -110,12 +181,17 @@ footer {
   object-fit: cover;
 }
 
-
 .collection-content {
   position: absolute;
   top: 20px;
   left: 20px;
   color: var(--color-collection-text);
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+.collection-box:hover .collection-content {
+  opacity: 1; /* Make content visible on hover */
 }
 
 .collection-content h5 {
