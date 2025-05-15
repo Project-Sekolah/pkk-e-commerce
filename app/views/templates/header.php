@@ -1,7 +1,3 @@
-<?php
-$user = $data['user'];
-?>
-
 <!DOCTYPE html>
 <html lang="en">  
 <head>  
@@ -127,24 +123,30 @@ $user = $data['user'];
   <?php endif; ?>
 
   <!-- User Info -->
+<?php if (isset($_SESSION['user'])): ?>
+  <?php
+   $user = $data['user'];
+  ?>
   <div class="px-3 py-2" id="user-info-section" style="display: block;">
-  <div class="d-flex justify-content-between align-items-center">
-    <div>
-      <h6 class="mb-0 fw-semibold"><?= htmlspecialchars($user['username']) ?></h6>
-      <small class="text-muted"><?= htmlspecialchars($user['email']) ?></small>
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h6 class="mb-0 fw-semibold"><?= htmlspecialchars($user['username']) ?></h6>
+        <small class="text-muted"><?= htmlspecialchars($user['email']) ?></small>
+      </div>
+      <img src="<?= !empty($user['image']) ? htmlspecialchars($user['image']) : BASEURL . '/assets/images/default-profile.png' ?>" alt="Foto Profil <?= htmlspecialchars($user['username']) ?>" class="rounded-circle" width="48" height="48" style="object-fit: cover;" loading="lazy">
     </div>
-    <img src="<?= !empty($user['image']) ? htmlspecialchars($user['image']) : BASEURL . '/assets/images/default-profile.png' ?>" alt="Foto Profil" class="rounded-circle" width="48" height="48" style="object-fit: cover;">
-  </div>
 
-  <div class="mt-3 text-success" id="user-info"></div>
+    <div class="mt-3 text-success" id="user-info"></div>
 
-  <a href="<?= BASEURL ?>/user/profile">
+    <!-- Jika ingin menggunakan modal, jangan gunakan <a href>. Pilih salah satu -->
     <button class="btn btn-link w-100" data-bs-toggle="modal" data-bs-target="#userInfoModal">
       Lihat Informasi Lengkap
     </button>
-  </a>
-  <hr>
-</div>
+
+    <hr>
+  </div>
+<?php endif; ?>
+
 
 
   <!-- Navigation Links -->
