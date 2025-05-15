@@ -16,6 +16,9 @@ WORKDIR /var/www/html/
 RUN apt-get update && apt-get install -y unzip git libzip-dev \
     && docker-php-ext-install zip
 
+
+RUN git config --global --add safe.directory /var/www/html
+
 # Install composer dan dependencies
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
@@ -31,6 +34,9 @@ RUN sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
 # Tambahkan ServerName
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
-EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+  CMD curl --fail http://localhost || exit 1
+
+EXPOSE 80
 
 CMD ["apache2-foreground"]
