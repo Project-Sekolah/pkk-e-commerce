@@ -1,153 +1,181 @@
+<?php
+$user = $data['user'];
+$addresses = $data['addresses'];
+?>
+
 <div class="container profile-container">
   <h2 class="mb-4 text-center">My Profile</h2>
 
-  <!-- Profile Section -->
-  <div id="profile-display">
-    <div class="p-4 border rounded shadow-sm bg-white mb-5">
-      <div class="d-flex justify-content-between">
-        <div>
-          <strong>Username:</strong> <?= htmlspecialchars($data['user']['username']) ?><br>
-          <strong>Full Name:</strong> <?= htmlspecialchars($data['user']['full_name']) ?><br>
-          <strong>Email:</strong> <?= htmlspecialchars($data['user']['email']) ?><br>
+  <!-- Profile Display -->
+  <div class="p-4 border rounded shadow-sm bg-white mb-5 d-flex justify-content-between align-items-center">
+    <div>
+      <h5 class="fw-bold mb-1"><?= htmlspecialchars($user['username']) ?></h5>
+      <small class="text-muted"><?= htmlspecialchars($user['email']) ?></small><br>
+      <span><?= htmlspecialchars($user['full_name']) ?></span>
+    </div>
+    <div>
+      <img src="<?= !empty($user['image']) ? htmlspecialchars($user['image']) : BASEURL . '/assets/images/default-profile.png' ?>" 
+           alt="Profile Image" width="64" height="64" class="rounded-circle shadow" style="object-fit: cover;">
+    </div>
+    <button class="btn btn-sm btn-outline-primary ms-3" data-bs-toggle="modal" data-bs-target="#editProfileModal">Edit</button>
+  </div>
+
+  <!-- Addresses -->
+  <h4 class="mb-3">My Addresses</h4>
+  <?php foreach ($addresses as $address): ?>
+    <div class="p-4 mb-4 border rounded bg-white shadow-sm position-relative">
+      <strong><?= htmlspecialchars($address['label']) ?></strong><br>
+      <?= htmlspecialchars($address['address_line_1']) ?><br>
+      <?= htmlspecialchars($address['address_line_2']) ?><br>
+      <?= htmlspecialchars($address['city']) ?>, <?= htmlspecialchars($address['country']) ?><br>
+      <small>Phone: <?= htmlspecialchars($address['phone_number']) ?></small><br>
+
+      <div class="mt-3">
+        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editAddressModal<?= $address['id'] ?>">Edit</button>
+        <form action="<?= BASEURL ?>/user/deleteAddress/<?= $address['id'] ?>" method="POST" class="d-inline" onsubmit="return confirm('Hapus alamat ini?')">
+          <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Address Modal -->
+    <div class="modal fade userModal" id="editAddressModal<?= $address['id'] ?>" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <form class="modal-content" method="POST" action="<?= BASEURL ?>/user/updateAddress/<?= $address['id'] ?>">
+          <div class="modal-header">
+            <h5 class="modal-title">Edit Address - <?= htmlspecialchars($address['label']) ?></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Label</label>
+              <input type="text" class="form-control" name="label" value="<?= htmlspecialchars($address['label']) ?>" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Phone Number</label>
+              <input type="text" class="form-control" name="phone_number" value="<?= htmlspecialchars($address['phone_number']) ?>" required>
+            </div>
+            <div class="col-md-12">
+              <label class="form-label">Address Line 1</label>
+              <input type="text" class="form-control" name="address_line_1" value="<?= htmlspecialchars($address['address_line_1']) ?>" required>
+            </div>
+            <div class="col-md-12">
+              <label class="form-label">Address Line 2</label>
+              <input type="text" class="form-control" name="address_line_2" value="<?= htmlspecialchars($address['address_line_2']) ?>">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">City</label>
+              <input type="text" class="form-control" name="city" value="<?= htmlspecialchars($address['city']) ?>" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Postal Code</label>
+              <input type="text" class="form-control" name="postal_code" value="<?= htmlspecialchars($address['postal_code']) ?>" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Country</label>
+              <input type="text" class="form-control" name="country" value="<?= htmlspecialchars($address['country']) ?>" required>
+            </div>
+            <div class="col-12 form-check">
+              <input type="checkbox" class="form-check-input" name="is_default" value="1" <?= $address['is_default'] ? 'checked' : '' ?>>
+              <label class="form-check-label">Set as default address</label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Update Address</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  <?php endforeach; ?>
+
+  <!-- Add New Address Button -->
+  <button class="btn btn-success mt-3" data-bs-toggle="modal" data-bs-target="#addAddressModal">Add New Address</button>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade userModal" id="editProfileModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form class="modal-content" action="<?= BASEURL ?>/user/updateProfile" method="POST" enctype="multipart/form-data">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Profile</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Username</label>
+          <input type="text" name="username" class="form-control" value="<?= htmlspecialchars($user['username']) ?>" required>
         </div>
-        <div>
-          <?php if (!empty($data['user']['image'])): ?>
-            <img src="<?= htmlspecialchars($data['user']['image']) ?>" alt="Profile Image" width="100" class="rounded shadow">
-          <?php else: ?>
-            <img src="default-profile.png" alt="Profile Image" width="100" class="rounded shadow">
+        <div class="mb-3">
+          <label class="form-label">Full Name</label>
+          <input type="text" name="full_name" class="form-control" value="<?= htmlspecialchars($user['full_name']) ?>" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($user['email']) ?>" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Profile Image</label>
+          <input type="file" name="image" class="form-control">
+          <?php if (!empty($user['image'])): ?>
+            <img src="<?= htmlspecialchars($user['image']) ?>" class="rounded-circle mt-2" width="80" height="80" style="object-fit: cover;">
           <?php endif; ?>
         </div>
       </div>
-
-      <!-- Edit Button -->
-      <button class="btn btn-primary mt-3" id="editProfileBtn">Edit Profile</button>
-    </div>
-  </div>
-
-  <!-- Profile Edit Form -->
-  <div id="profile-edit" class="d-none">
-    <form action="<?= BASEURL ?>/user/updateProfile" method="post" enctype="multipart/form-data" class="p-4 border rounded shadow-sm bg-white mb-5">
-      <div class="mb-3">
-        <label for="username" class="form-label">Username</label>
-        <input type="text" class="form-control" id="username" name="username" value="<?= htmlspecialchars($data['user']['username']) ?>" required>
+      <div class="modal-footer">
+        <button class="btn btn-primary">Save Changes</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
       </div>
-
-      <div class="mb-3">
-        <label for="full_name" class="form-label">Full Name</label>
-        <input type="text" class="form-control" id="full_name" name="full_name" value="<?= htmlspecialchars($data['user']['full_name']) ?>" required>
-      </div>
-
-      <div class="mb-3">
-        <label for="email" class="form-label">Email</label>
-        <input type="email" class="form-control" id="email" name="email" value="<?= htmlspecialchars($data['user']['email']) ?>" required>
-      </div>
-
-      <div class="mb-3">
-        <label for="image" class="form-label">Profile Image</label>
-        <input class="form-control" type="file" id="image" name="image">
-        <?php if (!empty($data['user']['image'])): ?>
-          <img src="<?= htmlspecialchars($data['user']['image']) ?>" alt="Profile Picture" width="100" class="mt-3 rounded shadow">
-        <?php endif; ?>
-      </div>
-
-      <button type="submit" class="btn btn-primary">Update Profile</button>
-      <button type="button" class="btn btn-secondary" id="cancelProfileBtn">Cancel</button>
-    </form>
-  </div>
-
-
-  <hr class="my-5">
-
-  <!-- Address Section -->
-  <h3 class="mb-4">My Addresses</h3>
-  <div id="address-list">
-    <?php foreach ($data['addresses'] as $address): ?>
-      <div class="p-4 mb-4 border rounded bg-white shadow-sm">
-        <strong><?= htmlspecialchars($address['label']) ?></strong><br>
-        <?= htmlspecialchars($address['address_line_1']) ?><br>
-        <?= htmlspecialchars($address['address_line_2']) ?><br>
-        <?= htmlspecialchars($address['city']) ?>, <?= htmlspecialchars($address['country']) ?><br>
-        <small>Phone: <?= htmlspecialchars($address['phone_number']) ?></small>
-
-        <button class="btn btn-warning mt-3 editAddressBtn" data-address-id="<?= $address['id'] ?>">Edit Address</button>
-        <form action="<?= BASEURL ?>/user/deleteAddress/<?= htmlspecialchars($address['id']) ?>" method="POST" onsubmit="return confirm('Hapus alamat ini?')" class="mt-2">
-          <button type="submit" class="btn btn-danger">Delete Address</button>
-        </form>
-      </div>
-    <?php endforeach; ?>
-  </div>
-
-  <!-- Add Address Button -->
-  <button class="btn btn-success mt-3" id="addAddressBtn">Add New Address</button>
-
-  <!-- New Address Form -->
-  <div id="add-address-form" class="d-none mt-4 p-4 border rounded bg-white shadow-sm">
-    <h4>Add New Address</h4>
-    <form action="<?= BASEURL ?>/user/addAddress" method="POST">
-      <div class="mb-3">
-        <label for="label" class="form-label">Label</label>
-        <input type="text" class="form-control" name="label" placeholder="Home, Office, etc." required>
-      </div>
-
-      <div class="mb-3">
-        <label for="address_line_1" class="form-label">Address Line 1</label>
-        <input type="text" class="form-control" name="address_line_1" required>
-      </div>
-
-      <div class="mb-3">
-        <label for="address_line_2" class="form-label">Address Line 2</label>
-        <input type="text" class="form-control" name="address_line_2" required>
-      </div>
-
-      <div class="mb-3">
-        <label for="city" class="form-label">City</label>
-        <input type="text" class="form-control" name="city" required>
-      </div>
-
-      <div class="mb-3">
-        <label for="postal_code" class="form-label">Postal Code</label>
-        <input type="text" class="form-control" name="postal_code" required>
-      </div>
-
-      <div class="mb-3">
-        <label for="country" class="form-label">Country</label>
-        <input type="text" class="form-control" name="country" required>
-      </div>
-
-      <div class="mb-3">
-        <label for="phone_number" class="form-label">Phone Number</label>
-        <input type="text" class="form-control" name="phone_number" required>
-      </div>
-
-      <div class="mb-3">
-        <label for="is_default" class="form-check-label">Set as Default Address</label>
-        <input type="checkbox" class="form-check-input" name="is_default" value="1">
-      </div>
-
-      <button type="submit" class="btn btn-success">Save Address</button>
-      <button type="button" class="btn btn-secondary" id="cancelAddAddressBtn">Cancel</button>
     </form>
   </div>
 </div>
 
-<script>
-  // Toggle profile edit form
-  document.getElementById('editProfileBtn').addEventListener('click', function() {
-    document.getElementById('profile-display').classList.add('d-none');
-    document.getElementById('profile-edit').classList.remove('d-none');
-  });
-
-  document.getElementById('cancelProfileBtn').addEventListener('click', function() {
-    document.getElementById('profile-display').classList.remove('d-none');
-    document.getElementById('profile-edit').classList.add('d-none');
-  });
-
-  // Toggle address add form
-  document.getElementById('addAddressBtn').addEventListener('click', function() {
-    document.getElementById('add-address-form').classList.remove('d-none');
-  });
-
-  document.getElementById('cancelAddAddressBtn').addEventListener('click', function() {
-    document.getElementById('add-address-form').classList.add('d-none');
-  });
-</script>
+<!-- Add Address Modal -->
+<div class="modal fade userModal" id="addAddressModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <form class="modal-content" action="<?= BASEURL ?>/user/addAddress" method="POST">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Address</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Label</label>
+          <input type="text" class="form-control" name="label" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Phone Number</label>
+          <input type="text" class="form-control" name="phone_number" required>
+        </div>
+        <div class="col-md-12">
+          <label class="form-label">Address Line 1</label>
+          <input type="text" class="form-control" name="address_line_1" required>
+        </div>
+        <div class="col-md-12">
+          <label class="form-label">Address Line 2</label>
+          <input type="text" class="form-control" name="address_line_2">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">City</label>
+          <input type="text" class="form-control" name="city" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Postal Code</label>
+          <input type="text" class="form-control" name="postal_code" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Country</label>
+          <input type="text" class="form-control" name="country" required>
+        </div>
+        <div class="col-12 form-check">
+          <input type="checkbox" class="form-check-input" name="is_default" value="1">
+          <label class="form-check-label">Set as default address</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-success">Save Address</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>

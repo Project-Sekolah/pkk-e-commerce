@@ -9,15 +9,9 @@ class Home extends Controller {
         
         $productModel = $this->model('Product_model');
         $data['judul'] = 'Lunerburg & Co';
-
-        // Ambil 8 produk untuk ditampilkan di home
         $data['products'] = $productModel->getLimitedProducts(8);
 
-        $this->view('templates/modal', $data);
-        $this->view('templates/header', $data);
-        $this->view('templates/hero');
-        $this->view('home/index', $data);
-        $this->view('templates/footer');
+        $this->render(['templates/hero', 'home/index'], $data);
     }
 }
 ?>

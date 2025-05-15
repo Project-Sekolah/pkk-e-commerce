@@ -1,3 +1,7 @@
+<?php
+$user = $data['user'];
+?>
+
 <!DOCTYPE html>
 <html lang="en">  
 <head>  
@@ -123,16 +127,25 @@
   <?php endif; ?>
 
   <!-- User Info -->
-  <div class="px-3 py-2" id="user-info-section" style="display: none;">
-    <h6>Informasi Lengkap</h6>
-    <div id="user-info" class="text-success"></div>
-    <a href="<?= BASEURL ?>/user/profile">
-      <button class="btn btn-link w-100" data-bs-toggle="modal" data-bs-target="#userInfoModal">
-      Lihat Informasi Lengkap
-     </button>
-    </a>
-    <hr>
+  <div class="px-3 py-2" id="user-info-section" style="display: block;">
+  <div class="d-flex justify-content-between align-items-center">
+    <div>
+      <h6 class="mb-0 fw-semibold"><?= htmlspecialchars($user['username']) ?></h6>
+      <small class="text-muted"><?= htmlspecialchars($user['email']) ?></small>
+    </div>
+    <img src="<?= !empty($user['image']) ? htmlspecialchars($user['image']) : BASEURL . '/assets/images/default-profile.png' ?>" alt="Foto Profil" class="rounded-circle" width="48" height="48" style="object-fit: cover;">
   </div>
+
+  <div class="mt-3 text-success" id="user-info"></div>
+
+  <a href="<?= BASEURL ?>/user/profile">
+    <button class="btn btn-link w-100" data-bs-toggle="modal" data-bs-target="#userInfoModal">
+      Lihat Informasi Lengkap
+    </button>
+  </a>
+  <hr>
+</div>
+
 
   <!-- Navigation Links -->
   <div class="px-3">

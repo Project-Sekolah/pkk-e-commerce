@@ -4,7 +4,7 @@
     <h1 class="display-4 fw-bold">Effortless Style</h1>
     <h1 class="display-4 fw-bold">Endless Comfort</h1>
     <p class="lead">Made with love, nature's colors, and a touch of warmth.</p>
-    <a href="#produk" class="btn px-4 py-2 mt-3">Discover Now</a>
+    <a href="#produk" class="btn px-4 py-2 mt-3 btn-discover">Discover Now</a>
   </div>
 
   <!-- Wave Decoration -->

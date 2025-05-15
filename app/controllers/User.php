@@ -94,19 +94,15 @@ class User extends Controller {
     }
 
     public function profile() {
-        if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-            header('Location: ' . BASEURL . '/');
-            exit;
-        }
-
+    
         $data['judul'] = 'Profile';
         $userModel = $this->model('User_model');
-        $user = $userModel->getUserById($_SESSION['user']['id']);
-        $addresses = $userModel->getAddressesByUserId($_SESSION['user']['id']);
+        $data['user'] = $userModel->getUserById($_SESSION['user']['id']);
+        $data['addresses'] = $userModel->getAddressesByUserId($_SESSION['user']['id']);
 
-        $this->view('templates/header', $data);
-        $this->view('user/profile', ['user' => $user, 'addresses' => $addresses]);
-        $this->view('templates/footer');
+        $this->render(['user/profile'], $data);
+
+
     }
 
     public function updateProfile() {

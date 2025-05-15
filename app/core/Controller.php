@@ -23,4 +23,23 @@ class Controller {
             exit;
         }
     }
+
+    protected function attachUserData(&$data) {
+        if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
+            $userModel = $this->model('User_model');
+            $data['user'] = $userModel->getUserById($_SESSION['user']['id']);
+            $data['addresses'] = $userModel->getAddressesByUserId($_SESSION['user']['id']);
+        }
+    }
+
+    protected function render($views = [], $data = []) {
+        $this->attachUserData($data);
+        
+        $this->view('templates/modal', $data);
+        $this->view('templates/header', $data);
+        foreach ($views as $view) {
+            $this->view($view, $data);
+        }
+        $this->view('templates/footer');
+    }
 }

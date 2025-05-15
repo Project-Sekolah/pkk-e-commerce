@@ -79,7 +79,30 @@ footer {
   background-position: center;
   background-repeat: no-repeat;
   padding: 100px 20px;
+  position: relative;
+  z-index: 1;
 }
+
+.btn-discover {
+  background-color: #fff;
+  color: #333;
+  border: 2px solid #fff;
+  transition: all 0.3s ease;
+  z-index: 2;
+  position: relative;
+}
+
+.btn-discover:hover {
+  background-color: transparent;
+  color: #fff;
+  border-color: #fff;
+  transform: scale(1.05);
+}
+
+.hero svg {
+  z-index: 0;
+}
+
 
 /* ==========================
    Buttons

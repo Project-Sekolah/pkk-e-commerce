@@ -29,11 +29,8 @@ class Product extends Controller {
         $data['totalPages'] = ceil($data['totalFilteredProducts'] / $this->perPage);
         $data['currentPage'] = $page;
         $data['judul'] = "Produk";
+    
+        $this->render(['templates/hero', 'product/index'], $data);
 
-        $this->view('templates/modal', $data);
-        $this->view('templates/header', $data);
-        $this->view('templates/hero');
-        $this->view('product/index', $data);
-        $this->view('templates/footer');
     }
 }
