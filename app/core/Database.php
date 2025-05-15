@@ -1,7 +1,5 @@
 <?php
 
-define('BASEURL', 'https://pkk-e-commerce-production.up.railway.app');
-
 class Database
 {
     private $dbh;
