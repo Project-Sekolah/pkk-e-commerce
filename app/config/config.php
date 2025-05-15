@@ -15,5 +15,7 @@ define('CLOUD_NAME', getenv('CLOUDINARY_CLOUD_NAME') ?: 'dripo32vz');
 define('CLOUD_API_KEY', getenv('CLOUDINARY_API_KEY') ?: '165341413734398');
 define('CLOUD_API_SECRET', getenv('CLOUDINARY_API_SECRET') ?: 'F7FDCO3Bvp0UKKZLLtfGCuvqG38');
 
-define('BASEURL', 'http://localhost/project-6/public');
+// define('BASEURL', 'http://localhost/project-6/public');
+define('BASEURL', 'https://pkk-e-commerce-production.up.railway.app');
+
 
