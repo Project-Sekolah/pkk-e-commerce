@@ -1,16 +1,31 @@
 FROM php:8.2-apache
 
+# Install PHP extensions
 RUN docker-php-ext-install mysqli pdo pdo_mysql
 
+# Enable mod_rewrite
 RUN a2enmod rewrite
 
+# Copy aplikasi ke container
 COPY . /var/www/html/
 
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-available/000-default.conf \
- && sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf \
- && echo "ServerName localhost" >> /etc/apache2/apache2.conf
+# Set working directory
+WORKDIR /var/www/html/
 
-WORKDIR /var/www/html/public
+# Install composer dan dependencies
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
+    && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
+    && php -r "unlink('composer-setup.php');" \
+    && composer install --no-dev --optimize-autoloader
+
+# Ubah DocumentRoot ke /public
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+
+# Izinkan .htaccess override
+RUN sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
+
+# Tambahkan ServerName
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 EXPOSE 80
 
