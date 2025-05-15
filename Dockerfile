@@ -12,10 +12,9 @@ COPY . /var/www/html/
 # Set working directory
 WORKDIR /var/www/html/
 
-# Install dependencies tambahan untuk composer
-RUN apt-get update && apt-get install -y unzip git \
+# Install dependencies tambahan untuk composer dan ekstensi zip
+RUN apt-get update && apt-get install -y unzip git libzip-dev \
     && docker-php-ext-install zip
-
 
 # Install composer dan dependencies
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
