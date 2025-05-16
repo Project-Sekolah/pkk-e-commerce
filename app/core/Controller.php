@@ -36,6 +36,7 @@ class Controller {
         $this->attachUserData($data);
         
         $this->view('templates/modal', $data);
+        $this->view('templates/sidebar', $data);
         $this->view('templates/header', $data);
         foreach ($views as $view) {
             $this->view($view, $data);

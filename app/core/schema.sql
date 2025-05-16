@@ -1,21 +1,6 @@
--- phpMyAdmin SQL Dump
--- version 5.2.2
--- https://www.phpmyadmin.net/
---
--- Host: 127.0.0.1
--- Waktu pembuatan: 12 Bulan Mei 2025 pada 05.53
--- Versi server: 11.8.0-MariaDB
--- Versi PHP: 8.4.2
-
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
 --
 -- Database: `pkk-ecommerce`
 --
@@ -67,12 +52,13 @@ CREATE TABLE IF NOT EXISTS `categories` (
 -- Struktur dari tabel `products`
 CREATE TABLE IF NOT EXISTS `products` (
   `id` char(36) NOT NULL,
+  `category_id` char(36) NOT NULL,
+  `user_id` char(36) NOT NULL,
   `title` varchar(255) NOT NULL,
   `slug` varchar(255) NOT NULL,
   `price` decimal(10,2) NOT NULL,
   `stock` int(11) DEFAULT 0,
   `description` text NOT NULL,
-  `category_id` char(36) NOT NULL,
   `gender` ENUM('pria', 'wanita', 'all') NOT NULL DEFAULT 'all',  
   `is_active` tinyint(1) DEFAULT 1,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
@@ -82,8 +68,11 @@ CREATE TABLE IF NOT EXISTS `products` (
   UNIQUE KEY `slug` (`slug`),
   KEY `idx_slug` (`slug`),
   KEY `idx_category_id` (`category_id`),
-  CONSTRAINT `products_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE CASCADE
+  KEY `idx_user_id` (`user_id`),
+  CONSTRAINT `products_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `products_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 
 -- --------------------------------------------------------
@@ -288,7 +277,3 @@ CREATE TABLE IF NOT EXISTS `audit_logs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

@@ -22,6 +22,26 @@
 }
 
 /* ==========================
+   Custom Scrollbar
+========================== */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-bg-footer);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5a6b6b;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* ==========================
    General & Layout Styles
 ========================== */
 body {
@@ -373,4 +393,110 @@ footer {
   border-radius: 50%;
   padding: 5px 8px;
   font-size: 14px;
+}
+
+
+/* ==========================
+   Modal Custom CSS
+========================== */
+.modal-content.custom-modal {
+  background-color: #ded5c6;
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.btn-close-modal {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1055;
+  filter: brightness(0) saturate(100%) invert(52%) sepia(90%) saturate(645%) hue-rotate(3deg) brightness(96%) contrast(90%);
+  transition: filter 0.3s ease;
+}
+
+.btn-close-modal:hover,
+.btn-close-modal:focus {
+  filter: brightness(0) saturate(100%) invert(70%) sepia(95%) saturate(800%) hue-rotate(10deg) brightness(110%) contrast(100%);
+}
+
+.modal-image-container {
+  position: relative;
+}
+
+.modal-image {
+  border: 1px solid #e0e0e0;
+  max-height: 300px;
+}
+
+.price-tag {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.5rem 1rem;
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+  background-color: #f8b400;
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+#modalTitle {
+  color: #3e2a47;
+}
+
+.modal-product-info p {
+  font-size: 0.875rem;
+}
+
+.modal .add-to-cart {
+  background-color: #F0E8DA;
+  color: #46555F;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  padding: 0.5rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.modal .add-to-cart:hover {
+  background-color: #e8ddcb;
+}
+
+.rating-stars-static i {
+  font-size: 1.1rem;
+}
+
+#starInput {
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+textarea#ratingComment {
+  resize: none;
+}
+
+.btn-submit-rating {
+  background-color: #f8b400; 
+  color: #3e2a47; 
+  border: none; 
+  border-radius: 20px; 
+  padding: 6px 16px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: background-color 0.2s ease;
+}
+
+.btn-submit-rating:hover {
+  background-color: #e09e00;
+}
+
+.review-comment {
+  font-size: 0.875rem;
+  color: #6c757d;
 }

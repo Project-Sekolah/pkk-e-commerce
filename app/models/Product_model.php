@@ -32,8 +32,8 @@ class Product_model {
             $params = array_merge($params, $categorySlugs);
         }
 
-        // Filter by genders
-        if (!empty($genders)) {
+        // Filter by genders, skip if 'all' is present
+        if (!empty($genders) && !in_array('all', $genders)) {
             $genderPlaceholders = implode(',', array_fill(0, count($genders), '?'));
             $sql .= " AND p.gender IN ($genderPlaceholders)";
             $params = array_merge($params, $genders);
@@ -45,19 +45,22 @@ class Product_model {
             $params[] = '%' . $search . '%';
         }
 
-        // Pagination
-        $sql .= "
-            GROUP BY p.id
-            ORDER BY p.created_at DESC
-            LIMIT $limit OFFSET $offset
-        ";
+        $sql .= " GROUP BY p.id ORDER BY p.created_at DESC LIMIT ? OFFSET ?";
 
-        // Execute the query
+        $params[] = (int)$limit;
+        $params[] = (int)$offset;
+
         $this->db->query($sql);
-        $this->db->execute($params);
+
+        // Bind parameters safely
+        foreach ($params as $key => $value) {
+            $paramType = is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR;
+            $this->db->bind($key+1, $value, $paramType);
+        }
 
         return $this->db->resultSet();
     }
+
 
     // Get total filtered product count (for pagination)
     public function getTotalFilteredProducts($categorySlugs = [], $genders = [], $search = '') {
@@ -136,6 +139,9 @@ class Product_model {
         $this->db->bind(':limit', (int)$limit, PDO::PARAM_INT);
         return $this->db->resultSet();
     }
+
+
+    
 
 }
 ?>
