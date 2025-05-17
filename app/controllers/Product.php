@@ -29,8 +29,20 @@ class Product extends Controller {
         $data['totalPages'] = ceil($data['totalFilteredProducts'] / $this->perPage);
         $data['currentPage'] = $page;
         $data['judul'] = "Produk";
+
+        // Ambil produk yang sudah difilter dan paginasi
+        $data['products'] = $productModel->getFilteredProductsPaginated($categories, $genders, $search, $this->perPage, ($page - 1) * $this->perPage);
+        $data['totalFilteredProducts'] = $productModel->getTotalFilteredProducts($categories, $genders, $search);
+
+        // Ambil semua product IDs dari produk yang didapat
+        $productIds = array_column($data['products'], 'id');
+
+        // Ambil semua rating untuk produk di halaman ini sekaligus
+        $data['ratings'] = $productModel->getAllRatingsForProductIds($productIds);
+
     
         $this->render(['templates/hero', 'product/index'], $data);
 
     }
+
 }

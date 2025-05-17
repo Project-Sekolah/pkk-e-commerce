@@ -35,31 +35,54 @@
   <!-- Product Cards -->
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" id="productGrid">
     <?php foreach ($data['products'] as $product): ?>
-      <div class="col product-item"
-           data-category="<?= strtolower($product['category_slug']); ?>"
-           data-gender="<?= strtolower($product['gender']); ?>">
-        <div class="card border card-3d interactive h-100">
-          <img src="<?= BASEURL; ?>/assets/img/<?= explode(',', $product['images'])[0]; ?>"
-               class="card-img-top product-img"
-               alt="product"
-               data-bs-toggle="modal"
-               data-bs-target="#productModal"
-               data-title="<?= htmlspecialchars($product['title']); ?>"
-               data-price="<?= number_format($product['price'], 2); ?>"
-               data-category="<?= htmlspecialchars($product['category_name']); ?>"
-               data-description="<?= htmlspecialchars($product['description']); ?>"
-               data-gender="<?= htmlspecialchars($product['gender']); ?>"
-               data-image="<?= BASEURL; ?>/assets/img/<?= explode(',', $product['images'])[0]; ?>"
-               data-stock="<?= $product['stock']; ?>">
+  <div class="col product-item"
+       data-category="<?= strtolower($product['category_slug']); ?>"
+       data-gender="<?= strtolower($product['gender']); ?>">
+    <div class="card border card-3d interactive h-100">
+      <img src="<?= BASEURL; ?>/assets/img/<?= explode(',', $product['images'])[0]; ?>"
+           class="card-img-top product-img"
+           alt="product"
+           data-bs-toggle="modal"
+           data-bs-target="#productModal"
+           data-title="<?= htmlspecialchars($product['title']); ?>"
+           data-price="<?= number_format($product['price'], 2); ?>"
+           data-category="<?= htmlspecialchars($product['category_name']); ?>"
+           data-description="<?= htmlspecialchars($product['description']); ?>"
+           data-gender="<?= htmlspecialchars($product['gender']); ?>"
+           data-image="<?= BASEURL; ?>/assets/img/<?= explode(',', $product['images'])[0]; ?>"
+           data-stock="<?= $product['stock']; ?>">
 
-         <div class="card-body text-center" style="background-color: #847e7b;">
-            <h6 class="card-title"><?= htmlspecialchars($product['title']); ?></h6>
-            <p class="card-text">$<?= number_format($product['price'], 2); ?></p>
-            <button class="btn btn-sm add-to-cart">Add to Cart</button>
-          </div>
-        </div>
+     <div class="card-body text-center" style="background-color: #847e7b;">
+        <h6 class="card-title"><?= htmlspecialchars($product['title']); ?></h6>
+        <p class="card-text">$<?= number_format($product['price'], 2); ?></p>
+
+        <!-- Rating summary -->
+        <?php
+          $ratingsForProduct = $data['ratings'][$product['id']] ?? [];
+          if (!empty($ratingsForProduct)) {
+              // Hitung rata-rata rating
+              $sum = 0;
+              $count = count($ratingsForProduct);
+              foreach ($ratingsForProduct as $r) {
+                  $sum += $r['rating'];
+              }
+              $avg = $sum / $count;
+        ?>
+          <p>
+            Rating: 
+            <strong><?= number_format($avg, 1); ?></strong> / 5
+            (<?= $count; ?> reviews)
+          </p>
+        <?php } else { ?>
+          <p class="text-muted">Belum ada review</p>
+        <?php } ?>
+
+        <button class="btn btn-sm add-to-cart">Add to Cart</button>
       </div>
-    <?php endforeach; ?>
+    </div>
+  </div>
+<?php endforeach; ?>
+
   </div>
 
   <!-- Pagination -->
