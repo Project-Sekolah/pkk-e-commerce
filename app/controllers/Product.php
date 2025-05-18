@@ -2,7 +2,7 @@
 
 class Product extends Controller
 {
-  private $perPage = 8;
+  private $perPage = 100;
 
   public function index($page = 1, $categorySlug = null)
   {
