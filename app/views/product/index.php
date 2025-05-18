@@ -117,7 +117,9 @@
             <p class="text-muted">Belum ada review</p>
           <?php endif; ?>
 
-          <button class="btn btn-sm add-to-cart">Add to Cart</button>
+          <button class="btn btn-sm" onclick="addToCart(<?= htmlspecialchars(
+          $product["id"]
+        ) ?>)">Add to Cart</button>
         </div>
       </div>
     </div>

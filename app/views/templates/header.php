@@ -3,20 +3,24 @@
 <head>  
   <meta charset="utf-8">  
   <meta name="viewport" content="width=device-width, initial-scale=1">  
-  <title><?= $data['judul']; ?></title>  
-  <link rel="icon" href="<?= BASEURL; ?>/assets/img/logotoko.png" type="image/x-icon">
+  <title><?= $data["judul"] ?></title>  
+  <link rel="icon" href="<?= BASEURL ?>/assets/img/logotoko.png" type="image/x-icon">
 
   <!-- SweetAlert -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
   <script>
-    const isLoggedIn = <?= isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true ? 'true' : 'false' ?>;
+    const isLoggedIn = <?= isset($_SESSION["logged_in"]) &&
+    $_SESSION["logged_in"] === true
+      ? "true"
+      : "false" ?>;
   </script>
 
   <!-- Bootstrap CSS -->
-  <link href="<?= BASEURL; ?>/assets/css/bootstrap/bootstrap.min.css" rel="stylesheet">   
+  <link href="<?= BASEURL ?>/assets/css/bootstrap/bootstrap.min.css" rel="stylesheet">   
 
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="<?= BASEURL; ?>/assets/css/styles.css">  
+  <link rel="stylesheet" href="<?= BASEURL ?>/assets/css/styles.css">  
 
   <!-- Icons & Fonts -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
@@ -47,22 +51,22 @@
 </nav>
 
 
+<!-- Shopping Cart Offcanvas -->  <div class="offcanvas offcanvas-end" id="offcanvasCart">  
+  <div class="offcanvas-header">  
+    <h5>Shopping Cart</h5>  
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>  
+  </div>  
+  <div class="offcanvas-body">  
+    <ul class="list-group" id="cart-items"></ul>  
+    <div class="mt-4 d-flex justify-content-between">  
+      <span><strong>Total:</strong> $<span id="total-price">0.00</span></span>  
+      <button class="btn btn-primary">Checkout</button>  
+    </div>  
+  </div>  
+</div>  
 
-<!-- Shopping Cart Offcanvas -->
-<div class="offcanvas offcanvas-end" id="offcanvasCart">
-  <div class="offcanvas-header">
-    <h5>Shopping Cart</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-  </div>
-  <div class="offcanvas-body">
-    <ul class="list-group" id="cart-items"></ul>
-    <div class="mt-4 d-flex justify-content-between">
-      <span><strong>Total:</strong> $<span id="total-price">0.00</span></span>
-      <button class="btn btn-primary">Checkout</button>
-    </div>
+<div class="row">
+  <div class="col-lg-6">
+    <?php Flasher::flash() ?>
   </div>
 </div>
-
-
-
-

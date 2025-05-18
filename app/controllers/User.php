@@ -8,107 +8,84 @@ class User extends Controller
 
   public function register()
   {
-    if (isset($_SESSION["logged_in"]) && $_SESSION["logged_in"] === true) {
-      header("Location: " . BASEURL . "/");
-      exit();
+    if (!empty($_SESSION["logged_in"])) {
+      return $this->redirectHome();
     }
 
     if ($_SERVER["REQUEST_METHOD"] === "POST") {
-      $username = $_POST["username"];
-      $full_name = $_POST["full_name"];
-      $email = $_POST["email"];
-      $password = $_POST["password"];
-      $confirm_password = $_POST["confirm_password"];
+      $username = trim($_POST["username"] ?? "");
+      $full_name = trim($_POST["full_name"] ?? "");
+      $email = trim($_POST["email"] ?? "");
+      $password = $_POST["password"] ?? "";
+      $confirm_password = $_POST["confirm_password"] ?? "";
 
       if (
-        empty($username) ||
-        empty($full_name) ||
-        empty($email) ||
-        empty($password) ||
-        empty($confirm_password)
+        !$username ||
+        !$full_name ||
+        !$email ||
+        !$password ||
+        !$confirm_password
       ) {
-        $_SESSION["alert"] = [
-          "type" => "error",
-          "message" => "All fields are required.",
-        ];
-        header("Location: " . BASEURL . "/");
-        exit();
+        return $this->redirectWithFlash("All fields are required.", "error");
       }
 
       if ($password !== $confirm_password) {
-        $_SESSION["alert"] = [
-          "type" => "error",
-          "message" => "Passwords do not match.",
-        ];
-        header("Location: " . BASEURL . "/");
-        exit();
+        return $this->redirectWithFlash("Passwords do not match.", "error");
       }
 
       $passwordHash = password_hash($password, PASSWORD_BCRYPT);
+      $this->model("User_model")->register(
+        $username,
+        $full_name,
+        $email,
+        $passwordHash
+      );
 
-      $userModel = $this->model("User_model");
-      $userModel->register($username, $full_name, $email, $passwordHash);
-
-      $_SESSION["alert"] = [
-        "type" => "success",
-        "message" => "Registration successful. Please login.",
-      ];
-      header("Location: " . BASEURL . "/");
-      exit();
+      return $this->redirectWithFlash(
+        "Registration successful. Please login.",
+        "success"
+      );
     }
   }
 
   public function login()
   {
-    if (isset($_SESSION["logged_in"]) && $_SESSION["logged_in"] === true) {
-      header("Location: " . BASEURL . "/");
-      exit();
+    if (!empty($_SESSION["logged_in"])) {
+      return $this->redirectHome();
     }
 
     if ($_SERVER["REQUEST_METHOD"] === "POST") {
-      $email = $_POST["email"];
-      $password = $_POST["password"];
+      $email = trim($_POST["email"] ?? "");
+      $password = $_POST["password"] ?? "";
 
-      if (empty($email) || empty($password)) {
-        $_SESSION["alert"] = [
-          "type" => "error",
-          "message" => "Both fields are required.",
-        ];
-        header("Location: " . BASEURL . "/");
-        exit();
+      if (!$email || !$password) {
+        return $this->redirectWithFlash("Both fields are required.", "error");
       }
 
-      $userModel = $this->model("User_model");
-      $user = $userModel->getUserByEmail($email);
+      $user = $this->model("User_model")->getUserByEmail($email);
 
       if ($user && password_verify($password, $user["password"])) {
         $_SESSION["user"] = $user;
         $_SESSION["logged_in"] = true;
-
-        $_SESSION["alert"] = [
-          "type" => "success",
-          "message" => "Login successful.",
-        ];
-        header("Location: " . BASEURL . "/");
-        exit();
-      } else {
-        $_SESSION["alert"] = [
-          "type" => "error",
-          "message" => "Invalid credentials.",
-        ];
-        header("Location: " . BASEURL . "/");
-        exit();
+        return $this->redirectWithFlash("Login successful.", "success");
       }
+
+      return $this->redirectWithFlash("Invalid credentials.", "error");
     }
   }
 
   public function logout()
   {
-    session_destroy();
-    $_SESSION["alert"] = [
-      "type" => "success",
-      "message" => "You have been logged out successfully.",
-    ];
+    // Hapus hanya data user dari session
+    unset($_SESSION["user"], $_SESSION["logged_in"]);
+
+    // Set flash sebelum redirect
+    Flasher::setFlash(
+      "Success",
+      "You have been logged out successfully.",
+      "success"
+    );
+
     header("Location: " . BASEURL . "/");
     exit();
   }
@@ -121,12 +98,14 @@ class User extends Controller
   {
     $this->checkLogin();
 
-    $data["judul"] = "Profile";
     $userModel = $this->model("User_model");
-    $data["user"] = $userModel->getUserById($_SESSION["user"]["id"]);
-    $data["addresses"] = $userModel->getAddressesByUserId(
-      $_SESSION["user"]["id"]
-    );
+    $userId = $_SESSION["user"]["id"];
+
+    $data = [
+      "judul" => "Profile",
+      "user" => $userModel->getUserById($userId),
+      "addresses" => $userModel->getAddressesByUserId($userId),
+    ];
 
     $this->render(["user/profile"], $data);
   }
@@ -136,9 +115,9 @@ class User extends Controller
     $this->checkLogin();
 
     $userId = $_SESSION["user"]["id"];
-    $username = $_POST["username"];
-    $full_name = $_POST["full_name"];
-    $email = $_POST["email"];
+    $username = trim($_POST["username"] ?? "");
+    $full_name = trim($_POST["full_name"] ?? "");
+    $email = trim($_POST["email"] ?? "");
 
     $userModel = $this->model("User_model");
     $user = $userModel->getUserById($userId);
@@ -146,7 +125,7 @@ class User extends Controller
 
     if (!empty($_FILES["image"]["name"])) {
       try {
-        $uploadedImage = $this->cloudinary
+        $upload = $this->cloudinary
           ->uploadApi()
           ->upload($_FILES["image"]["tmp_name"], [
             "folder" => "profile_pics/",
@@ -157,16 +136,13 @@ class User extends Controller
             "overwrite" => true,
             "resource_type" => "image",
           ]);
-
-        $imagePath = $uploadedImage["secure_url"];
+        $imagePath = $upload["secure_url"];
       } catch (Exception $e) {
-        $_SESSION["alert"] = [
-          "type" => "error",
-          "message" =>
-            "Gagal mengunggah foto ke Cloudinary: " . $e->getMessage(),
-        ];
-        header("Location: " . BASEURL . "/user/profile");
-        exit();
+        return $this->redirectWithFlash(
+          "Gagal mengunggah foto: " . $e->getMessage(),
+          "error",
+          "/user/profile"
+        );
       }
     }
 
@@ -177,13 +153,11 @@ class User extends Controller
       $email,
       $imagePath
     );
-
-    $_SESSION["alert"] = [
-      "type" => "success",
-      "message" => "Profile updated successfully.",
-    ];
-    header("Location: " . BASEURL . "/user/profile");
-    exit();
+    return $this->redirectWithFlash(
+      "Profile updated successfully.",
+      "success",
+      "/user/profile"
+    );
   }
 
   // ============================
@@ -193,73 +167,45 @@ class User extends Controller
   public function addAddress()
   {
     $this->checkLogin();
-
     $userId = $_SESSION["user"]["id"];
-    $label = $_POST["label"];
-    $address_line_1 = $_POST["address_line_1"];
-    $address_line_2 = $_POST["address_line_2"];
-    $city = $_POST["city"];
-    $postal_code = $_POST["postal_code"];
-    $country = $_POST["country"];
-    $phone_number = $_POST["phone_number"];
-    $is_default = isset($_POST["is_default"]) ? 1 : 0;
 
-    $userModel = $this->model("User_model");
-    $userModel->addUserAddress(
-      $userId,
-      $label,
-      $address_line_1,
-      $address_line_2,
-      $city,
-      $postal_code,
-      $country,
-      $phone_number,
-      $is_default
+    $data = $this->getAddressInput();
+    $data["user_id"] = $userId;
+
+    $this->model("User_model")->addUserAddress(...array_values($data));
+    return $this->redirectWithFlash(
+      "Address added successfully.",
+      "success",
+      "/user/profile"
     );
-
-    $_SESSION["alert"] = [
-      "type" => "success",
-      "message" => "Address added successfully.",
-    ];
-    header("Location: " . BASEURL . "/user/profile");
-    exit();
   }
 
   public function updateAddress()
   {
     $this->checkLogin();
-
     $userId = $_SESSION["user"]["id"];
-    $addressId = $_POST["address_id"];
-    $label = $_POST["label"];
-    $address_line_1 = $_POST["address_line_1"];
-    $address_line_2 = $_POST["address_line_2"];
-    $city = $_POST["city"];
-    $postal_code = $_POST["postal_code"];
-    $country = $_POST["country"];
-    $phone_number = $_POST["phone_number"];
-    $is_default = isset($_POST["is_default"]) ? 1 : 0;
+    $addressId = $_POST["address_id"] ?? null;
 
-    $userModel = $this->model("User_model");
-    $userModel->updateUserAddress(
+    if (!$addressId) {
+      return $this->redirectWithFlash(
+        "Address ID is required.",
+        "error",
+        "/user/profile"
+      );
+    }
+
+    $data = $this->getAddressInput();
+    $this->model("User_model")->updateUserAddress(
       $addressId,
       $userId,
-      $label,
-      $address_line_1,
-      $address_line_2,
-      $city,
-      $postal_code,
-      $country,
-      $phone_number,
-      $is_default
+      ...array_values($data)
     );
 
-    $_SESSION["alert"] = [
-      "type" => "success",
-      "message" => "Address updated successfully.",
-    ];
-    header("Location: " . BASEURL . "/user/profile");
-    exit();
+    return $this->redirectWithFlash(
+      "Address updated successfully.",
+      "success",
+      "/user/profile"
+    );
   }
 
   public function deleteAddress($id)
@@ -267,14 +213,46 @@ class User extends Controller
     $this->checkLogin();
 
     $userId = $_SESSION["user"]["id"];
-    $userModel = $this->model("User_model");
-    $userModel->deleteUserAddress($id, $userId);
+    $this->model("User_model")->deleteUserAddress($id, $userId);
 
-    $_SESSION["alert"] = [
-      "type" => "success",
-      "message" => "Address deleted successfully.",
-    ];
-    header("Location: " . BASEURL . "/user/profile");
+    return $this->redirectWithFlash(
+      "Address deleted successfully.",
+      "success",
+      "/user/profile"
+    );
+  }
+
+  // ============================
+  //         UTILITIES
+  // ============================
+
+  private function redirectHome()
+  {
+    header("Location: " . BASEURL . "/");
     exit();
+  }
+
+  private function redirectWithFlash(
+    $message,
+    $type = "success",
+    $redirect = "/"
+  ) {
+    Flasher::setFlash(ucfirst($type), $message, $type);
+    header("Location: " . BASEURL . $redirect);
+    exit();
+  }
+
+  private function getAddressInput()
+  {
+    return [
+      "label" => $_POST["label"] ?? "",
+      "address_line_1" => $_POST["address_line_1"] ?? "",
+      "address_line_2" => $_POST["address_line_2"] ?? "",
+      "city" => $_POST["city"] ?? "",
+      "postal_code" => $_POST["postal_code"] ?? "",
+      "country" => $_POST["country"] ?? "",
+      "phone_number" => $_POST["phone_number"] ?? "",
+      "is_default" => isset($_POST["is_default"]) ? 1 : 0,
+    ];
   }
 }

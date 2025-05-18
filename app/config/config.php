@@ -16,5 +16,5 @@ define(
 );
 
 //define('BASEURL', 'http://localhost/project-6/public');
-define('BASEURL', 'https://pkk-e-commerce-production.up.railway.app');
-//define("BASEURL", "http://localhost:8080/pkk-e-commerce-main/public");
+//define('BASEURL', 'https://pkk-e-commerce-production.up.railway.app');
+define("BASEURL", "http://localhost:8080/pkk-e-commerce-main/public");

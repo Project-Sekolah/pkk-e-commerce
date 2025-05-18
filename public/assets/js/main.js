@@ -1,28 +1,48 @@
+
 // === Cart Logic ===
-const cart = [];
 const cartItemsElement = document.getElementById("cart-items");
 const cartCountElement = document.getElementById("cart-count");
 const totalPriceElement = document.getElementById("total-price");
 
-function renderCartItems() {
+// Render cart dari backend
+async function loadCart() {
+    try {
+        const response = await fetch("/cart", {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        });
+        const data = await response.json();
+
+        if (data && data.items) {
+            renderCartItems(data.items);
+        }
+    } catch (error) {
+        console.error("Gagal mengambil keranjang:", error);
+    }
+}
+
+function renderCartItems(items) {
     cartItemsElement.innerHTML = "";
     let total = 0;
     let itemCount = 0;
 
-    cart.forEach((item, index) => {
-        total += item.price * item.quantity;
+    items.forEach(item => {
+        const product = item.product;
+        total += product.price * item.quantity;
         itemCount += item.quantity;
 
         const li = document.createElement("li");
         li.className =
             "list-group-item d-flex justify-content-between align-items-center";
+
         li.innerHTML = `
-            ${item.name} - $${item.price.toFixed(2)} x 
+            ${product.name} - $${product.price.toFixed(2)} x 
             <input type="number" value="${
                 item.quantity
-            }" min="1" class="quantity-input" 
-                   onchange="updateItemQuantity(${index}, this.value)">
-            <button class="btn btn-sm btn-danger" onclick="removeFromCart(${index})">Remove</button>
+            }" min="1" class="quantity-input"
+                onchange="updateItemQuantity(${item.id}, this.value)">
+            <button class="btn btn-sm btn-danger" onclick="removeFromCart(${
+                item.id
+            })">Remove</button>
         `;
         cartItemsElement.appendChild(li);
     });
@@ -31,23 +51,82 @@ function renderCartItems() {
     cartCountElement.textContent = itemCount;
 }
 
-function updateItemQuantity(index, newQuantity) {
-    if (newQuantity <= 0) {
-        removeFromCart(index);
-    } else {
-        cart[index].quantity = parseInt(newQuantity);
-        updateCart();
+async function updateItemQuantity(itemId, newQuantity) {
+    newQuantity = parseInt(newQuantity);
+    if (newQuantity < 1) {
+        removeFromCart(itemId);
+        return;
+    }
+
+    const action = newQuantity > 0 ? "increase" : "decrease";
+
+    try {
+        const res = await fetch("/cart/updateQuantity", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: `item_id=${itemId}&action=${
+                newQuantity > 1 ? "increase" : "decrease"
+            }`
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            await loadCart();
+        } else {
+            alert(data.message);
+        }
+    } catch (err) {
+        console.error("Gagal update jumlah:", err);
     }
 }
 
-function removeFromCart(index) {
-    cart.splice(index, 1);
-    updateCart();
+async function removeFromCart(itemId) {
+    try {
+        const res = await fetch(`/cart/delete/${itemId}`, {
+            method: "POST",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            await loadCart();
+        } else {
+            alert(data.message);
+        }
+    } catch (err) {
+        console.error("Gagal hapus item:", err);
+    }
 }
 
-function updateCart() {
-    renderCartItems();
+async function addToCart(productId, quantity = 1) {
+    try {
+        const res = await fetch("/cart/add", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: `product_id=${productId}&quantity=${quantity}`
+        });
+
+        const data = await res.json();
+        if (data.success) {
+            await loadCart();
+        } else {
+            alert(data.message);
+        }
+    } catch (err) {
+        console.error("Gagal tambah ke cart:", err);
+    }
 }
+
+// Panggil di awal untuk load isi cart
+loadCart();
 
 // === Filter Logic ===
 const filters = {

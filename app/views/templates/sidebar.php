@@ -121,12 +121,21 @@
           $user["email"]
         ) ?></small>
       </div>
-      <img src="<?= !empty($user["image"])
-        ? htmlspecialchars($user["image"])
-        : BASEURL .
-          "/assets/images/default-profile.png" ?>" alt="Foto Profil <?= htmlspecialchars(
-  $user["username"]
-) ?>" class="rounded-circle" width="48" height="48" style="object-fit: cover;" loading="lazy">
+<img src="<?php
+    if (!empty($user["image"])) {
+        echo strpos($user["image"], 'res.cloudinary.com') !== false
+            ? htmlspecialchars($user["image"])
+            : BASEURL . '/' . ltrim(htmlspecialchars($user["image"]), '/');
+    } else {
+        echo BASEURL . '/assets/images/default.png';
+    }
+?>"
+alt="Foto Profil <?= htmlspecialchars($user["username"]) ?>"
+class="rounded-circle"
+width="48"
+height="48"
+style="object-fit: cover;"
+loading="lazy">
     </div>
 
     <div class="mt-3 text-success" id="user-info"></div>
@@ -156,7 +165,9 @@
       isset($_SESSION["logged_in"]) &&
       $_SESSION["logged_in"] === true
     ): ?>
-      <a href="<?= BASEURL ?>/user/logout" class="d-flex align-items-center mb-3"><i class="bi bi-door-closed-fill"></i><span class="ms-2">Logout</span></a>
+      <a href="<?= BASEURL ?>/user/logout" class="d-flex align-items-center
+      mb-3"><i class="bi bi-door-closed-fill" id="logout-link"></i><span
+      class="ms-2">Logout</span></a>
     <?php endif; ?>
   </div>
 </div>
