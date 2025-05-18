@@ -1,0 +1,52 @@
+Options -Multiviews
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ index.php?url=$1 [L]
+
+
+# 1. Options -Multiviews
+# Artinya: menonaktifkan opsi "content negotiation" Multiviews dari Apache.
+# Multiviews memungkinkan Apache mencari file yang cocok walau ekstensi tidak ditulis. Misalnya, akses ke /about bisa diarahkan ke about.html, about.php, dll.
+# Kenapa dimatikan? Karena kita ingin routing dikontrol sepenuhnya oleh index.php (dalam hal ini oleh file App.php yang kamu kirim sebelumnya), bukan oleh Apache.
+
+
+# 2. RewriteEngine On
+# Artinya: Mengaktifkan mod_rewrite.
+# mod_rewrite adalah modul Apache untuk menulis ulang URL secara dinamis (URL Rewriting).
+# Tanpa ini, aturan rewrite tidak akan diproses.
+
+
+# 3. RewriteCond %{REQUEST_FILENAME} !-d
+# Artinya: Jika URL bukan direktori nyata di server.
+# %{REQUEST_FILENAME} = path file yang diminta oleh browser.
+# !-d = bukan direktori (! = negasi).
+
+
+# 4. RewriteCond %{REQUEST_FILENAME} !-f
+# Artinya: Jika URL bukan file nyata di server.
+# !-f = bukan file.
+
+
+# 5. RewriteRule ^(.*)$ index.php?url=$1 [L]
+# Artinya:
+# Jika URL bukan file/direktori, maka:
+# Arahkan semuanya ke index.php dan lempar parameter url dengan nilai path-nya.
+# Misal user akses:
+# http://localhost/blog/post/5
+# Maka akan diarahkan ke:
+# index.php?url=blog/post/5
+# ^(.*)$ = ambil seluruh path (dengan regex).
+# [L] = Last rule; setelah ini, stop proses rewrite lainnya.
+
+
+# Contoh Alurnya:
+# User akses:
+# http://localhost/product/detail/10
+# Kalau tidak ada file product/detail/10, dan bukan folder, maka diarahkan ke:
+# index.php?url=product/detail/10
+# Di index.php, URL ini akan diproses oleh class App untuk menentukan:
+# controller = Product
+# method = detail
+# parameter = 10

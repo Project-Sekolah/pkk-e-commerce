@@ -1,0 +1,502 @@
+/* ==========================
+   Root Variables (Color Palette)
+========================== */
+:root {
+  --color-bg-body: #ded5c6;
+  --color-bg-footer: #424e4e;
+  --color-bg-topbar: #ded5c6;
+  --color-bg-btn: #F0E8DA;
+  --color-bg-btn-hover: #e4ddd3;
+  --color-btn-text: #46555F;
+  --color-btn-text-hover: #3e4a4e;
+  --color-link: #333;
+  --color-link-hover: #8b9a6d;
+  --color-border-card: #e0e0e0;
+  --color-offcanvas-bg: #f8f9fa;
+  --color-offcanvas-text: #333;
+  --color-collection-text: #000;
+  --color-badge-bg: #f8b400;
+  --color-badge-text: white;
+  --color-offcanvas-link-hover: #6c757d;
+  --color-bg-dark-brown: #3e2a47;
+}
+
+/* ==========================
+   Custom Scrollbar
+========================== */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-bg-footer);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5a6b6b;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* ==========================
+   General & Layout Styles
+========================== */
+body {
+  background-color: var(--color-bg-body);
+}
+
+footer {
+  background-color: var(--color-bg-footer);
+}
+
+/* ==========================
+   Topbar
+========================== */
+.topbar {
+  background-color: var(--color-bg-topbar);
+  padding: 0.8rem 1rem;
+}
+
+/* ==========================
+   Navbar Brand (Lunerburg & Co)
+========================== */
+.navbar-brand {
+  margin-left: 0; 
+  margin-right: auto; 
+}
+
+
+/* ==========================
+   Sidebar
+========================== */
+.sidebar {
+  min-height: 100vh;
+  background-color: var(--color-bg-body);
+  padding: 1rem;
+}
+
+.sidebar a {
+  display: block;
+  padding: 10px 0;
+  color: var(--color-link);
+  text-decoration: none;
+}
+
+.sidebar a:hover {
+  color: var(--color-link-hover);
+}
+
+/* ==========================
+   Hero Section
+========================== */
+.hero {
+  margin-top: 70px;
+  background-image: url('../img/jumbotron4.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 100px 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.btn-discover {
+  background-color: #fff;
+  color: #333;
+  border: 2px solid #fff;
+  transition: all 0.3s ease;
+  z-index: 2;
+  position: relative;
+}
+
+.btn-discover:hover {
+  background-color: transparent;
+  color: #fff;
+  border-color: #fff;
+  transform: scale(1.05);
+}
+
+.hero svg {
+  z-index: 0;
+}
+
+
+/* ==========================
+   Buttons
+========================== */
+.btn {
+  background-color: var(--color-bg-btn);
+  color: var(--color-btn-text);
+  outline: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: var(--color-bg-btn-hover);
+  color: var(--color-btn-text-hover);
+}
+
+.btn-cart {
+  position: relative;
+  transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-cart:hover {
+  transform: scale(1.05);
+  background-color: var(--color-bg-btn-hover);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.btn-cart span {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: var(--color-badge-bg);
+  color: var(--color-badge-text);
+  border-radius: 999px;
+  font-size: 12px;
+  padding: 2px 6px;
+  min-width: 20px;
+  text-align: center;
+  line-height: 1;
+}
+
+#menu-toggle {
+  outline: none;
+  box-shadow: none;
+}
+
+.btn-outline-light.active {
+  background-color: var(--color-bg-dark-brown);
+  color: var(--color-badge-text);
+}
+
+/* ==========================
+   Product Card
+========================== */
+.product-card {
+  border: 1px solid var(--color-border-card);
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.card-title, .card-text {
+  transition: color 0.3s ease;
+}
+
+.card:hover .card-title,
+.card:hover .card-text {
+  color: var(--color-btn-text-hover);
+}
+
+/* ==========================
+   3D Card
+========================== */
+.card-3d {
+  perspective: 1000px;
+  transition: transform 0.3s ease;
+  background-color: var(--color-bg-body);
+}
+
+.card-3d img {
+  display: block;
+  width: 100%;
+  height: auto;
+  transform-style: preserve-3d;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  will-change: transform;
+  cursor: pointer;
+}
+
+.card-3d:hover img {
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* ==========================
+   Collection Section
+========================== */
+.collection-box {
+  position: relative;
+  overflow: hidden;
+  height: auto;
+  border-radius: 10px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.collection-box:hover {
+  transform: scale(1.02);
+  filter: grayscale(100%);
+}
+
+.collection-box img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.collection-content {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  color: var(--color-collection-text);
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+.collection-box:hover .collection-content {
+  opacity: 1;
+}
+
+.collection-content h5 {
+  font-weight: bold;
+}
+
+.collection-content a {
+  text-decoration: none;
+  font-weight: 500;
+  color: var(--color-collection-text);
+}
+
+/* ==========================
+   Offcanvas Sidebar
+========================== */
+.offcanvas {
+  width: 250px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.offcanvas-header {
+  background-color: var(--color-offcanvas-bg);
+  padding: 10px 15px;
+  text-align: center;
+}
+
+.offcanvas .sidebar-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-offcanvas-text);
+  margin: 0 auto;
+}
+
+.offcanvas a {
+  text-decoration: none;
+  color: var(--color-collection-text);
+  font-weight: 500;
+  text-align: center;
+  display: block;
+  padding: 8px 0;
+  transition: color 0.3s ease;
+}
+
+.offcanvas a:hover {
+  color: var(--color-offcanvas-link-hover);
+}
+
+
+
+
+/* ==========================
+   Faq Style
+========================== */
+.faq-container {
+    margin-top: 100px;
+}
+
+.lang-btn {
+    font-weight: bold;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50rem;
+    transition: background-color 0.3s ease;
+}
+
+.faq-title {
+    color: var(--color-btn-text);
+}
+
+.faq-description {
+    color: #6c757d;
+}
+
+.faq-item {
+    background-color: var(--color-bg-body);
+    border: none;
+    margin-bottom: 1rem;
+}
+
+.faq-header-btn {
+    background-color: var(--color-bg-btn);
+    color: var(--color-btn-text);
+}
+
+.faq-body {
+    color: var(--color-link);
+}
+
+.feedback-card {
+    background-color: var(--color-bg-body);
+}
+
+.feedback-title {
+    color: var(--color-btn-text);
+}
+
+.feedback-label {
+    color: var(--color-btn-text);
+}
+
+.feedback-input,
+.feedback-textarea {
+    background-color: var(--color-bg-btn);
+    border-color: var(--color-border-card);
+    border-radius: 50rem;
+    padding-left: 1rem;
+}
+
+.feedback-textarea {
+    border-radius: 1rem;
+}
+
+.feedback-btn {
+    background-color: var(--color-badge-bg);
+    border-color: var(--color-badge-bg);
+    border-radius: 50rem;
+    padding: 0.5rem 1.5rem;
+}
+
+
+
+/* ==========================
+   Profile Style
+========================== */
+.profile-container{
+  margin-top: 100px;
+}
+
+.edit-profile-btn {
+  background-color: white;
+  border-radius: 50%;
+  padding: 5px 8px;
+  font-size: 14px;
+}
+
+
+/* ==========================
+   Modal Custom CSS
+========================== */
+.modal-content.custom-modal {
+  background-color: #ded5c6;
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.btn-close-modal {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1055;
+  filter: brightness(0) saturate(100%) invert(52%) sepia(90%) saturate(645%) hue-rotate(3deg) brightness(96%) contrast(90%);
+  transition: filter 0.3s ease;
+}
+
+.btn-close-modal:hover,
+.btn-close-modal:focus {
+  filter: brightness(0) saturate(100%) invert(70%) sepia(95%) saturate(800%) hue-rotate(10deg) brightness(110%) contrast(100%);
+}
+
+.modal-image-container {
+  position: relative;
+}
+
+.modal-image {
+  border: 1px solid #e0e0e0;
+  max-height: 300px;
+}
+
+.price-tag {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.5rem 1rem;
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+  background-color: #f8b400;
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+#modalTitle {
+  color: #3e2a47;
+}
+
+.modal-product-info p {
+  font-size: 0.875rem;
+}
+
+.modal .add-to-cart {
+  background-color: #F0E8DA;
+  color: #46555F;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  padding: 0.5rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.modal .add-to-cart:hover {
+  background-color: #e8ddcb;
+}
+
+.rating-stars-static i {
+  font-size: 1.1rem;
+}
+
+#starInput {
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+textarea#ratingComment {
+  resize: none;
+}
+
+.btn-submit-rating {
+  background-color: #f8b400; 
+  color: #3e2a47; 
+  border: none; 
+  border-radius: 20px; 
+  padding: 6px 16px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: background-color 0.2s ease;
+}
+
+.btn-submit-rating:hover {
+  background-color: #e09e00;
+}
+
+.review-comment {
+  font-size: 0.875rem;
+  color: #6c757d;
+}

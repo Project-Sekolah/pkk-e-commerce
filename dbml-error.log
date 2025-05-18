@@ -1,0 +1,13 @@
+2025-05-16T15:51:56.444Z
+Error: Unsupported database type: unknown
+    at Object.fetchSchemaJson (/home/bocahndeso/.nvm/versions/node/v18.20.8/lib/node_modules/@dbml/cli/node_modules/@dbml/connector/dist/connectors/connector.js:22:19)
+    at connectionHandler (/home/bocahndeso/.nvm/versions/node/v18.20.8/lib/node_modules/@dbml/cli/lib/cli/connector.js:24:51)
+    at Object.db2dbml (/home/bocahndeso/.nvm/versions/node/v18.20.8/lib/node_modules/@dbml/cli/lib/cli/index.js:67:26)
+    at Object.<anonymous> (/home/bocahndeso/.nvm/versions/node/v18.20.8/lib/node_modules/@dbml/cli/bin/db2dbml.js:4:19)
+    at Module._compile (node:internal/modules/cjs/loader:1364:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1422:10)
+    at Module.load (node:internal/modules/cjs/loader:1203:32)
+    at Module._load (node:internal/modules/cjs/loader:1019:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:128:12)
+    at node:internal/main/run_main_module:28:49
+
