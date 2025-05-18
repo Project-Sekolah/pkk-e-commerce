@@ -17,15 +17,16 @@ class User_model
   public function register($username, $full_name, $email, $passwordHash)
   {
     $defaultImage = "assets/img/default.jpg";
-    $sql = "INSERT INTO $this->table (id, username, full_name, email, password, role)
-                VALUES (UUID(), :username, :full_name, :email, :password, 'buyer')";
+    $sql = "INSERT INTO $this->table (id, username, full_name, email, password, image, role)
+        VALUES (UUID(), :username, :full_name, :email, :password, :image,
+        'buyer')";
 
     $this->db->query($sql);
     $this->db->bind(":username", $username);
     $this->db->bind(":full_name", $full_name);
     $this->db->bind(":email", $email);
     $this->db->bind(":password", $passwordHash);
-     $this->db->bind(':image', $defaultImage);
+    $this->db->bind(":image", $defaultImage);
 
     return $this->db->execute();
   }
