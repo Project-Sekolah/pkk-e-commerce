@@ -47,6 +47,9 @@
         : 0;
 
     $image = explode(",", $product["images"])[0];
+    $imageUrl = strpos($image, 'res.cloudinary.com') !== false
+      ? htmlspecialchars($image)
+      : BASEURL . '/assets/img/' . htmlspecialchars($image);
 
     // Siapkan data reviewer untuk atribut data-reviewers
     $reviewers = [];
@@ -61,12 +64,10 @@
     }
     ?>
     <div class="col product-item"
-         data-category="<?= strtolower(
-           htmlspecialchars($product["category_slug"])
-         ) ?>"
+         data-category="<?= strtolower(htmlspecialchars($product["category_slug"])) ?>"
          data-gender="<?= strtolower(htmlspecialchars($product["gender"])) ?>">
       <div class="card border card-3d interactive h-100">
-        <img src="<?= BASEURL ?>/assets/img/<?= htmlspecialchars($image) ?>"
+        <img src="<?= $imageUrl ?>"
              class="card-img-top product-img"
              alt="product"
              data-userId ="<?= htmlspecialchars($user["id"]) ?>"
@@ -77,28 +78,14 @@
              data-bs-target="#productModal"
              data-title="<?= htmlspecialchars($product["title"], ENT_QUOTES) ?>"
              data-price="<?= number_format($product["price"], 2) ?>"
-             data-category="<?= htmlspecialchars(
-               $product["category_name"],
-               ENT_QUOTES
-             ) ?>"
-             data-description="<?= htmlspecialchars(
-               $product["description"],
-               ENT_QUOTES
-             ) ?>"
-             data-gender="<?= htmlspecialchars(
-               $product["gender"],
-               ENT_QUOTES
-             ) ?>"
-             data-image="<?= BASEURL ?>/assets/img/<?= htmlspecialchars(
-  $image
-) ?>"
+             data-category="<?= htmlspecialchars($product["category_name"], ENT_QUOTES) ?>"
+             data-description="<?= htmlspecialchars($product["description"], ENT_QUOTES) ?>"
+             data-gender="<?= htmlspecialchars($product["gender"], ENT_QUOTES) ?>"
+             data-image="<?= $imageUrl ?>"
              data-stock="<?= (int) $product["stock"] ?>"
              data-rating="<?= $count > 0 ? number_format($avg, 1) : "0" ?>"
              data-rating-count="<?= $count ?>"
-             data-reviewers='<?= htmlspecialchars(
-               json_encode($reviewers),
-               ENT_QUOTES
-             ) ?>'
+             data-reviewers='<?= htmlspecialchars(json_encode($reviewers), ENT_QUOTES) ?>'
         >
 
         <div class="card-body text-center" style="background-color: #847e7b;">
@@ -108,23 +95,22 @@
           <!-- Rating summary -->
           <?php if ($count > 0): ?>
             <p>
-              Rating: <strong><?= number_format(
-                $avg,
-                1
-              ) ?></strong> / 5 (<?= $count ?> reviews)
+              Rating: <strong><?= number_format($avg, 1) ?></strong> / 5 (<?= $count ?> reviews)
             </p>
           <?php else: ?>
             <p class="text-muted">Belum ada review</p>
           <?php endif; ?>
-
-          <button class="btn btn-sm" onclick="addToCart(<?= htmlspecialchars(
-          $product["id"]
-        ) ?>)">Add to Cart</button>
+          
+          <button class="btn btn-sm add-to-cart"
+                  data-id="<?= htmlspecialchars($product["id"]) ?>"
+                  data-name="<?= htmlspecialchars($product["title"]) ?>"
+                  data-price="<?= htmlspecialchars($product["price"]) ?>">
+            Add to Cart
+          </button>
         </div>
       </div>
     </div>
-  <?php
-  endforeach; ?>
+  <?php endforeach; ?>
 </div>
 
   <!-- Pagination -->

@@ -1,132 +1,161 @@
-
 // === Cart Logic ===
+let cart = [];
+const BASEURL = "http://localhost:8080/pkk-e-commerce-main/public";
 const cartItemsElement = document.getElementById("cart-items");
 const cartCountElement = document.getElementById("cart-count");
 const totalPriceElement = document.getElementById("total-price");
 
-// Render cart dari backend
-async function loadCart() {
-    try {
-        const response = await fetch("/cart", {
-            headers: { "X-Requested-With": "XMLHttpRequest" }
-        });
-        const data = await response.json();
-
-        if (data && data.items) {
-            renderCartItems(data.items);
+// Load cart dari localStorage saat awal
+function loadCart() {
+    const storedCart = localStorage.getItem("cart");
+    if (storedCart) {
+        try {
+            cart = JSON.parse(storedCart);
+        } catch (e) {
+            console.error("Cart JSON parsing error:", e);
+            cart = [];
         }
-    } catch (error) {
-        console.error("Gagal mengambil keranjang:", error);
     }
 }
 
-function renderCartItems(items) {
+// Simpan cart ke localStorage
+function saveCart() {
+    localStorage.setItem("cart", JSON.stringify(cart));
+}
+
+// Render isi keranjang
+function renderCartItems() {
     cartItemsElement.innerHTML = "";
     let total = 0;
     let itemCount = 0;
 
-    items.forEach(item => {
-        const product = item.product;
-        total += product.price * item.quantity;
+    cart.forEach((item, index) => {
+        const subtotal = item.price * item.quantity;
+        total += subtotal;
         itemCount += item.quantity;
 
         const li = document.createElement("li");
         li.className =
             "list-group-item d-flex justify-content-between align-items-center";
 
-        li.innerHTML = `
-            ${product.name} - $${product.price.toFixed(2)} x 
-            <input type="number" value="${
-                item.quantity
-            }" min="1" class="quantity-input"
-                onchange="updateItemQuantity(${item.id}, this.value)">
-            <button class="btn btn-sm btn-danger" onclick="removeFromCart(${
-                item.id
-            })">Remove</button>
-        `;
+        const itemInfo = document.createElement("div");
+        itemInfo.className = "me-3";
+        itemInfo.innerHTML = `<strong>${
+            item.name
+        }</strong><br>$${item.price.toFixed(2)} x ${
+            item.quantity
+        } = $${subtotal.toFixed(2)}`;
+
+        const btnGroup = document.createElement("div");
+        btnGroup.className = "btn-group";
+
+        const minusBtn = document.createElement("button");
+        minusBtn.className = "btn btn-sm btn-outline-secondary";
+        minusBtn.textContent = "-";
+        minusBtn.addEventListener("click", () => {
+            if (item.quantity > 1) {
+                item.quantity -= 1;
+            } else {
+                cart.splice(index, 1); // Hapus item jika jumlah tinggal 1
+            }
+            updateCart();
+        });
+
+        const plusBtn = document.createElement("button");
+        plusBtn.className = "btn btn-sm btn-outline-secondary";
+        plusBtn.textContent = "+";
+        plusBtn.addEventListener("click", () => {
+            item.quantity += 1;
+            updateCart();
+        });
+
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "btn btn-sm btn-danger";
+        removeBtn.textContent = "Remove";
+        removeBtn.addEventListener("click", () => {
+            removeFromCart(index);
+        });
+
+        btnGroup.appendChild(minusBtn);
+        btnGroup.appendChild(plusBtn);
+        btnGroup.appendChild(removeBtn);
+
+        li.appendChild(itemInfo);
+        li.appendChild(btnGroup);
         cartItemsElement.appendChild(li);
     });
 
     totalPriceElement.textContent = total.toFixed(2);
-    cartCountElement.textContent = itemCount;
-}
-
-async function updateItemQuantity(itemId, newQuantity) {
-    newQuantity = parseInt(newQuantity);
-    if (newQuantity < 1) {
-        removeFromCart(itemId);
-        return;
-    }
-
-    const action = newQuantity > 0 ? "increase" : "decrease";
-
-    try {
-        const res = await fetch("/cart/updateQuantity", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "X-Requested-With": "XMLHttpRequest"
-            },
-            body: `item_id=${itemId}&action=${
-                newQuantity > 1 ? "increase" : "decrease"
-            }`
-        });
-
-        const data = await res.json();
-        if (data.success) {
-            await loadCart();
-        } else {
-            alert(data.message);
-        }
-    } catch (err) {
-        console.error("Gagal update jumlah:", err);
+    if (cartCountElement) {
+        cartCountElement.textContent = itemCount;
     }
 }
 
-async function removeFromCart(itemId) {
-    try {
-        const res = await fetch(`/cart/delete/${itemId}`, {
-            method: "POST",
-            headers: {
-                "X-Requested-With": "XMLHttpRequest"
+// Update isi keranjang dan simpan
+function updateCart() {
+    renderCartItems();
+    saveCart();
+}
+
+// Hapus item dari keranjang
+function removeFromCart(index) {
+    cart.splice(index, 1);
+    updateCart();
+}
+
+// Tambahkan event listener ke tombol "Add to Cart"
+document.addEventListener("DOMContentLoaded", function () {
+    loadCart();
+    updateCart();
+
+    document.querySelectorAll(".add-to-cart").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const productId = btn.getAttribute("data-id");
+            const productName = btn.getAttribute("data-name") || "Unknown";
+            const productPrice =
+                parseFloat(btn.getAttribute("data-price")) || 0;
+
+            const existingItem = cart.find(item => item.id === productId);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    id: productId,
+                    name: productName,
+                    price: productPrice,
+                    quantity: 1
+                });
             }
+
+            updateCart();
         });
+    });
+});
 
-        const data = await res.json();
-        if (data.success) {
-            await loadCart();
-        } else {
-            alert(data.message);
-        }
-    } catch (err) {
-        console.error("Gagal hapus item:", err);
-    }
-}
+//btn modal
+document.addEventListener("DOMContentLoaded", function () {
+    const productModal = document.getElementById("productModal");
+    const modalAddToCartBtn = document.getElementById("modalAddToCartBtn");
 
-async function addToCart(productId, quantity = 1) {
-    try {
-        const res = await fetch("/cart/add", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "X-Requested-With": "XMLHttpRequest"
-            },
-            body: `product_id=${productId}&quantity=${quantity}`
+    document.querySelectorAll(".product-img").forEach(img => {
+        img.addEventListener("click", function () {
+            const productId = this.dataset.productid;
+            const productName = this.dataset.title;
+            const productPrice = this.dataset.price;
+
+            // Simpan data ke tombol modal
+            modalAddToCartBtn.dataset.id = productId;
+            modalAddToCartBtn.dataset.name = productName;
+            modalAddToCartBtn.dataset.price = productPrice;
         });
+    });
 
-        const data = await res.json();
-        if (data.success) {
-            await loadCart();
-        } else {
-            alert(data.message);
-        }
-    } catch (err) {
-        console.error("Gagal tambah ke cart:", err);
-    }
-}
-
-// Panggil di awal untuk load isi cart
-loadCart();
+    modalAddToCartBtn.addEventListener("click", function () {
+        const id = this.dataset.id;
+        const name = this.dataset.name;
+        const price = this.dataset.price;
+    });
+});
 
 // === Filter Logic ===
 const filters = {
@@ -238,74 +267,9 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("modalImage").src = this.dataset.image;
         });
     });
-
-    // Add to Cart Button
-    document.querySelectorAll(".add-to-cart").forEach(btn => {
-        btn.addEventListener("click", () => {
-            if (!isLoggedIn) {
-                Swal.fire({
-                    title: "Login Required",
-                    text: "Please login to add items to the cart.",
-                    icon: "warning",
-                    confirmButtonText: "OK"
-                });
-                return;
-            }
-
-            let productName, productPrice, productImage;
-            if (btn.closest(".product-item")) {
-                const parent = btn.parentElement;
-                productName = parent.querySelector(".card-title").textContent;
-                productPrice = parseFloat(
-                    parent
-                        .querySelector(".card-text")
-                        .textContent.replace("$", "")
-                );
-                productImage = btn
-                    .closest(".product-item")
-                    .querySelector(".product-img").src;
-            }
-
-            if (btn.closest(".modal-body")) {
-                productName = document.getElementById("modalTitle").textContent;
-                productPrice = parseFloat(
-                    document.getElementById("modalPrice").textContent
-                );
-                productImage = document.getElementById("modalImage").src;
-            }
-
-            if (productPrice && productName) {
-                const existing = cart.find(item => item.name === productName);
-                existing
-                    ? existing.quantity++
-                    : cart.push({
-                          name: productName,
-                          price: productPrice,
-                          image: productImage,
-                          quantity: 1
-                      });
-                updateCart();
-            }
-        });
-    });
 });
 
-// === Auth Section Visibility ===
-document.addEventListener("DOMContentLoaded", () => {
-    const show = id => (document.getElementById(id).style.display = "block");
-    const hide = id => (document.getElementById(id).style.display = "none");
-
-    if (isLoggedIn) {
-        hide("auth-section");
-        show("user-info-section");
-        document.getElementById("logout-link").style.display = "flex";
-    } else {
-        show("auth-section");
-        hide("user-info-section");
-        hide("logout-link");
-    }
-});
-
+// === Auth Section Visibility ==
 function showRegister() {
     document.getElementById("login-section").style.display = "none";
     document.getElementById("register-section").style.display = "block";

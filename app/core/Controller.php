@@ -2,7 +2,7 @@
 
 class Controller {
     protected $cloudinary;
-
+    
     public function __construct() {
         global $cloudinary;
         $this->cloudinary = $cloudinary;

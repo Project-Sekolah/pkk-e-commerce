@@ -38,7 +38,7 @@
 <div class="rating-stars-static text-warning fs-5 mb-2"></div>
         
 
-        <button class="btn add-to-cart">
+        <button id="modalAddToCartBtn" class="btn add-to-cart">
           <i class="bi bi-cart-plus-fill"></i> Add To Cart
         </button>
       </div>

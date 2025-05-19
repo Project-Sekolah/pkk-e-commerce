@@ -27,8 +27,8 @@
   <meta name="twitter:image" content="<?= BASEURL ?>/assets/img/preview.jpg">
 
   <!-- Keamanan -->
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https://*; font-src 'self' https://*;">
+ <!--  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+ <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https://*; font-src 'self' https://*;"> -->
 
   <!-- Favicon -->
   <link rel="icon" href="<?= BASEURL ?>/assets/img/logotoko.png" type="image/x-icon">
@@ -40,8 +40,12 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
   <script>
-    const isLoggedIn = <?= isset($_SESSION["logged_in"]) && $_SESSION["logged_in"] === true ? "true" : "false" ?>;
+    const isLoggedIn = <?= isset($_SESSION["logged_in"]) &&
+    $_SESSION["logged_in"] === true
+      ? "true"
+      : "false" ?>;
   </script>
+
 
   <!-- Bootstrap CSS -->
   <link href="<?= BASEURL ?>/assets/css/bootstrap/bootstrap.min.css" rel="stylesheet">   
@@ -67,30 +71,37 @@
     <!-- Brand -->
     <a class="navbar-brand fw-bold" href="#">Lunerburg & Co</a>
 
-    <!-- Cart -->
-    <div class="me-3">
-      <button class="btn btn-cart position-relative" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart">
-        <i class="fas fa-shopping-cart"></i>
-        <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge rounded-circle bg-warning text-white px-35">0</span>
-      </button>
-    </div>
+    <!-- Cart button -->
+<div class="me-3 position-relative">
+  <button class="btn btn-light position-relative" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart">
+    <i class="bi bi-cart3 fs-5"></i>
+    <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge bg-danger rounded-pill">0</span>
+  </button>
+</div>
   </div>
 </nav>
 
-<!-- Shopping Cart Offcanvas -->  
-<div class="offcanvas offcanvas-end" id="offcanvasCart">  
-  <div class="offcanvas-header">  
-    <h5>Shopping Cart</h5>  
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>  
-  </div>  
-  <div class="offcanvas-body">  
-    <ul class="list-group" id="cart-items"></ul>  
-    <div class="mt-4 d-flex justify-content-between">  
-      <span><strong>Total:</strong> $<span id="total-price">0.00</span></span>  
-      <button class="btn btn-primary">Checkout</button>  
-    </div>  
-  </div>  
-</div>  
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">
+      <div class="offcanvas-header">
+        <h5 id="offcanvasCartLabel">Shopping Cart</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+        <ul class="list-group" id="cart-items">
+          <!-- Cart items will be dynamically added here -->
+        </ul>
+        <div class="mt-4 d-flex justify-content-between">
+          <span><strong>Total:</strong> $<span id="total-price">0.00</span></span>
+          <button class="btn btn-primary">Checkout</button>
+        </div>
+      </div>
+    </div>
+
+
+
+
+
+
 
 <div class="row">
   <div class="col-lg-6">
