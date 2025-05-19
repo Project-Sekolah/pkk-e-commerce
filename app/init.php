@@ -1,25 +1,35 @@
 <?php
+
 // Load environment and dependencies
+require_once __DIR__ . "/../vendor/autoload.php";
+
+use Dotenv\Dotenv;
+
+// Pakai createMutable
+$dotenv = Dotenv::createMutable(__DIR__ . "/../");
+$dotenv->load();
+
+// Ini yang penting: push semua $_ENV ke getenv()
+foreach ($_ENV as $key => $value) {
+  putenv("$key=$value");
+}
+
+
+
+use Cloudinary\Cloudinary;
 require_once "config/config.php";
 require_once "core/App.php";
 require_once "core/Controller.php";
 require_once "core/Database.php";
 require_once "core/Flasher.php";
 
-use Cloudinary\Cloudinary;
-
 // Start session jika belum dimulai
 if (session_status() === PHP_SESSION_NONE) {
   session_start();
 }
 
-echo "<pre>";
-echo "CLOUDINARY_CLOUD_NAME: " . getenv("CLOUDINARY_CLOUD_NAME") . PHP_EOL;
-echo "CLOUDINARY_API_KEY: " . getenv("CLOUDINARY_API_KEY") . PHP_EOL;
-echo "CLOUDINARY_API_SECRET: " . getenv("CLOUDINARY_API_SECRET") . PHP_EOL;
-echo "</pre>";
-
 // Inisialisasi Cloudinary jika konstanta tersedia
+
 if (
   defined("CLOUD_NAME") &&
   defined("CLOUD_API_KEY") &&
