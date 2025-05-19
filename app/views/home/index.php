@@ -118,11 +118,12 @@
               <p class="text-muted">Belum ada review</p>
             <?php endif; ?>
 
-            <button class="btn btn-sm add-to-cart"
+           <!-- Product Cards -->
+<button class="btn btn-sm add-to-cart"
                     data-id="<?= htmlspecialchars($product["id"]) ?>"
                     data-name="<?= htmlspecialchars($product["title"]) ?>"
                     data-price="<?= htmlspecialchars($product["price"]) ?>">
-              Add to Cart
+                Add to Cart
             </button>
           </div>
         </div>

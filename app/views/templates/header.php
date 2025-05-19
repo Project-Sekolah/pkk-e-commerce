@@ -61,6 +61,8 @@
 <body>
 
 <!-- Navbar -->
+<?php
+/*
 <nav class="navbar navbar-expand-lg topbar fixed-top shadow-sm">
   <div class="container-fluid d-flex justify-content-between px-3">
     <!-- Tombol hamburger -->
@@ -81,30 +83,58 @@
   </div>
 </nav>
 
-    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">
-      <div class="offcanvas-header">
-        <h5 id="offcanvasCartLabel">Shopping Cart</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-      </div>
-      <div class="offcanvas-body">
-        <ul class="list-group" id="cart-items">
-          <!-- Cart items will be dynamically added here -->
-        </ul>
-        <div class="mt-4 d-flex justify-content-between">
-          <span><strong>Total:</strong> $<span id="total-price">0.00</span></span>
-          <button class="btn btn-primary">Checkout</button>
-        </div>
-      </div>
+    
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">
+  <div class="offcanvas-header">
+    <h5 id="offcanvasCartLabel">Shopping Cart</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    <ul class="list-group" id="cart-items">
+      <!-- Cart items will be dynamically added here -->
+    </ul>
+    <div class="mt-4 d-flex justify-content-between">
+      <span><strong>Total:</strong> $<span id="total-price">0.00</span></span>
+      <button class="btn btn-primary">Checkout</button>
     </div>
-
-
-
-
-
-
-
-<div class="row">
-  <div class="col-lg-6">
-    <?php Flasher::flash(); ?>
   </div>
 </div>
+*/
+?>
+
+
+  <nav class="navbar navbar-expand-lg topbar fixed-top shadow-sm">
+    <div class="container-fluid d-flex justify-content-between px-3">
+      <button class="btn border-0 me-2" id="menu-toggle" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
+        <i class="bi bi-list" style="font-size: 1.5rem;"></i>
+      </button>
+      <a class="navbar-brand fw-bold" href="#">Lunerburg & Co</a>
+      <div class="me-3 position-relative">
+        <button class="btn btn-light position-relative" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart">
+          <i class="bi bi-cart3 fs-5"></i>
+          <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge bg-danger rounded-pill">0</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">
+    <div class="offcanvas-header">
+      <h5 id="offcanvasCartLabel">Shopping Cart</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      <ul class="list-group" id="cart-items">
+      </ul>
+      <div class="mt-4 d-flex justify-content-between">
+        <span><strong>Total:</strong> $<span id="total-price">0.00</span></span>
+        <button class="btn btn-primary">Checkout</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-6">
+      <?php Flasher::flash(); ?>
+    </div>
+  </div>

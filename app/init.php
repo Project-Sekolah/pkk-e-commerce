@@ -23,11 +23,6 @@ require_once "core/Controller.php";
 require_once "core/Database.php";
 require_once "core/Flasher.php";
 
-// Start session jika belum dimulai
-if (session_status() === PHP_SESSION_NONE) {
-  session_start();
-}
-
 // Inisialisasi Cloudinary jika konstanta tersedia
 
 if (
