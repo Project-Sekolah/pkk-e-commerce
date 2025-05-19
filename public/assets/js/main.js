@@ -23,6 +23,33 @@ function saveCart() {
     localStorage.setItem("cart", JSON.stringify(cart));
 }
 
+// Sync: Tambah item / tambah quantity
+function syncAddItemToServer(productId, quantity = 1) {
+    fetch(`${BASEURL}/Cart.php?action=addItem`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `product_id=${encodeURIComponent(productId)}&quantity=${quantity}`
+    }).catch(err => console.error("Add item error:", err));
+}
+
+// Sync: Kurangi quantity item
+function syncDecreaseItemFromServer(productId, quantity = 1) {
+    fetch(`${BASEURL}/Cart.php?action=removeItem`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `product_id=${encodeURIComponent(productId)}&quantity=${quantity}`
+    }).catch(err => console.error("Remove item error:", err));
+}
+
+// Sync: Hapus item dari cart
+function syncDeleteItemFromServer(productId) {
+    fetch(`${BASEURL}/Cart.php?action=deleteItem`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `product_id=${encodeURIComponent(productId)}`
+    }).catch(err => console.error("Delete item error:", err));
+}
+
 // Render isi keranjang
 function renderCartItems() {
     cartItemsElement.innerHTML = "";
@@ -35,16 +62,11 @@ function renderCartItems() {
         itemCount += item.quantity;
 
         const li = document.createElement("li");
-        li.className =
-            "list-group-item d-flex justify-content-between align-items-center";
+        li.className = "list-group-item d-flex justify-content-between align-items-center";
 
         const itemInfo = document.createElement("div");
         itemInfo.className = "me-3";
-        itemInfo.innerHTML = `<strong>${
-            item.name
-        }</strong><br>$${item.price.toFixed(2)} x ${
-            item.quantity
-        } = $${subtotal.toFixed(2)}`;
+        itemInfo.innerHTML = `<strong>${item.name}</strong><br>$${item.price.toFixed(2)} x ${item.quantity} = $${subtotal.toFixed(2)}`;
 
         const btnGroup = document.createElement("div");
         btnGroup.className = "btn-group";
@@ -55,8 +77,10 @@ function renderCartItems() {
         minusBtn.addEventListener("click", () => {
             if (item.quantity > 1) {
                 item.quantity -= 1;
+                syncDecreaseItemFromServer(item.id); // sync perubahan
             } else {
-                cart.splice(index, 1); // Hapus item jika jumlah tinggal 1
+                cart.splice(index, 1);
+                syncDeleteItemFromServer(item.id); // sync hapus
             }
             updateCart();
         });
@@ -66,6 +90,7 @@ function renderCartItems() {
         plusBtn.textContent = "+";
         plusBtn.addEventListener("click", () => {
             item.quantity += 1;
+            syncAddItemToServer(item.id); // sync tambah
             updateCart();
         });
 
@@ -99,6 +124,8 @@ function updateCart() {
 
 // Hapus item dari keranjang
 function removeFromCart(index) {
+    const item = cart[index];
+    syncDeleteItemFromServer(item.id);
     cart.splice(index, 1);
     updateCart();
 }
@@ -112,8 +139,7 @@ document.addEventListener("DOMContentLoaded", function () {
         btn.addEventListener("click", () => {
             const productId = btn.getAttribute("data-id");
             const productName = btn.getAttribute("data-name") || "Unknown";
-            const productPrice =
-                parseFloat(btn.getAttribute("data-price")) || 0;
+            const productPrice = parseFloat(btn.getAttribute("data-price")) || 0;
 
             const existingItem = cart.find(item => item.id === productId);
             if (existingItem) {
@@ -127,12 +153,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             }
 
+            syncAddItemToServer(productId); // sync ke server
             updateCart();
         });
     });
 });
 
-//btn modal
+// Modal logika (kalau pakai)
 document.addEventListener("DOMContentLoaded", function () {
     const productModal = document.getElementById("productModal");
     const modalAddToCartBtn = document.getElementById("modalAddToCartBtn");
@@ -143,7 +170,6 @@ document.addEventListener("DOMContentLoaded", function () {
             const productName = this.dataset.title;
             const productPrice = this.dataset.price;
 
-            // Simpan data ke tombol modal
             modalAddToCartBtn.dataset.id = productId;
             modalAddToCartBtn.dataset.name = productName;
             modalAddToCartBtn.dataset.price = productPrice;
@@ -153,7 +179,22 @@ document.addEventListener("DOMContentLoaded", function () {
     modalAddToCartBtn.addEventListener("click", function () {
         const id = this.dataset.id;
         const name = this.dataset.name;
-        const price = this.dataset.price;
+        const price = parseFloat(this.dataset.price);
+
+        const existingItem = cart.find(item => item.id === id);
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push({
+                id: id,
+                name: name,
+                price: price,
+                quantity: 1
+            });
+        }
+
+        syncAddItemToServer(id);
+        updateCart();
     });
 });
 
