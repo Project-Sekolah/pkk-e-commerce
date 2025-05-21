@@ -54,7 +54,7 @@
   <link href="<?= BASEURL ?>/assets/css/bootstrap/bootstrap.min.css" rel="stylesheet">   
 
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="<?= BASEURL ?>/assets/css/styles.css">  
+  <link rel="stylesheet" href="<?= BASEURL ?>/assets/css/styles.css?v<?= time() ?>">  
 
   <!-- Icons & Fonts -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">

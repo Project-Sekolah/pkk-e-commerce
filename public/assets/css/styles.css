@@ -392,11 +392,11 @@ footer {
     left: 20px;
     color: var(--color-collection-text);
     transition: opacity 0.3s ease;
-    opacity: 0;
+    opacity: 1;
 }
 
 .collection-box:hover .collection-content {
-    opacity: 1;
+    opacity: 0;
 }
 
 .collection-content h5 {
@@ -517,13 +517,6 @@ footer {
 ========================== */
 .profile-container {
     margin-top: 100px;
-}
-
-.edit-profile-btn {
-    background-color: white;
-    border-radius: 50%;
-    padding: 5px 8px;
-    font-size: 14px;
 }
 
 /* ==========================
