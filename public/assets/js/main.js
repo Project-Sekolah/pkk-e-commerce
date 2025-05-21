@@ -14,20 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const productName = btn.getAttribute("data-name") || "Unknown";
             const productPrice = parseFloat(btn.getAttribute("data-price")) || 0;
 
-            const existingItem = cart.find(item => item.id === productId);
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({
-                    id: productId,
-                    name: productName,
-                    price: productPrice,
-                    quantity: 1
-                });
-            }
-
             syncAddItemToServer(productId);
-            updateCart();
         });
     });
 });
@@ -40,10 +27,10 @@ async function loadCartFromServer() {
             id: item.product_id,
             item_id: item.item_id,
             name: item.title,
-            price: item.price,
+            price: parseFloat(item.price),
             quantity: item.quantity
         }));
-        updateCart();
+        renderCartItems();
     } catch (err) {
         console.error("Gagal memuat keranjang:", err);
     }
@@ -57,7 +44,18 @@ function syncAddItemToServer(productId, quantity = 1) {
             product_id: productId,
             quantity: quantity
         })
-    }).catch(err => console.error("Add item error:", err));
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    }).then(data => {
+        if (data.success) {
+            loadCartFromServer(); // Refresh cart after successful addition
+        }
+    }).catch(err => {
+        console.error("Add item error:", err);
+    });
 }
 
 function syncDecreaseItemFromServer(itemId) {
@@ -65,7 +63,18 @@ function syncDecreaseItemFromServer(itemId) {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ item_id: itemId })
-    }).catch(err => console.error("Decrease error:", err));
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    }).then(data => {
+        if (data.success) {
+            loadCartFromServer(); // Refresh cart after successful update
+        }
+    }).catch(err => {
+        console.error("Decrease item error:", err);
+    });
 }
 
 function syncDeleteItemFromServer(itemId) {
@@ -73,7 +82,18 @@ function syncDeleteItemFromServer(itemId) {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ item_id: itemId })
-    }).catch(err => console.error("Delete error:", err));
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    }).then(data => {
+        if (data.success) {
+            loadCartFromServer(); // Refresh cart after successful deletion
+        }
+    }).catch(err => {
+        console.error("Delete item error:", err);
+    });
 }
 
 function renderCartItems() {
@@ -82,9 +102,11 @@ function renderCartItems() {
     let itemCount = 0;
 
     cart.forEach((item, index) => {
-        const subtotal = item.price * item.quantity;
+        const price = parseFloat(item.price);
+        const quantity = item.quantity;
+        const subtotal = price * quantity;
         total += subtotal;
-        itemCount += item.quantity;
+        itemCount += quantity;
 
         const li = document.createElement("li");
         li.className =
@@ -92,7 +114,9 @@ function renderCartItems() {
 
         const itemInfo = document.createElement("div");
         itemInfo.className = "me-3";
-        itemInfo.innerHTML = `<strong>${item.name}</strong><br>$${item.price.toFixed(2)} x ${item.quantity} = $${subtotal.toFixed(2)}`;
+        itemInfo.innerHTML = `<strong>${item.name}</strong><br>$${price.toFixed(
+            2
+        )} x ${quantity} = $${subtotal.toFixed(2)}`;
 
         const btnGroup = document.createElement("div");
         btnGroup.className = "btn-group";
@@ -101,30 +125,21 @@ function renderCartItems() {
         minusBtn.className = "btn btn-sm btn-outline-secondary";
         minusBtn.textContent = "-";
         minusBtn.addEventListener("click", () => {
-            if (item.quantity > 1) {
-                item.quantity -= 1;
-                syncDecreaseItemFromServer(item.item_id);
-            } else {
-                cart.splice(index, 1);
-                syncDeleteItemFromServer(item.item_id);
-            }
-            updateCart();
+            syncDecreaseItemFromServer(item.item_id);
         });
 
         const plusBtn = document.createElement("button");
         plusBtn.className = "btn btn-sm btn-outline-secondary";
         plusBtn.textContent = "+";
         plusBtn.addEventListener("click", () => {
-            item.quantity += 1;
-            syncAddItemToServer(item.id);
-            updateCart();
+            syncAddItemToServer(item.id, 1);
         });
 
         const removeBtn = document.createElement("button");
         removeBtn.className = "btn btn-sm btn-danger";
         removeBtn.textContent = "Remove";
         removeBtn.addEventListener("click", () => {
-            removeFromCart(index);
+            syncDeleteItemFromServer(item.item_id);
         });
 
         btnGroup.appendChild(minusBtn);
@@ -141,24 +156,6 @@ function renderCartItems() {
         cartCountElement.textContent = itemCount;
     }
 }
-
-function updateCart() {
-    renderCartItems();
-}
-
-function removeFromCart(index) {
-    const item = cart[index];
-    syncDeleteItemFromServer(item.item_id);
-    cart.splice(index, 1);
-    updateCart();
-}
-
-
-
-
-
-
-
 
 
 

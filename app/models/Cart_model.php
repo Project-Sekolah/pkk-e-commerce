@@ -89,13 +89,6 @@ class Cart_model
         return $this->db->execute();
     }
 
-    public function deleteCartItemById($itemId)
-    {
-        $this->db->query("DELETE FROM $this->itemTable WHERE id = :id");
-        $this->db->bind(":id", $itemId);
-        return $this->db->execute();
-    }
-
     public function increaseItemQuantity($itemId, $amount = 1)
     {
         $this->db->query(
@@ -122,9 +115,16 @@ class Cart_model
             $this->db->bind(":quantity", $newQty);
             $this->db->bind(":id", $itemId);
             return $this->db->execute();
+        } else {
+            return $this->deleteCartItemById($itemId);
         }
+    }
 
-        return $this->deleteCartItemById($itemId);
+    public function deleteCartItemById($itemId)
+    {
+        $this->db->query("DELETE FROM $this->itemTable WHERE id = :id");
+        $this->db->bind(":id", $itemId);
+        return $this->db->execute();
     }
 
     public function getCartItemById($itemId)

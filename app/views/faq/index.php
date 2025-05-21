@@ -1,6 +1,35 @@
+<!-- faq -->
 <div class="container py-1 faq-container">
     <div class="container-fluid py-4">
         <div class="text-center mb-4">
+          
+          <div class="row justify-content-center mb-5">
+            <div class="col-lg-8">
+                <div class="card shadow-lg border-0 rounded-4 feedback-card">
+                    <div class="card-body p-4">
+                        <h3 class="card-title feedback-title">Send Us Your Feedback</h3>
+                        <form action="https://formspree.io/f/xgvkreeb" method="POST">
+                            <div class="mb-3">
+                                <label for="nameInput" class="form-label feedback-label">Your Name</label>
+                                <input type="text" name="name" class="form-control feedback-input" id="nameInput" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="emailInput" class="form-label feedback-label">Your Email</label>
+                                <input type="email" name="email" class="form-control feedback-input" id="emailInput" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="messageInput" class="form-label feedback-label">Message</label>
+                                <textarea name="message" class="form-control feedback-textarea" id="messageInput" rows="4" required></textarea>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary feedback-btn">Send Feedback</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+          
             <div class="btn-group" role="group" aria-label="Language Toggle">
                 <button class="btn btn-outline-primary lang-btn me-2" onclick="toggleLanguage('en')">
                     <i class="bi bi-globe"></i> English
@@ -103,41 +132,29 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- FAQ 7 -->
+                    <div class="accordion-item faq-item">
+                        <h2 class="accordion-header" id="faqSevenHeading">
+                            <button class="accordion-button collapsed fw-semibold faq-header-btn" type="button" data-bs-toggle="collapse" data-bs-target="#faqSeven" aria-expanded="false">
+                                <span id="faqSevenTitle">How to register?</span>
+                            </button>
+                        </h2>
+                        <div id="faqSeven" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body faq-body">
+                                <span id="faqSevenAnswer">Click the Three Lines Button on the Top Left, if you already have an account, enter your email and password, if you already have one, click login, if you don't have an account, click "Don't have an account? Register"</span>
 
                 </div>
             </div>
         </div>
 
 
-        <div class="row justify-content-center mt-5">
-            <div class="col-lg-8">
-                <div class="card shadow-lg border-0 rounded-4 feedback-card">
-                    <div class="card-body p-4">
-                        <h3 class="card-title feedback-title">Send Us Your Feedback</h3>
-                        <form action="https://formspree.io/f/xgvkreeb" method="POST">
-                            <div class="mb-3">
-                                <label for="nameInput" class="form-label feedback-label">Your Name</label>
-                                <input type="text" name="name" class="form-control feedback-input" id="nameInput" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="emailInput" class="form-label feedback-label">Your Email</label>
-                                <input type="email" name="email" class="form-control feedback-input" id="emailInput" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="messageInput" class="form-label feedback-label">Message</label>
-                                <textarea name="message" class="form-control feedback-textarea" id="messageInput" rows="4" required></textarea>
-                            </div>
-                            <div class="text-end">
-                                <button type="submit" class="btn btn-primary feedback-btn">Send Feedback</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+        
     </div>
 </div>
-
+        </div>
+        </div>
+        </div>
 
 <script>
     function toggleLanguage(lang) {
@@ -165,15 +182,16 @@
             document.getElementById('faqFourTitle').innerText = "Bagaimana cara melacak pesanan saya?";
             document.getElementById('faqFiveTitle').innerText = "Apakah Anda menawarkan pengiriman internasional?";
             document.getElementById('faqSixTitle').innerText = "Bisakah saya membatalkan pesanan saya?";
+            document.getElementById('faqSevenTitle').innerText = "Bagaiamana Cara Untuk Mendaftar?";
             document.getElementById('faqOneAnswer').innerText = "Website ini adalah toko online di mana pengguna dapat menelusuri dan membeli produk dengan mudah.";
             document.getElementById('faqTwoAnswer').innerText = "Cukup klik tombol “Tambah ke Keranjang” di bawah produk, dan produk tersebut akan muncul di keranjang belanja Anda.";
             document.getElementById('faqThreeAnswer').innerText = "Gunakan formulir umpan balik di bawah atau email kami langsung di support@example.com.";
             document.getElementById('faqFourAnswer').innerText = "Setelah melakukan pemesanan, Anda akan menerima nomor pelacakan melalui email. Anda dapat menggunakannya untuk melacak status pesanan di situs web pengiriman.";
             document.getElementById('faqFiveAnswer').innerText = "Ya, kami menawarkan pengiriman internasional ke negara-negara tertentu. Silakan periksa kebijakan pengiriman kami untuk detail lebih lanjut.";
             document.getElementById('faqSixAnswer').innerText = "Pesanan hanya dapat dibatalkan jika belum diproses. Harap hubungi kami secepatnya jika Anda ingin membatalkan pesanan.";
+            document.getElementById
+            ('faqSevenAnswer'
+            ).innerText = "Klik Tombol Tiga Garis di Kiri Atas, jika sudah mempunyai akun masukkan email dan password, jika sudah punya klik login, jika belum punya akun klik Tidak punya akun";
         }
     }
-
-
-
 </script>
