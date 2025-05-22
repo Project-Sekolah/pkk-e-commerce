@@ -52,6 +52,10 @@ footer {
     background-color: var(--color-bg-footer);
 }
 
+.container {
+    padding-top: 30px;
+}
+
 /* ==========================
    Topbar
 ========================== */

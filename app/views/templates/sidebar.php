@@ -121,15 +121,13 @@
           $user["email"]
         ) ?></small>
       </div>
-<img src="<?php
-    if (!empty($user["image"])) {
-        echo strpos($user["image"], 'res.cloudinary.com') !== false
-            ? htmlspecialchars($user["image"])
-            : BASEURL . '/' . ltrim(htmlspecialchars($user["image"]), '/');
-    } else {
-        echo BASEURL . '/assets/images/default.png';
-    }
-?>"
+<img src="<?php if (!empty($user["image"])) {
+  echo strpos($user["image"], "res.cloudinary.com") !== false
+    ? htmlspecialchars($user["image"])
+    : BASEURL . "/" . ltrim(htmlspecialchars($user["image"]), "/");
+} else {
+  echo BASEURL . "/assets/images/default.png";
+} ?>"
 alt="Foto Profil <?= htmlspecialchars($user["username"]) ?>"
 class="rounded-circle"
 width="48"
@@ -161,9 +159,18 @@ loading="lazy">
     <a href="<?= BASEURL ?>/order" class="d-flex align-items-center mb-3"><i class="bi bi-credit-card-fill"></i><span class="ms-2">Pembayaran</span></a>
     <a href="<?= BASEURL ?>/faq" class="d-flex align-items-center mb-3"><i class="bi bi-question-circle-fill"></i><span class="ms-2">Faq</span></a>
     <hr>
-   <?php if (isset($_SESSION["logged_in"]) && $_SESSION["logged_in"] === true): ?>
-      <?php if ($_SESSION["user"]["role"] === "admin" || $_SESSION["user"]["role"] === "seller"): ?>
+   <?php if (
+     isset($_SESSION["logged_in"]) &&
+     $_SESSION["logged_in"] === true
+   ): ?>
+      <?php if (
+        $_SESSION["user"]["role"] === "admin" ||
+        $_SESSION["user"]["role"] === "seller"
+      ): ?>
         <a href="<?= BASEURL ?>/product/seller" class="d-flex align-items-center mb-3"><i class="bi bi-cart-fill"></i><span class="ms-2">Produk Saya</span></a>
+        <a href="<?= BASEURL ?>/discount" class="d-flex align-items-center
+        mb-3"><i class="bi bi-tag-fill"></i><span class="ms-2">Discount
+        Saya</span></a>
       <?php endif; ?>
       <a href="<?= BASEURL ?>/user/logout" class="d-flex align-items-center mb-3"><i class="bi bi-door-closed-fill" id="logout-link"></i><span class="ms-2">Logout</span></a>
     <?php endif; ?>

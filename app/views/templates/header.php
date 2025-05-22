@@ -78,20 +78,58 @@
     </div>
   </nav>
 
-  <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">
-    <div class="offcanvas-header">
-      <h5 id="offcanvasCartLabel">Shopping Cart</h5>
-      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    <div class="offcanvas-body">
-      <ul class="list-group" id="cart-items">
-      </ul>
-      <div class="mt-4 d-flex justify-content-between">
-        <span><strong>Total:</strong> $<span id="total-price">0.00</span></span>
-        <button class="btn btn-primary">Checkout</button>
+  <!-- OFFCANVAS CART -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">
+  <div class="offcanvas-header">
+    <h5 id="offcanvasCartLabel">Shopping Cart</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    <ul class="list-group" id="cart-items"></ul>
+
+    <!-- Ringkasan Pembayaran -->
+    <div class="summary-box mt-4">
+      <h2>Ringkasan</h2>
+
+      <div class="line">
+        <span>Subtotal</span>
+        <span id="subtotal">Rp 0</span>
       </div>
+
+      <div class="line">
+        <span>Ongkir & Penanganan</span>
+        <span id="delivery">Rp 0</span>
+      </div>
+
+      <div class="line">
+        <span>Pajak & Biaya</span>
+        <span id="taxes">Rp 0</span>
+      </div>
+
+      <label for="discountInput">Masukkan Diskon</label>
+      <input type="number" id="discountInput" placeholder="Input kode diskon" />
+
+      <div class="line">
+        <span>Diskon</span>
+        <span id="discount">- Rp 0</span>
+      </div>
+
+      <div class="line total">
+        <span>Total</span>
+        <span id="total">Rp 0</span>
+      </div>
+
+      <label>
+        <input type="checkbox" id="agreeTerms" />
+        Saya menyetujui <a href="#">syarat & ketentuan</a>
+      </label>
+
+      <button class="btn mt-2" onclick="checkout('guest')">Checkout</button>
+      <button class="btn" onclick="checkout('member')">View Struct</button>
     </div>
   </div>
+</div>
+
 
   <div class="row">
     <div class="col-lg-6">

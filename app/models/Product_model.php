@@ -113,20 +113,29 @@ class Product_model
 
   public function getProductById($id)
   {
+    // Ambil detail produk dan kategori
     $this->db->query('
-            SELECT 
-                p.*, 
-                c.name AS category_name, 
-                c.slug AS category_slug,
-                GROUP_CONCAT(pi.image_url) AS images
-            FROM products p
-            LEFT JOIN categories c ON p.category_id = c.id
-            LEFT JOIN product_images pi ON pi.product_id = p.id
-            WHERE p.id = :id
-            GROUP BY p.id
-        ');
+        SELECT 
+            p.*, 
+            c.name AS category_name, 
+            c.slug AS category_slug
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        WHERE p.id = :id
+    ');
     $this->db->bind("id", $id);
-    return $this->db->single();
+    $product = $this->db->single();
+
+    // Ambil semua gambar produk
+    $this->db->query(
+      "SELECT id, image_url FROM product_images WHERE product_id = :id"
+    );
+    $this->db->bind("id", $id);
+    $images = $this->db->resultSet();
+
+    $product["images"] = $images;
+
+    return $product;
   }
 
   public function getLimitedProducts($limit)
@@ -269,11 +278,9 @@ class Product_model
     $this->db->bind("description", $data["description"]);
     $this->db->bind("gender", $data["gender"]);
     $this->db->bind("is_active", $data["is_active"]);
-    
-    
+
     $this->db->execute();
-        return $data["id"]; 
-    
+    return $data["id"];
   }
 
   /**
@@ -388,6 +395,13 @@ class Product_model
     return $this->db->resultSet();
   }
 
+  public function getProductImageById($imageId)
+  {
+    $this->db->query("SELECT * FROM product_images WHERE id = :id");
+    $this->db->bind("id", $imageId);
+    return $this->db->single();
+  }
+
   public function deleteProductImage($imageId)
   {
     $query = "DELETE FROM product_images WHERE id = :id";
@@ -395,4 +409,22 @@ class Product_model
     $this->db->bind("id", $imageId);
     return $this->db->execute();
   }
+
+  // Mendapatkan daftar diskon yang berlaku untuk suatu produk
+  public function getProductDiscounts($productId)
+  {
+    $discountModel = new Discount_model();
+    return $discountModel->getProductDiscounts($productId);
+  }
+
+  public function updateProductImage($data)
+  {
+    $query = "UPDATE product_images SET image_url = :image_url WHERE id = :id";
+    $this->db->query($query);
+    $this->db->bind("id", $data["id"]);
+    $this->db->bind("image_url", $data["image_url"]);
+    return $this->db->execute();
+  }
+
+  
 }

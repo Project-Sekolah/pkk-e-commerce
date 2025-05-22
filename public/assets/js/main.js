@@ -1,161 +1,179 @@
-// === Cart Logic ===
-let cart = [];
-const BASEURL = "http://localhost:8080/pkk-e-commerce-main/public";
-const cartItemsElement = document.getElementById("cart-items");
-const cartCountElement = document.getElementById("cart-count");
-const totalPriceElement = document.getElementById("total-price");
 
-document.addEventListener("DOMContentLoaded", function () {
-    loadCartFromServer();
+  const BASEURL = "http://localhost:8080/pkk-e-commerce-main/public";
 
-    document.querySelectorAll(".add-to-cart").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const productId = btn.getAttribute("data-id");
-            const productName = btn.getAttribute("data-name") || "Unknown";
-            const productPrice = parseFloat(btn.getAttribute("data-price")) || 0;
+  const $cartItems = document.getElementById("cart-items");
+  const $subtotal = document.getElementById("subtotal");
+  const $delivery = document.getElementById("delivery");
+  const $taxes = document.getElementById("taxes");
+  const $discount = document.getElementById("discount");
+  const $total = document.getElementById("total");
+  const $discountInput = document.getElementById("discountInput");
+  const $agreeTerms = document.getElementById("agreeTerms");
+  const $cartCount = document.getElementById("cart-count");
+  const $totalPriceElement = document.getElementById("total-price");
 
-            syncAddItemToServer(productId);
-        });
-    });
-});
+  let cart = [];
+  let delivery = 150000;
+  let taxes = 708000;
+  let discount = 0;
 
-async function loadCartFromServer() {
-    try {
-        const response = await fetch(`${BASEURL}/Cart/getCart`);
-        const data = await response.json();
-        cart = data.items.map(item => ({
-            id: item.product_id,
-            item_id: item.item_id,
-            name: item.title,
-            price: parseFloat(item.price),
-            quantity: item.quantity
-        }));
-        renderCartItems();
-    } catch (err) {
-        console.error("Gagal memuat keranjang:", err);
+  function formatRupiah(num) {
+    return "Rp " + num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  }
+
+  function updateDisplay(subtotal) {
+    $subtotal.innerText = formatRupiah(subtotal);
+    $delivery.innerText = formatRupiah(delivery);
+    $taxes.innerText = formatRupiah(taxes);
+    $discount.innerText = "- " + formatRupiah(discount);
+    const total = subtotal + delivery + taxes - discount;
+    $total.innerText = formatRupiah(total);
+    if ($totalPriceElement) {
+      $totalPriceElement.innerText = formatRupiah(total);
     }
-}
+  }
 
-function syncAddItemToServer(productId, quantity = 1) {
-    fetch(`${BASEURL}/Cart/addItem`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-            product_id: productId,
-            quantity: quantity
-        })
-    }).then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    }).then(data => {
-        if (data.success) {
-            loadCartFromServer(); // Refresh cart after successful addition
-        }
-    }).catch(err => {
-        console.error("Add item error:", err);
-    });
-}
+  function calculateSubtotal() {
+    return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }
 
-function syncDecreaseItemFromServer(itemId) {
-    fetch(`${BASEURL}/Cart/decreaseItem`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ item_id: itemId })
-    }).then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    }).then(data => {
-        if (data.success) {
-            loadCartFromServer(); // Refresh cart after successful update
-        }
-    }).catch(err => {
-        console.error("Decrease item error:", err);
-    });
-}
-
-function syncDeleteItemFromServer(itemId) {
-    fetch(`${BASEURL}/Cart/deleteItem`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ item_id: itemId })
-    }).then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    }).then(data => {
-        if (data.success) {
-            loadCartFromServer(); // Refresh cart after successful deletion
-        }
-    }).catch(err => {
-        console.error("Delete item error:", err);
-    });
-}
-
-function renderCartItems() {
-    cartItemsElement.innerHTML = "";
+  function renderCartItems() {
+    $cartItems.innerHTML = "";
     let total = 0;
     let itemCount = 0;
 
-    cart.forEach((item, index) => {
-        const price = parseFloat(item.price);
-        const quantity = item.quantity;
-        const subtotal = price * quantity;
-        total += subtotal;
-        itemCount += quantity;
+    cart.forEach((item) => {
+      const price = parseFloat(item.price);
+      const quantity = item.quantity;
+      const subtotal = price * quantity;
+      total += subtotal;
+      itemCount += quantity;
 
-        const li = document.createElement("li");
-        li.className =
-            "list-group-item d-flex justify-content-between align-items-center";
+      const li = document.createElement("li");
+      li.className = "list-group-item d-flex justify-content-between align-items-center";
 
-        const itemInfo = document.createElement("div");
-        itemInfo.className = "me-3";
-        itemInfo.innerHTML = `<strong>${item.name}</strong><br>$${price.toFixed(
-            2
-        )} x ${quantity} = $${subtotal.toFixed(2)}`;
+      const itemInfo = document.createElement("div");
+      itemInfo.className = "me-3";
+      itemInfo.innerHTML = `<strong>${item.name}</strong><br>${formatRupiah(price)} x ${quantity} = ${formatRupiah(subtotal)}`;
 
-        const btnGroup = document.createElement("div");
-        btnGroup.className = "btn-group";
+      const btnGroup = document.createElement("div");
+      btnGroup.className = "btn-group";
 
-        const minusBtn = document.createElement("button");
-        minusBtn.className = "btn btn-sm btn-outline-secondary";
-        minusBtn.textContent = "-";
-        minusBtn.addEventListener("click", () => {
-            syncDecreaseItemFromServer(item.item_id);
-        });
+      const minusBtn = document.createElement("button");
+      minusBtn.className = "btn btn-sm btn-outline-secondary";
+      minusBtn.textContent = "-";
+      minusBtn.addEventListener("click", () => {
+        syncDecreaseItemFromServer(item.item_id);
+      });
 
-        const plusBtn = document.createElement("button");
-        plusBtn.className = "btn btn-sm btn-outline-secondary";
-        plusBtn.textContent = "+";
-        plusBtn.addEventListener("click", () => {
-            syncAddItemToServer(item.id, 1);
-        });
+      const plusBtn = document.createElement("button");
+      plusBtn.className = "btn btn-sm btn-outline-secondary";
+      plusBtn.textContent = "+";
+      plusBtn.addEventListener("click", () => {
+        syncAddItemToServer(item.id, 1);
+      });
 
-        const removeBtn = document.createElement("button");
-        removeBtn.className = "btn btn-sm btn-danger";
-        removeBtn.textContent = "Remove";
-        removeBtn.addEventListener("click", () => {
-            syncDeleteItemFromServer(item.item_id);
-        });
+      const removeBtn = document.createElement("button");
+      removeBtn.className = "btn btn-sm btn-danger";
+      removeBtn.textContent = "Remove";
+      removeBtn.addEventListener("click", () => {
+        syncDeleteItemFromServer(item.item_id);
+      });
 
-        btnGroup.appendChild(minusBtn);
-        btnGroup.appendChild(plusBtn);
-        btnGroup.appendChild(removeBtn);
+      btnGroup.appendChild(minusBtn);
+      btnGroup.appendChild(plusBtn);
+      btnGroup.appendChild(removeBtn);
 
-        li.appendChild(itemInfo);
-        li.appendChild(btnGroup);
-        cartItemsElement.appendChild(li);
+      li.appendChild(itemInfo);
+      li.appendChild(btnGroup);
+      $cartItems.appendChild(li);
     });
 
-    totalPriceElement.textContent = total.toFixed(2);
-    if (cartCountElement) {
-        cartCountElement.textContent = itemCount;
+    updateDisplay(total);
+    if ($cartCount) $cartCount.textContent = itemCount;
+  }
+
+  $discountInput?.addEventListener("input", function () {
+    const subtotal = calculateSubtotal();
+    const value = parseInt(this.value);
+    discount = isNaN(value) ? 0 : Math.min(value, subtotal + delivery + taxes);
+    updateDisplay(subtotal);
+  });
+
+  function checkout(mode) {
+    if (!$agreeTerms.checked) {
+      alert("Harap setujui syarat & ketentuan terlebih dahulu.");
+      return;
     }
-}
+    alert("Lanjut sebagai " + (mode === "guest" ? "tamu" : "member"));
+  }
+
+  async function loadCartFromServer() {
+    try {
+      const response = await fetch(`${BASEURL}/Cart/getCart`);
+      const data = await response.json();
+      cart = data.items.map(item => ({
+        id: item.product_id,
+        item_id: item.item_id,
+        name: item.title,
+        price: parseFloat(item.price),
+        quantity: item.quantity
+      }));
+      renderCartItems();
+    } catch (err) {
+      console.error("Gagal memuat keranjang:", err);
+    }
+  }
+
+  function syncAddItemToServer(productId, quantity = 1) {
+    fetch(`${BASEURL}/Cart/addItem`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ product_id: productId, quantity })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) loadCartFromServer();
+      })
+      .catch(err => console.error("Add item error:", err));
+  }
+
+  function syncDecreaseItemFromServer(itemId) {
+    fetch(`${BASEURL}/Cart/decreaseItem`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ item_id: itemId })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) loadCartFromServer();
+      })
+      .catch(err => console.error("Decrease item error:", err));
+  }
+
+  function syncDeleteItemFromServer(itemId) {
+    fetch(`${BASEURL}/Cart/deleteItem`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ item_id: itemId })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) loadCartFromServer();
+      })
+      .catch(err => console.error("Delete item error:", err));
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadCartFromServer();
+
+    document.querySelectorAll(".add-to-cart").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const productId = btn.getAttribute("data-id");
+        syncAddItemToServer(productId);
+      });
+    });
+  });
 
 
 

@@ -158,12 +158,11 @@ class Product extends Controller
     $this->render(["product/add"], $data);
   }
 
-  
-    public function store()
-    {
-        $this->checkRole(["seller", "admin"]);
+  public function store()
+  {
+    $this->checkRole(["seller", "admin"]);
 
-        if (
+    if (
       !isset($_POST["title"]) ||
       !isset($_POST["description"]) ||
       !isset($_POST["price"]) ||
@@ -179,48 +178,55 @@ class Product extends Controller
       exit();
     }
 
-        $data = [
-            "category_id" => $_POST["category_id"],
-            "user_id" => $_SESSION["user"]["id"],
-            "title" => $_POST["title"],
-            "slug" => strtolower(str_replace(" ", "-", $_POST["title"])),
-            "price" => $_POST["price"],
-            "stock" => $_POST["stock"] ?? 0,
-            "description" => $_POST["description"],
-            "gender" => $_POST["gender"],
-            "is_active" => 1,
-        ];
+    $data = [
+      "category_id" => $_POST["category_id"],
+      "user_id" => $_SESSION["user"]["id"],
+      "title" => $_POST["title"],
+      "slug" => strtolower(str_replace(" ", "-", $_POST["title"])),
+      "price" => $_POST["price"],
+      "stock" => $_POST["stock"] ?? 0,
+      "description" => $_POST["description"],
+      "gender" => $_POST["gender"],
+      "is_active" => 1,
+    ];
 
-        // Simpan produk dan dapatkan UUID yang valid
-        $productId = $this->model("Product_model")->addProduct($data);
+    // Simpan produk dan dapatkan UUID yang valid
+    $productId = $this->model("Product_model")->addProduct($data);
 
-        if ($productId) {
-            // Unggah gambar
-            if (isset($_FILES["images"]) && is_array($_FILES["images"]["tmp_name"])) {
-                foreach ($_FILES["images"]["tmp_name"] as $key => $tmp_name) {
-                    if ($_FILES["images"]["error"][$key] === 0) { // Perbaiki pengecekan error per file
-                        try {
-                            $upload = $this->cloudinary
-                                ->uploadApi()
-                                ->upload($tmp_name, ["folder" => "product_images/"]);
-                            $this->model("Product_model")->addProductImage($productId, $upload["secure_url"]);
-                        } catch (Exception $e) {
-                            error_log("Cloudinary upload error: " . $e->getMessage());
-                            Flasher::setFlash("Error", "Gagal mengunggah beberapa gambar.", "danger");
-                        }
-                    }
-                }
+    if ($productId) {
+      // Unggah gambar
+      if (isset($_FILES["images"]) && is_array($_FILES["images"]["tmp_name"])) {
+        foreach ($_FILES["images"]["tmp_name"] as $key => $tmp_name) {
+          if ($_FILES["images"]["error"][$key] === 0) {
+            // Perbaiki pengecekan error per file
+            try {
+              $upload = $this->cloudinary
+                ->uploadApi()
+                ->upload($tmp_name, ["folder" => "product_images/"]);
+              $this->model("Product_model")->addProductImage(
+                $productId,
+                $upload["secure_url"]
+              );
+            } catch (Exception $e) {
+              error_log("Cloudinary upload error: " . $e->getMessage());
+              Flasher::setFlash(
+                "Error",
+                "Gagal mengunggah beberapa gambar.",
+                "danger"
+              );
             }
-
-            Flasher::setFlash("Sukses", "Produk berhasil ditambahkan.", "success");
-        } else {
-            Flasher::setFlash("Error", "Gagal menambahkan produk.", "danger");
+          }
         }
+      }
 
-        header("Location: " . BASEURL . "/product");
-        exit();
+      Flasher::setFlash("Sukses", "Produk berhasil ditambahkan.", "success");
+    } else {
+      Flasher::setFlash("Error", "Gagal menambahkan produk.", "danger");
     }
 
+    header("Location: " . BASEURL . "/product");
+    exit();
+  }
 
   private function ensureCloudinaryFolderExists($folder)
   {
@@ -240,13 +246,17 @@ class Product extends Controller
   {
     $this->checkRole(["seller", "admin"]);
     $productModel = $this->model("Product_model");
-    $categoryModel = $this->model("Category_model");
+    $discountModel = $this->model("Discount_model");
     $data["product"] = $productModel->getProductById($id);
-    $data["categories"] = $categoryModel->getAllCategories();
+    $data["categories"] = $this->model("Category_model")->getAllCategories();
+    $data["discounts"] = $discountModel->getAllDiscounts();
+    $data["productDiscounts"] = $productModel->getProductDiscounts($id);
 
-    // Convert image string to array
-    if (!empty($data["product"]["images"])) {
-      $data["product"]["images"] = explode(",", $data["product"]["images"]);
+    // Ensure product_images is available
+    if (!isset($data["product"]["images"])) {
+      $data["product_images"] = [];
+    } else {
+      $data["product_images"] = $data["product"]["images"];
     }
 
     $data["judul"] = "Edit Produk";
@@ -285,6 +295,16 @@ class Product extends Controller
     $result = $this->model("Product_model")->updateProduct($data);
 
     if ($result > 0) {
+      // Hapus semua relasi diskon produk lama
+      $this->model("Discount_model")->deleteProductDiscount($id);
+
+      // Tambahkan relasi diskon produk baru
+      if (isset($_POST["discounts"]) && is_array($_POST["discounts"])) {
+        foreach ($_POST["discounts"] as $discountId) {
+          $this->model("Discount_model")->addProductDiscount($id, $discountId);
+        }
+      }
+
       if (isset($_FILES["images"]) && $_FILES["images"]["error"] == 0) {
         $imageUrls = [];
         foreach ($_FILES["images"]["tmp_name"] as $key => $tmp_name) {
@@ -333,6 +353,92 @@ class Product extends Controller
     }
 
     header("Location: " . BASEURL . "/product/edit/" . $_POST["product_id"]);
+    exit();
+  }
+
+  public function editImage($imageId)
+  {
+    $this->checkRole(["seller", "admin"]);
+    // Fetch the image details
+    $image = $this->model("Product_model")->getProductImageById($imageId);
+
+    if ($image) {
+      // Display an edit form for the image
+      $data["image"] = $image;
+      $this->render(["product/edit_image"], $data);
+    } else {
+      Flasher::setFlash("Error", "Gambar tidak ditemukan.", "danger");
+      header("Location: " . BASEURL . "/product");
+      exit();
+    }
+  }
+
+  public function updateImage($imageId)
+  {
+    $this->checkRole(["seller", "admin"]);
+    if (!isset($_POST["image_url"])) {
+      Flasher::setFlash(
+        "Error",
+        "Input tidak valid, gambar gagal diupdate.",
+        "danger"
+      );
+      header("Location: " . BASEURL . "/product/editImage/$imageId");
+      exit();
+    }
+
+    $data = [
+      "id" => $imageId,
+      "image_url" => $_POST["image_url"],
+    ];
+
+    $result = $this->model("Product_model")->updateProductImage($data);
+
+    if ($result > 0) {
+      Flasher::setFlash(
+        "Sukses",
+        "Gambar produk berhasil diupdate.",
+        "success"
+      );
+    } else {
+      Flasher::setFlash(
+        "Error",
+        "Gagal mengupdate gambar produk. Coba lagi nanti.",
+        "danger"
+      );
+    }
+
+    header("Location: " . BASEURL . "/product");
+    exit();
+  }
+
+  public function addImage($productId)
+  {
+    $this->checkRole(["seller", "admin"]);
+    if (!isset($_FILES["new_image"]) || $_FILES["new_image"]["error"] !== 0) {
+      Flasher::setFlash("Error", "Gambar gagal diunggah.", "danger");
+      header("Location: " . BASEURL . "/product/edit/$productId");
+      exit();
+    }
+
+    try {
+      $upload = $this->cloudinary
+        ->uploadApi()
+        ->upload($_FILES["new_image"]["tmp_name"], [
+          "folder" => "product_images/",
+        ]);
+      $imageUrl = $upload["secure_url"];
+      $this->model("Product_model")->addProductImage($productId, $imageUrl);
+      Flasher::setFlash(
+        "Sukses",
+        "Gambar produk berhasil ditambahkan.",
+        "success"
+      );
+    } catch (Exception $e) {
+      error_log("Cloudinary upload error: " . $e->getMessage());
+      Flasher::setFlash("Error", "Gagal mengunggah gambar.", "danger");
+    }
+
+    header("Location: " . BASEURL . "/product/edit/$productId");
     exit();
   }
 }
