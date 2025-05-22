@@ -10,7 +10,6 @@ class Product_model
     $this->db = new Database();
   }
 
-  // Get paginated & filtered products
   public function getFilteredProductsPaginated(
     $categorySlugs = [],
     $genders = [],
@@ -55,7 +54,7 @@ class Product_model
     }
 
     if (!empty($search)) {
-      $sql .= " AND p.name LIKE ?";
+      $sql .= " AND p.title LIKE ?";
       $params[] = "%" . $search . "%";
     }
 
@@ -74,7 +73,6 @@ class Product_model
     return $this->db->resultSet();
   }
 
-  // Get total filtered product count (for pagination)
   public function getTotalFilteredProducts(
     $categorySlugs = [],
     $genders = [],
@@ -89,27 +87,23 @@ class Product_model
 
     $params = [];
 
-    // Filter by categories
     if (!empty($categorySlugs)) {
       $placeholders = implode(",", array_fill(0, count($categorySlugs), "?"));
       $sql .= " AND c.slug IN ($placeholders)";
       $params = array_merge($params, $categorySlugs);
     }
 
-    // Filter by genders
     if (!empty($genders)) {
       $genderPlaceholders = implode(",", array_fill(0, count($genders), "?"));
       $sql .= " AND p.gender IN ($genderPlaceholders)";
       $params = array_merge($params, $genders);
     }
 
-    // Filter by search term
     if (!empty($search)) {
-      $sql .= " AND p.name LIKE ?";
+      $sql .= " AND p.title LIKE ?";
       $params[] = "%" . $search . "%";
     }
 
-    // Execute the query
     $this->db->query($sql);
     $this->db->execute($params);
 
@@ -117,7 +111,6 @@ class Product_model
     return $result["total"] ?? 0;
   }
 
-  //belum di pake
   public function getProductById($id)
   {
     $this->db->query('
@@ -136,7 +129,6 @@ class Product_model
     return $this->db->single();
   }
 
-  //belum di pake
   public function getLimitedProducts($limit)
   {
     $query = "
@@ -158,10 +150,6 @@ class Product_model
     $this->db->bind(":limit", (int) $limit, PDO::PARAM_INT);
     return $this->db->resultSet();
   }
-
-  // =======================
-  // DATA Rating
-  // =======================
 
   public function getAllProductRatings($productId)
   {
@@ -204,11 +192,10 @@ class Product_model
 
     $this->db->query($sql);
     foreach ($productIds as $k => $id) {
-      $this->db->bind($k + 1, $id, PDO::PARAM_STR); // id user adalah char(36), bind sebagai string
+      $this->db->bind($k + 1, $id, PDO::PARAM_STR);
     }
     $results = $this->db->resultSet();
 
-    // Kelompokkan rating berdasarkan product_id supaya mudah akses di view
     $grouped = [];
     foreach ($results as $row) {
       $grouped[$row["product_id"]][] = $row;
@@ -218,37 +205,194 @@ class Product_model
   }
 
   public function addDataRating($data)
-{
-    // Cek apakah feedback user untuk produk ini sudah ada
-    $checkQuery = "SELECT id FROM product_ratings WHERE user_id = :user_id AND product_id = :product_id LIMIT 1";
+  {
+    $checkQuery =
+      "SELECT id FROM product_ratings WHERE user_id = :user_id AND product_id = :product_id LIMIT 1";
     $this->db->query($checkQuery);
     $this->db->bind("user_id", $data["user_id"]);
     $this->db->bind("product_id", $data["product_id"]);
     $existing = $this->db->single();
 
     if ($existing) {
-        // Kalau sudah ada, update feedback lama
-        $updateQuery = "UPDATE product_ratings SET rating = :rating, review_text = :review_text WHERE id = :id";
-        $this->db->query($updateQuery);
-        $this->db->bind("rating", $data["rating"]);
-        $this->db->bind("review_text", $data["review_text"]);
-        $this->db->bind("id", $existing["id"]);
+      $updateQuery =
+        "UPDATE product_ratings SET rating = :rating, review_text = :review_text WHERE id = :id";
+      $this->db->query($updateQuery);
+      $this->db->bind("rating", $data["rating"]);
+      $this->db->bind("review_text", $data["review_text"]);
+      $this->db->bind("id", $existing["id"]);
 
-        return $this->db->execute();
+      return $this->db->execute();
     } else {
-        // Kalau belum ada, insert feedback baru
-        $insertQuery = "INSERT INTO product_ratings 
+      $insertQuery = "INSERT INTO product_ratings 
                         (id, user_id, product_id, rating, review_text) 
                         VALUES 
                         (UUID(), :user_id, :product_id, :rating, :review_text)";
 
-        $this->db->query($insertQuery);
-        $this->db->bind("user_id", $data["user_id"]);
-        $this->db->bind("product_id", $data["product_id"]);
-        $this->db->bind("rating", $data["rating"]);
-        $this->db->bind("review_text", $data["review_text"]);
+      $this->db->query($insertQuery);
+      $this->db->bind("user_id", $data["user_id"]);
+      $this->db->bind("product_id", $data["product_id"]);
+      $this->db->bind("rating", $data["rating"]);
+      $this->db->bind("review_text", $data["review_text"]);
 
-        return $this->db->execute();
+      return $this->db->execute();
     }
-}
+  }
+
+  /**
+   * Menambahkan produk baru ke database dengan UUID sebagai ID
+   *
+   * @param array $data Data produk yang akan ditambahkan
+   * @return string UUID dari produk yang baru ditambahkan
+   */
+  public function addProduct($data)
+  {
+    // Generate UUID manual
+    $data["id"] = $this->generateUUID();
+
+    // Query insert dengan ID UUID
+    $query = "INSERT INTO products (
+                    id, category_id, user_id, title, slug, price, stock,
+                    description, gender, is_active
+                  ) VALUES (
+                    :id, :category_id, :user_id, :title, :slug, :price, :stock,
+                    :description, :gender, :is_active
+                  )";
+
+    $this->db->query($query);
+    $this->db->bind("id", $data["id"]);
+    $this->db->bind("category_id", $data["category_id"]);
+    $this->db->bind("user_id", $data["user_id"]);
+    $this->db->bind("title", $data["title"]);
+    $this->db->bind("slug", $data["slug"]);
+    $this->db->bind("price", $data["price"]);
+    $this->db->bind("stock", $data["stock"]);
+    $this->db->bind("description", $data["description"]);
+    $this->db->bind("gender", $data["gender"]);
+    $this->db->bind("is_active", $data["is_active"]);
+    
+    
+    $this->db->execute();
+        return $data["id"]; 
+    
+  }
+
+  /**
+   * Fungsi untuk generate UUID v4 secara manual (tanpa library)
+   *
+   * @return string UUID versi 4
+   */
+  private function generateUUID()
+  {
+    return sprintf(
+      "%04x%04x-%04x-%04x-%04x-%04x%04x%04x",
+      mt_rand(0, 0xffff),
+      mt_rand(0, 0xffff),
+      mt_rand(0, 0xffff),
+      mt_rand(0, 0x0fff) | 0x4000, // UUID versi 4
+      mt_rand(0, 0x3fff) | 0x8000, // Variant
+      mt_rand(0, 0xffff),
+      mt_rand(0, 0xffff),
+      mt_rand(0, 0xffff)
+    );
+  }
+
+  public function updateProduct($data)
+  {
+    $query =
+      "UPDATE products SET title = :title, slug = :slug, price = :price, stock = :stock, description = :description, gender = :gender, updated_at = NOW() WHERE id = :id";
+    $this->db->query($query);
+    $this->db->bind("id", $data["id"]);
+    $this->db->bind("title", $data["title"]);
+    $this->db->bind("slug", $data["slug"]);
+    $this->db->bind("price", $data["price"]);
+    $this->db->bind("stock", $data["stock"]);
+    $this->db->bind("description", $data["description"]);
+    $this->db->bind("gender", $data["gender"]);
+    return $this->db->execute();
+  }
+
+  public function deleteProduct($id)
+  {
+    $query = "UPDATE products SET deleted_at = NOW() WHERE id = :id";
+    $this->db->query($query);
+    $this->db->bind("id", $id);
+    return $this->db->execute();
+  }
+
+  public function getProductsBySeller($userId, $limit, $offset)
+  {
+    $sql = "
+        SELECT 
+            p.*, 
+            c.name AS category_name, 
+            c.slug AS category_slug,
+            GROUP_CONCAT(pi.image_url) AS images,
+            COALESCE(ratings_summary.average_rating, 0) AS average_rating,
+            COALESCE(ratings_summary.total_ratings, 0) AS total_ratings
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        LEFT JOIN product_images pi ON pi.product_id = p.id
+        LEFT JOIN (
+            SELECT 
+                product_id,
+                COUNT(*) AS total_ratings,
+                AVG(rating) AS average_rating
+            FROM product_ratings
+            GROUP BY product_id
+        ) AS ratings_summary ON ratings_summary.product_id = p.id
+        WHERE p.deleted_at IS NULL AND p.is_active = 1 AND p.user_id = :user_id
+        GROUP BY p.id
+        ORDER BY p.created_at DESC
+        LIMIT :limit OFFSET :offset
+    ";
+
+    $this->db->query($sql);
+    $this->db->bind("user_id", $userId);
+    $this->db->bind("limit", (int) $limit, PDO::PARAM_INT);
+    $this->db->bind("offset", (int) $offset, PDO::PARAM_INT);
+
+    return $this->db->resultSet();
+  }
+
+  public function getTotalProductsBySeller($userId)
+  {
+    $sql = "
+        SELECT COUNT(DISTINCT p.id) AS total
+        FROM products p
+        WHERE p.deleted_at IS NULL AND p.is_active = 1 AND p.seller_id = :seller_id
+    ";
+
+    $this->db->query($sql);
+    $this->db->bind("seller_id", $userId);
+
+    $result = $this->db->single();
+    return $result["total"] ?? 0;
+  }
+
+  public function addProductImage($productId, $imageUrl)
+  {
+    $query =
+      "INSERT INTO product_images (id, product_id, image_url) VALUES (UUID(), :product_id, :image_url)";
+    $this->db->query($query);
+    $this->db->bind("product_id", $productId);
+    $this->db->bind("image_url", $imageUrl);
+    return $this->db->execute();
+  }
+
+  public function getProductImages($productId)
+  {
+    $this->db->query(
+      "SELECT image_url FROM product_images WHERE product_id = :product_id"
+    );
+    $this->db->bind("product_id", $productId);
+    return $this->db->resultSet();
+  }
+
+  public function deleteProductImage($imageId)
+  {
+    $query = "DELETE FROM product_images WHERE id = :id";
+    $this->db->query($query);
+    $this->db->bind("id", $imageId);
+    return $this->db->execute();
+  }
 }
