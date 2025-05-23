@@ -1,4 +1,5 @@
-const BASEURL = "http://localhost:8080/pkk-e-commerce-main/public/";
+//const BASEURL = "http://localhost:8080/pkk-e-commerce-main/public/";
+const BASEURL = "//pkk-e-commerce-production.up.railway.app";
 
 const $cartItems = document.getElementById("cart-items");
 const $subtotal = document.getElementById("subtotal");
@@ -17,80 +18,59 @@ let taxes = 0;
 let discount = 0;
 let activeDiscount = null;
 
-function updateDisplay(subtotal) {
-    delivery = subtotal * 0.1;
-    taxes = cart.reduce(
-        (sum, item) => sum + item.price * item.quantity * 0.05,
-        0
-    );
+document
+    .getElementById("applyDiscountBtn")
+    ?.addEventListener("click", function () {
+        const discountName = document
+            .getElementById("discountInput")
+            .value.trim();
 
-    let discountAmount = 0;
-    if (activeDiscount) {
-        cart.forEach(item => {
-            if (activeDiscount.applicableProducts.includes(item.id)) {
-                discountAmount +=
-                    item.price *
-                    item.quantity *
-                    (activeDiscount.percentage / 100);
-            }
-        });
-    }
-
-    $subtotal.innerText = formatDollar(subtotal);
-    $delivery.innerText = formatDollar(delivery);
-    $taxes.innerText = formatDollar(taxes);
-
-    if (discountAmount > 0) {
-        $discount.innerText = "- " + formatDollar(discountAmount);
-    } else {
-        $discount.innerText = "- $0.00";
-    }
-
-    const total = subtotal + delivery + taxes - discountAmount;
-    $total.innerText = formatDollar(total);
-    if ($totalPriceElement) $totalPriceElement.innerText = formatDollar(total);
-}
-
-document.getElementById("applyDiscountBtn")?.addEventListener("click", function() {
-    const discountName = document.getElementById("discountInput").value.trim();
-
-    if (!discountName) {
-        alert("Please enter a valid discount name");
-        return;
-    }
-    if (/^[0-9]+$/.test(discountName)) {
-        alert("Discount name cannot be a number");
-        return;
-    }
-
-    fetch(`${BASEURL}/Cart/validateDiscount`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ discount_name: discountName })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            activeDiscount = {
-                percentage: parseFloat(data.discount_percentage),
-                applicableProducts: data.applicable_products
-            };
-            
-            updateDisplay(calculateSubtotal());
-            alert(`Discount applied! ${data.discount_percentage}% off applicable items`);
-        } else {
-            alert(data.message);
+        if (!discountName) {
+            alert("Please enter a valid discount name");
+            return;
         }
-    })
-    .catch(err => {
-        console.error("Discount validation error:", err);
-        alert("Failed to validate discount. Please try again.");
+        if (/^[0-9]+$/.test(discountName)) {
+            alert("Discount name cannot be a number");
+            return;
+        }
+
+        fetch(`${BASEURL}/Cart/validateDiscount`, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ discount_name: discountName })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    activeDiscount = {
+                        percentage: parseFloat(data.discount_percentage),
+                        applicableProducts: data.applicable_products
+                    };
+
+                    // Update cart items with discount information
+                    cart.forEach(item => {
+                        if (
+                            activeDiscount.applicableProducts.includes(item.id)
+                        ) {
+                            item.discount_name = discountName;
+                            item.discount_percentage =
+                                activeDiscount.percentage;
+                        }
+                    });
+
+                    updateDisplay(calculateSubtotal());
+                    alert(
+                        `Discount applied! ${data.discount_percentage}% off applicable items`
+                    );
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(err => {
+                console.error("Discount validation error:", err);
+                alert("Failed to validate discount. Please try again.");
+            });
     });
-});
-
-
-
-
 
 function formatDollar(num) {
     return "$" + num.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,");
@@ -114,13 +94,25 @@ function updateDisplay(subtotal) {
 }
 
 function calculateSubtotal() {
-    return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    return cart.reduce((sum, item) => {
+        const price = parseFloat(item.price);
+        const quantity = item.quantity;
+        let subtotal = price * quantity;
+
+        // Apply discount if available
+        if (item.discount_percentage) {
+            subtotal -= subtotal * (item.discount_percentage / 100);
+        }
+
+        return sum + subtotal;
+    }, 0);
 }
 
 function renderCartItems() {
     $cartItems.innerHTML = "";
     let total = 0;
     let itemCount = 0;
+    let discountAmount = 0;
 
     cart.forEach(item => {
         const price = parseFloat(item.price);
@@ -129,15 +121,31 @@ function renderCartItems() {
         total += subtotal;
         itemCount += quantity;
 
+        // Calculate discount for the item
+        let itemDiscount = 0;
+        if (item.discount_percentage) {
+            itemDiscount = subtotal * (item.discount_percentage / 100);
+            discountAmount += itemDiscount;
+        }
+
         const li = document.createElement("li");
         li.className =
             "list-group-item d-flex justify-content-between align-items-center";
 
         const itemInfo = document.createElement("div");
         itemInfo.className = "me-3";
-        itemInfo.innerHTML = `<strong>${item.name}</strong><br>${formatDollar(
-            price
-        )} x ${quantity} = ${formatDollar(subtotal)}`;
+        itemInfo.innerHTML = `
+            <strong>${item.name}</strong>
+            <br>
+            ${formatDollar(price)} x ${quantity} = ${formatDollar(subtotal)}
+            ${
+                item.discount_name
+                    ? `<br><small class="text-danger">- ${
+                          item.discount_percentage
+                      }% (${formatDollar(itemDiscount)})</small>`
+                    : ""
+            }
+        `;
 
         const btnGroup = document.createElement("div");
         btnGroup.className = "btn-group";
@@ -172,8 +180,30 @@ function renderCartItems() {
         $cartItems.appendChild(li);
     });
 
-    updateDisplay(total);
+    updateDisplay(total, discountAmount);
     if ($cartCount) $cartCount.textContent = itemCount;
+}
+
+function updateDisplay(subtotal, discountAmount) {
+    delivery = subtotal * 0.1;
+    taxes = cart.reduce(
+        (sum, item) => sum + item.price * item.quantity * 0.05,
+        0
+    );
+
+    $subtotal.innerText = formatDollar(subtotal);
+    $delivery.innerText = formatDollar(delivery);
+    $taxes.innerText = formatDollar(taxes);
+
+    if (discountAmount > 0) {
+        $discount.innerText = "- " + formatDollar(discountAmount);
+    } else {
+        $discount.innerText = "- $0.00";
+    }
+
+    const total = subtotal + delivery + taxes - discountAmount;
+    $total.innerText = formatDollar(total);
+    if ($totalPriceElement) $totalPriceElement.innerText = formatDollar(total);
 }
 
 $discountInput?.addEventListener("input", function () {
@@ -200,7 +230,9 @@ async function loadCartFromServer() {
             item_id: item.item_id,
             name: item.title,
             price: parseFloat(item.price),
-            quantity: item.quantity
+            quantity: item.quantity,
+            discount_name: item.discount_name,
+            discount_percentage: parseFloat(item.discount_percentage)
         }));
         renderCartItems();
     } catch (err) {

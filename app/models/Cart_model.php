@@ -42,16 +42,20 @@ class Cart_model
         ci.quantity,
         p.title, 
         p.price, 
-        pi.image_url as image 
-        FROM $this->itemTable ci
+        pi.image_url as image,
+        d.name as discount_name,
+        d.percentage as discount_percentage
+        FROM cart_items ci
         JOIN products p ON ci.product_id = p.id
         LEFT JOIN product_images pi ON p.id = pi.product_id
+        LEFT JOIN product_discounts pd ON p.id = pd.product_id
+        LEFT JOIN discounts d ON pd.discount_id = d.id
         WHERE ci.cart_id = :cart_id
-        GROUP BY ci.id"
-    );
+        GROUP BY ci.id");
     $this->db->bind(":cart_id", $cartId);
     return $this->db->resultSet();
 }
+
 
 
     public function addItem($cartId, $productId, $quantity)
