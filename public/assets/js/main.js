@@ -1,181 +1,275 @@
+const BASEURL = "http://localhost:8080/pkk-e-commerce-main/public/";
 
-  const BASEURL = "http://localhost:8080/pkk-e-commerce-main/public";
+const $cartItems = document.getElementById("cart-items");
+const $subtotal = document.getElementById("subtotal");
+const $delivery = document.getElementById("delivery");
+const $taxes = document.getElementById("taxes");
+const $discount = document.getElementById("discount");
+const $total = document.getElementById("total");
+const $discountInput = document.getElementById("discountInput");
+const $agreeTerms = document.getElementById("agreeTerms");
+const $cartCount = document.getElementById("cart-count");
+const $totalPriceElement = document.getElementById("total-price");
 
-  const $cartItems = document.getElementById("cart-items");
-  const $subtotal = document.getElementById("subtotal");
-  const $delivery = document.getElementById("delivery");
-  const $taxes = document.getElementById("taxes");
-  const $discount = document.getElementById("discount");
-  const $total = document.getElementById("total");
-  const $discountInput = document.getElementById("discountInput");
-  const $agreeTerms = document.getElementById("agreeTerms");
-  const $cartCount = document.getElementById("cart-count");
-  const $totalPriceElement = document.getElementById("total-price");
+let cart = [];
+let delivery = 0;
+let taxes = 0;
+let discount = 0;
+let activeDiscount = null;
 
-  let cart = [];
-  let delivery = 150000;
-  let taxes = 708000;
-  let discount = 0;
+function updateDisplay(subtotal) {
+    delivery = subtotal * 0.1;
+    taxes = cart.reduce(
+        (sum, item) => sum + item.price * item.quantity * 0.05,
+        0
+    );
 
-  function formatRupiah(num) {
-    return "Rp " + num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  }
-
-  function updateDisplay(subtotal) {
-    $subtotal.innerText = formatRupiah(subtotal);
-    $delivery.innerText = formatRupiah(delivery);
-    $taxes.innerText = formatRupiah(taxes);
-    $discount.innerText = "- " + formatRupiah(discount);
-    const total = subtotal + delivery + taxes - discount;
-    $total.innerText = formatRupiah(total);
-    if ($totalPriceElement) {
-      $totalPriceElement.innerText = formatRupiah(total);
+    let discountAmount = 0;
+    if (activeDiscount) {
+        cart.forEach(item => {
+            if (activeDiscount.applicableProducts.includes(item.id)) {
+                discountAmount +=
+                    item.price *
+                    item.quantity *
+                    (activeDiscount.percentage / 100);
+            }
+        });
     }
-  }
 
-  function calculateSubtotal() {
+    $subtotal.innerText = formatDollar(subtotal);
+    $delivery.innerText = formatDollar(delivery);
+    $taxes.innerText = formatDollar(taxes);
+
+    if (discountAmount > 0) {
+        $discount.innerText = "- " + formatDollar(discountAmount);
+    } else {
+        $discount.innerText = "- $0.00";
+    }
+
+    const total = subtotal + delivery + taxes - discountAmount;
+    $total.innerText = formatDollar(total);
+    if ($totalPriceElement) $totalPriceElement.innerText = formatDollar(total);
+}
+
+document.getElementById("applyDiscountBtn")?.addEventListener("click", function() {
+    const discountName = document.getElementById("discountInput").value.trim();
+
+    if (!discountName) {
+        alert("Please enter a valid discount name");
+        return;
+    }
+    if (/^[0-9]+$/.test(discountName)) {
+        alert("Discount name cannot be a number");
+        return;
+    }
+
+    fetch(`${BASEURL}/Cart/validateDiscount`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ discount_name: discountName })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            activeDiscount = {
+                percentage: parseFloat(data.discount_percentage),
+                applicableProducts: data.applicable_products
+            };
+            
+            updateDisplay(calculateSubtotal());
+            alert(`Discount applied! ${data.discount_percentage}% off applicable items`);
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(err => {
+        console.error("Discount validation error:", err);
+        alert("Failed to validate discount. Please try again.");
+    });
+});
+
+
+
+
+
+function formatDollar(num) {
+    return "$" + num.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,");
+}
+
+function updateDisplay(subtotal) {
+    delivery = subtotal * 0.1;
+    taxes = cart.reduce(
+        (sum, item) => sum + item.price * item.quantity * 0.05,
+        0
+    );
+
+    $subtotal.innerText = formatDollar(subtotal);
+    $delivery.innerText = formatDollar(delivery);
+    $taxes.innerText = formatDollar(taxes);
+    $discount.innerText = "- " + formatDollar(discount);
+
+    const total = subtotal + delivery + taxes - discount;
+    $total.innerText = formatDollar(total);
+    if ($totalPriceElement) $totalPriceElement.innerText = formatDollar(total);
+}
+
+function calculateSubtotal() {
     return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  }
+}
 
-  function renderCartItems() {
+function renderCartItems() {
     $cartItems.innerHTML = "";
     let total = 0;
     let itemCount = 0;
 
-    cart.forEach((item) => {
-      const price = parseFloat(item.price);
-      const quantity = item.quantity;
-      const subtotal = price * quantity;
-      total += subtotal;
-      itemCount += quantity;
+    cart.forEach(item => {
+        const price = parseFloat(item.price);
+        const quantity = item.quantity;
+        const subtotal = price * quantity;
+        total += subtotal;
+        itemCount += quantity;
 
-      const li = document.createElement("li");
-      li.className = "list-group-item d-flex justify-content-between align-items-center";
+        const li = document.createElement("li");
+        li.className =
+            "list-group-item d-flex justify-content-between align-items-center";
 
-      const itemInfo = document.createElement("div");
-      itemInfo.className = "me-3";
-      itemInfo.innerHTML = `<strong>${item.name}</strong><br>${formatRupiah(price)} x ${quantity} = ${formatRupiah(subtotal)}`;
+        const itemInfo = document.createElement("div");
+        itemInfo.className = "me-3";
+        itemInfo.innerHTML = `<strong>${item.name}</strong><br>${formatDollar(
+            price
+        )} x ${quantity} = ${formatDollar(subtotal)}`;
 
-      const btnGroup = document.createElement("div");
-      btnGroup.className = "btn-group";
+        const btnGroup = document.createElement("div");
+        btnGroup.className = "btn-group";
 
-      const minusBtn = document.createElement("button");
-      minusBtn.className = "btn btn-sm btn-outline-secondary";
-      minusBtn.textContent = "-";
-      minusBtn.addEventListener("click", () => {
-        syncDecreaseItemFromServer(item.item_id);
-      });
+        const minusBtn = document.createElement("button");
+        minusBtn.className = "btn btn-sm btn-outline-secondary";
+        minusBtn.textContent = "-";
+        minusBtn.addEventListener("click", () => {
+            syncDecreaseItemFromServer(item.item_id);
+        });
 
-      const plusBtn = document.createElement("button");
-      plusBtn.className = "btn btn-sm btn-outline-secondary";
-      plusBtn.textContent = "+";
-      plusBtn.addEventListener("click", () => {
-        syncAddItemToServer(item.id, 1);
-      });
+        const plusBtn = document.createElement("button");
+        plusBtn.className = "btn btn-sm btn-outline-secondary";
+        plusBtn.textContent = "+";
+        plusBtn.addEventListener("click", () => {
+            syncAddItemToServer(item.id, 1);
+        });
 
-      const removeBtn = document.createElement("button");
-      removeBtn.className = "btn btn-sm btn-danger";
-      removeBtn.textContent = "Remove";
-      removeBtn.addEventListener("click", () => {
-        syncDeleteItemFromServer(item.item_id);
-      });
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "btn btn-sm btn-danger";
+        removeBtn.textContent = "Remove";
+        removeBtn.addEventListener("click", () => {
+            syncDeleteItemFromServer(item.item_id);
+        });
 
-      btnGroup.appendChild(minusBtn);
-      btnGroup.appendChild(plusBtn);
-      btnGroup.appendChild(removeBtn);
+        btnGroup.appendChild(minusBtn);
+        btnGroup.appendChild(plusBtn);
+        btnGroup.appendChild(removeBtn);
 
-      li.appendChild(itemInfo);
-      li.appendChild(btnGroup);
-      $cartItems.appendChild(li);
+        li.appendChild(itemInfo);
+        li.appendChild(btnGroup);
+        $cartItems.appendChild(li);
     });
 
     updateDisplay(total);
     if ($cartCount) $cartCount.textContent = itemCount;
-  }
+}
 
-  $discountInput?.addEventListener("input", function () {
+$discountInput?.addEventListener("input", function () {
     const subtotal = calculateSubtotal();
     const value = parseInt(this.value);
     discount = isNaN(value) ? 0 : Math.min(value, subtotal + delivery + taxes);
     updateDisplay(subtotal);
-  });
+});
 
-  function checkout(mode) {
+function checkout(mode) {
     if (!$agreeTerms.checked) {
-      alert("Harap setujui syarat & ketentuan terlebih dahulu.");
-      return;
+        alert("Harap setujui syarat & ketentuan terlebih dahulu.");
+        return;
     }
     alert("Lanjut sebagai " + (mode === "guest" ? "tamu" : "member"));
-  }
+}
 
-  async function loadCartFromServer() {
+async function loadCartFromServer() {
     try {
-      const response = await fetch(`${BASEURL}/Cart/getCart`);
-      const data = await response.json();
-      cart = data.items.map(item => ({
-        id: item.product_id,
-        item_id: item.item_id,
-        name: item.title,
-        price: parseFloat(item.price),
-        quantity: item.quantity
-      }));
-      renderCartItems();
+        const response = await fetch(`${BASEURL}/Cart/getCart`);
+        const data = await response.json();
+        cart = data.items.map(item => ({
+            id: item.product_id,
+            item_id: item.item_id,
+            name: item.title,
+            price: parseFloat(item.price),
+            quantity: item.quantity
+        }));
+        renderCartItems();
     } catch (err) {
-      console.error("Gagal memuat keranjang:", err);
+        console.error("Gagal memuat keranjang:", err);
     }
-  }
+}
 
-  function syncAddItemToServer(productId, quantity = 1) {
+function syncAddItemToServer(productId, quantity = 1) {
     fetch(`${BASEURL}/Cart/addItem`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ product_id: productId, quantity })
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ product_id: productId, quantity })
     })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) loadCartFromServer();
-      })
-      .catch(err => console.error("Add item error:", err));
-  }
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) loadCartFromServer();
+        })
+        .catch(err => console.error("Add item error:", err));
+}
 
-  function syncDecreaseItemFromServer(itemId) {
+function syncDecreaseItemFromServer(itemId) {
     fetch(`${BASEURL}/Cart/decreaseItem`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ item_id: itemId })
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ item_id: itemId })
     })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) loadCartFromServer();
-      })
-      .catch(err => console.error("Decrease item error:", err));
-  }
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) loadCartFromServer();
+        })
+        .catch(err => console.error("Decrease item error:", err));
+}
 
-  function syncDeleteItemFromServer(itemId) {
+function syncDeleteItemFromServer(itemId) {
     fetch(`${BASEURL}/Cart/deleteItem`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ item_id: itemId })
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ item_id: itemId })
     })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) loadCartFromServer();
-      })
-      .catch(err => console.error("Delete item error:", err));
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) loadCartFromServer();
+        })
+        .catch(err => console.error("Delete item error:", err));
+}
+document.addEventListener("DOMContentLoaded", () => {
+    // Ambil data cart dari server saat halaman selesai dimuat
     loadCartFromServer();
 
+    // Tambahkan event listener ke semua tombol "Add to Cart"
     document.querySelectorAll(".add-to-cart").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const productId = btn.getAttribute("data-id");
-        syncAddItemToServer(productId);
-      });
+        btn.addEventListener("click", () => {
+            // Cek apakah user sudah login
+            if (!IS_LOGGED_IN) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Login Dulu!",
+                    text: "Kamu harus login untuk menambahkan produk ke keranjang.",
+                    confirmButtonText: "Ya"
+                });
+                return;
+            }
+
+            // Jika sudah login, ambil ID produk dan kirim ke server
+            const productId = btn.getAttribute("data-id");
+            syncAddItemToServer(productId);
+        });
     });
-  });
-
-
+});
 
 // === Filter Logic ===
 const filters = {

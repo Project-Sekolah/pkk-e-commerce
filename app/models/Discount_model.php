@@ -95,19 +95,55 @@ class Discount_model
 
   public function addProductDiscount($productId, $discountId)
   {
+    // Periksa apakah diskon dan produk ada
+    $discount = $this->getDiscountById($discountId);
+    // Buat instance Product_model secara manual
+    $productModel = new Product_model();
+    $product = $productModel->getProductById($productId);
+
+    if (!$discount || !$product) {
+      return false;
+    }
+
+    // Periksa apakah relasi sudah ada
+    $existingQuery =
+      "SELECT id FROM product_discounts WHERE product_id = :product_id AND discount_id = :discount_id";
+    $this->db->query($existingQuery);
+    $this->db->bind("product_id", $productId);
+    $this->db->bind("discount_id", $discountId);
+    $existing = $this->db->single();
+
+    if ($existing) {
+      return false; // Relasi sudah ada
+    }
+
     $query =
-      "INSERT INTO product_discounts (id, product_id, discount_id) VALUES (UUID(), :product_id, :discount_id)";
+      "INSERT INTO product_discounts (id, product_id, discount_id, start_date, end_date, is_active) VALUES (UUID(), :product_id, :discount_id, NOW(), DATE_ADD(NOW(), INTERVAL 1 MONTH), 1)";
     $this->db->query($query);
     $this->db->bind("product_id", $productId);
     $this->db->bind("discount_id", $discountId);
     return $this->db->execute();
   }
 
+  public function deleteProductDiscount($productId, $discountId)
+  {
+    $query =
+      "DELETE FROM product_discounts WHERE product_id = :product_id AND discount_id = :discount_id";
+    $this->db->query($query);
+    $this->db->bind("product_id", $productId);
+    $this->db->bind("discount_id", $discountId);
+    return $this->db->execute();
+  }
 
   public function getProductDiscounts($productId)
   {
-    $query =
-      "SELECT d.* FROM product_discounts pd JOIN discounts d ON pd.discount_id = d.id WHERE pd.product_id = :product_id AND d.deleted_at IS NULL AND d.is_active = 1";
+    $query = "SELECT d.* FROM product_discounts pd 
+       JOIN discounts d ON pd.discount_id = d.id 
+       WHERE pd.product_id = :product_id 
+       AND d.deleted_at IS NULL 
+       AND d.is_active = 1
+       AND d.start_date <= NOW() 
+       AND d.end_date >= NOW()";
     $this->db->query($query);
     $this->db->bind("product_id", $productId);
     return $this->db->resultSet();
@@ -122,7 +158,7 @@ class Discount_model
     $this->db->bind("discount_id", $discountId);
     return $this->db->resultSet();
   }
-
+/*
   public function deleteProductDiscount($productId, $discountId)
   {
     $query =
@@ -131,5 +167,61 @@ class Discount_model
     $this->db->bind("product_id", $productId);
     $this->db->bind("discount_id", $discountId);
     return $this->db->execute();
+  }
+*/
+  public function getDiscountByCode($name)
+  {
+    $this->db->query("SELECT * FROM discounts WHERE name = :name");
+    $this->db->bind("name", $name);
+    return $this->db->single();
+  }
+
+  public function validateDiscount($discountName, $cartItems)
+  {
+    // Validasi kode diskon
+    $this->db->query("SELECT * FROM discounts 
+                      WHERE name = :name 
+                      AND is_active = 1 
+                      AND start_date <= NOW() 
+                      AND end_date >= NOW()");
+    $this->db->bind("name", $discountName);
+    $discount = $this->db->single();
+
+    if (!$discount) {
+      return [
+        "success" => false,
+        "message" => "Invalid or expired discount name",
+      ];
+    }
+
+    // Ambil semua produk yang berlaku untuk diskon ini
+    $this->db->query("SELECT pd.product_id 
+                      FROM product_discounts pd 
+                      JOIN discounts d ON pd.discount_id = d.id 
+                      WHERE d.name = :name 
+                      AND pd.is_active = 1 
+                      AND pd.start_date <= NOW() 
+                      AND pd.end_date >= NOW()");
+    $this->db->bind("name", $discountName);
+    $validProducts = $this->db->resultSet();
+
+    $validProductIds = array_column($validProducts, "product_id");
+
+    // Periksa apakah produk di keranjang termasuk produk yang berlaku
+    $cartProductIds = array_column($cartItems, "product_id");
+    $matchingProducts = array_intersect($cartProductIds, $validProductIds);
+
+    if (empty($matchingProducts)) {
+      return [
+        "success" => false,
+        "message" => "No products in your cart match this discount.",
+      ];
+    }
+
+    return [
+      "success" => true,
+      "discount_percentage" => $discount["percentage"],
+      "applicable_products" => array_values($matchingProducts),
+    ];
   }
 }

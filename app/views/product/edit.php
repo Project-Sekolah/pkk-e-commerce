@@ -86,22 +86,21 @@ $category["id"]
     </div>
 
     <div class="mb-3">
-      <label for="discounts" class="form-label">Diskon</label>
-      <select class="form-select" id="discounts" name="discounts[]" multiple>
-        <?php foreach ($discounts as $discount): ?>
-          <option value="<?= $discount["id"] ?>" <?= in_array(
-  $discount["id"],
-  $productDiscounts
-)
-  ? "selected"
-  : "" ?>>
-            <?= htmlspecialchars($discount["name"]) ?> (<?= $discount[
-   "percentage"
- ] ?>%)
-          </option>
-        <?php endforeach; ?>
-      </select>
-    </div>
+  <label for="discounts" class="form-label">Diskon</label>
+  <select class="form-select" id="discounts" name="discounts[]" multiple>
+    <?php foreach ($discounts as $discount): ?>
+      <option value="<?= $discount["id"] ?>" <?= in_array(
+        $discount["id"],
+        $productDiscounts
+      ) ? "selected" : "" ?>>
+        <?= htmlspecialchars($discount["name"]) ?> (<?= $discount[
+       "percentage"
+     ] ?>%)
+      </option>
+    <?php endforeach; ?>
+  </select>
+</div>
+
     
     <!-- Existing Product Images -->
 <div class="mb-3">

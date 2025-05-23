@@ -142,56 +142,52 @@ class Discount extends Controller
   }
 
   public function addDiscountToProduct($productId, $discountId)
-  {
+{
     $this->checkRole(["seller", "admin"]);
-    $result = $this->model("Discount_model")->addProductDiscount(
-      $productId,
-      $discountId
-    );
+    $result = $this->model("Discount_model")->addProductDiscount($productId, $discountId);
 
-    if ($result > 0) {
-      Flasher::setFlash(
-        "Sukses",
-        "Discount berhasil ditambahkan ke produk.",
-        "success"
-      );
+    if ($result) {
+        Flasher::setFlash(
+            "Sukses",
+            "Discount berhasil ditambahkan ke produk.",
+            "success"
+        );
     } else {
-      Flasher::setFlash(
-        "Error",
-        "Gagal menambahkan discount ke produk. Coba lagi nanti.",
-        "danger"
-      );
+        Flasher::setFlash(
+            "Error",
+            "Gagal menambahkan discount ke produk. Coba lagi nanti.",
+            "danger"
+        );
     }
 
     header("Location: " . BASEURL . "/product/edit/$productId");
     exit();
-  }
+}
 
-  public function deleteDiscountFromProduct($productId, $discountId)
-  {
+public function deleteDiscountFromProduct($productId, $discountId)
+{
     $this->checkRole(["seller", "admin"]);
-    $result = $this->model("Discount_model")->deleteProductDiscount(
-      $productId,
-      $discountId
-    );
+    $result = $this->model("Discount_model")->deleteProductDiscount($productId, $discountId);
 
-    if ($result > 0) {
-      Flasher::setFlash(
-        "Sukses",
-        "Discount berhasil dihapus dari produk.",
-        "success"
-      );
+    if ($result) {
+        Flasher::setFlash(
+            "Sukses",
+            "Discount berhasil dihapus dari produk.",
+            "success"
+        );
     } else {
-      Flasher::setFlash(
-        "Error",
-        "Gagal menghapus discount dari produk. Coba lagi nanti.",
-        "danger"
-      );
+        Flasher::setFlash(
+            "Error",
+            "Gagal menghapus discount dari produk. Coba lagi nanti.",
+            "danger"
+        );
     }
 
     header("Location: " . BASEURL . "/product/edit/$productId");
     exit();
-  }
+}
+
+
 
   private function checkRole($allowedRoles)
   {

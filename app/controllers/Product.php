@@ -264,78 +264,65 @@ class Product extends Controller
   }
 
   public function update($id)
-  {
+{
     $this->checkRole(["seller", "admin"]);
     if (
-      !isset($_POST["title"]) ||
-      !isset($_POST["description"]) ||
-      !isset($_POST["price"]) ||
-      !isset($_POST["category_id"]) ||
-      !isset($_POST["gender"])
+        !isset($_POST["title"]) ||
+        !isset($_POST["description"]) ||
+        !isset($_POST["price"]) ||
+        !isset($_POST["category_id"]) ||
+        !isset($_POST["gender"])
     ) {
-      Flasher::setFlash(
-        "Error",
-        "Input tidak valid, produk gagal diupdate.",
-        "danger"
-      );
-      header("Location: " . BASEURL . "/product/edit/$id");
-      exit();
+        Flasher::setFlash(
+            "Error",
+            "Input tidak valid, produk gagal diupdate.",
+            "danger"
+        );
+        header("Location: " . BASEURL . "/product/edit/$id");
+        exit();
     }
 
     $data = [
-      "id" => $id,
-      "title" => $_POST["title"],
-      "slug" => strtolower(str_replace(" ", "-", $_POST["title"])),
-      "price" => $_POST["price"],
-      "stock" => $_POST["stock"] ?? 0,
-      "description" => $_POST["description"],
-      "gender" => $_POST["gender"],
+        "id" => $id,
+        "title" => $_POST["title"],
+        "slug" => strtolower(str_replace(" ", "-", $_POST["title"])),
+        "price" => $_POST["price"],
+        "stock" => $_POST["stock"] ?? 0,
+        "description" => $_POST["description"],
+        "gender" => $_POST["gender"],
     ];
 
     $result = $this->model("Product_model")->updateProduct($data);
 
     if ($result > 0) {
-      // Hapus semua relasi diskon produk lama
-      $this->model("Discount_model")->deleteProductDiscount($id);
+        // Hapus semua relasi diskon produk lama
+        $discountModel = $this->model("Discount_model");
+        $productDiscounts = $this->model("Product_model")->getProductDiscounts($id);
+        foreach ($productDiscounts as $discount) {
+            $discountModel->deleteProductDiscount($id, $discount["id"]);
+        }
 
-      // Tambahkan relasi diskon produk baru
-      if (isset($_POST["discounts"]) && is_array($_POST["discounts"])) {
-        foreach ($_POST["discounts"] as $discountId) {
-          $this->model("Discount_model")->addProductDiscount($id, $discountId);
+        // Tambahkan relasi diskon produk baru
+        if (isset($_POST["discounts"]) && is_array($_POST["discounts"])) {
+            foreach ($_POST["discounts"] as $discountId) {
+                $discountModel->addProductDiscount($id, $discountId);
+            }
         }
-      }
 
-      if (isset($_FILES["images"]) && $_FILES["images"]["error"] == 0) {
-        $imageUrls = [];
-        foreach ($_FILES["images"]["tmp_name"] as $key => $tmp_name) {
-          try {
-            $upload = $this->cloudinary
-              ->uploadApi()
-              ->upload($tmp_name, ["folder" => "product_images/"]);
-            $imageUrls[] = $upload["secure_url"];
-          } catch (Exception $e) {
-            error_log("Cloudinary upload error: " . $e->getMessage());
-            Flasher::setFlash("Error", "Gagal mengunggah gambar.", "danger");
-            header("Location: " . BASEURL . "/product/edit/$id");
-            exit();
-          }
-        }
-        foreach ($imageUrls as $imageUrl) {
-          $this->model("Product_model")->addProductImage($id, $imageUrl);
-        }
-      }
-      Flasher::setFlash("Sukses", "Produk berhasil diupdate.", "success");
+        Flasher::setFlash("Sukses", "Produk berhasil diupdate.", "success");
     } else {
-      Flasher::setFlash(
-        "Error",
-        "Gagal mengupdate produk. Coba lagi nanti.",
-        "danger"
-      );
+        Flasher::setFlash(
+            "Error",
+            "Gagal mengupdate produk. Coba lagi nanti.",
+            "danger"
+        );
     }
 
     header("Location: " . BASEURL . "/product");
     exit();
-  }
+}
+
+
 
   public function deleteImage($imageId)
   {
@@ -442,3 +429,5 @@ class Product extends Controller
     exit();
   }
 }
+
+

@@ -133,7 +133,12 @@ class Product_model
     $this->db->bind("id", $id);
     $images = $this->db->resultSet();
 
+    // Ambil semua diskon yang berlaku untuk produk
+    $discountModel = new Discount_model();
+    $productDiscounts = $discountModel->getProductDiscounts($id);
+
     $product["images"] = $images;
+    $product["discounts"] = $productDiscounts;
 
     return $product;
   }
@@ -426,5 +431,4 @@ class Product_model
     return $this->db->execute();
   }
 
-  
 }

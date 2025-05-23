@@ -77,58 +77,70 @@
       </div>
     </div>
   </nav>
+  
+  <script>
+    const IS_LOGGED_IN = <?= isset($_SESSION["user"]) ? "true" : "false" ?>;
+</script>
 
   <!-- OFFCANVAS CART -->
-<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">
-  <div class="offcanvas-header">
-    <h5 id="offcanvasCartLabel">Shopping Cart</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-  </div>
-  <div class="offcanvas-body">
-    <ul class="list-group" id="cart-items"></ul>
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCart" aria-labelledby="offcanvasCartLabel">  
+  <div class="offcanvas-header">  
+    <h5 id="offcanvasCartLabel">Shopping Cart</h5>  
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>  
+  </div>    <div class="offcanvas-body">  
+  <!-- List Keranjang -->  
+  <ul class="list-group mb-4" id="cart-items"></ul>    <!-- Ringkasan Pembayaran -->    <div class="summary-box p-4 border rounded shadow-sm bg-light">  
+    <h4 class="mb-3">Ringkasan Belanja</h4>  <div class="d-flex justify-content-between mb-2">  
+  <span>Subtotal</span>  
+  <span id="subtotal">Rp 0</span>  
+</div>  
 
-    <!-- Ringkasan Pembayaran -->
-    <div class="summary-box mt-4">
-      <h2>Ringkasan</h2>
+<div class="d-flex justify-content-between mb-2">  
+  <span>Ongkir & Penanganan</span>  
+  <span id="delivery">Rp 0</span>  
+</div>  
 
-      <div class="line">
-        <span>Subtotal</span>
-        <span id="subtotal">Rp 0</span>
-      </div>
+<div class="d-flex justify-content-between mb-2">  
+  <span>Pajak & Biaya</span>  
+  <span id="taxes">Rp 0</span>  
+</div>  
 
-      <div class="line">
-        <span>Ongkir & Penanganan</span>
-        <span id="delivery">Rp 0</span>
-      </div>
-
-      <div class="line">
-        <span>Pajak & Biaya</span>
-        <span id="taxes">Rp 0</span>
-      </div>
-
-      <label for="discountInput">Masukkan Diskon</label>
-      <input type="number" id="discountInput" placeholder="Input kode diskon" />
-
-      <div class="line">
-        <span>Diskon</span>
-        <span id="discount">- Rp 0</span>
-      </div>
-
-      <div class="line total">
-        <span>Total</span>
-        <span id="total">Rp 0</span>
-      </div>
-
-      <label>
-        <input type="checkbox" id="agreeTerms" />
-        Saya menyetujui <a href="#">syarat & ketentuan</a>
-      </label>
-
-      <button class="btn mt-2" onclick="checkout('guest')">Checkout</button>
-      <button class="btn" onclick="checkout('member')">View Struct</button>
+<div class="form-check mb-3">
+    <label for="discountInput" class="form-label">Discount Name</label>
+    <div class="input-group">
+        <input type="text" id="discountInput" class="form-control" placeholder="Enter discount name">
+        <button class="btn btn-outline-primary" id="applyDiscountBtn">Apply</button>
     </div>
-  </div>
 </div>
+
+
+<div class="d-flex justify-content-between mb-2">  
+  <span>Diskon</span>  
+  <span id="discount">- Rp 0</span>  
+</div>  
+
+<hr>  
+
+<div class="d-flex justify-content-between mb-3 fw-bold">  
+  <span>Total</span>  
+  <span id="total">Rp 0</span>  
+</div>  
+
+<div class="form-check mb-3">  
+  <input class="form-check-input" type="checkbox" id="agreeTerms" />  
+  <label class="form-check-label" for="agreeTerms">  
+    Saya menyetujui <a href="#">syarat & ketentuan</a>  
+  </label>  
+</div>  
+
+<button class="btn btn-primary w-100 mb-2"  
+onclick="checkout('guest')">Checkout</button>  
+<button class="btn btn-outline-primary w-100"  
+onclick="checkout('member')">Download Struct</button>
+
+
+  </div>  
+</div>  </div> 
 
 
   <div class="row">
