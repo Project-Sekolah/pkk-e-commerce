@@ -25,6 +25,7 @@
           <p><i class="bi bi-tags-fill text-dark me-2"></i><strong>Category:</strong> <span id="modalCategory"></span></p>
           <p><i class="bi bi-gender-ambiguous text-dark me-2"></i><strong>Gender:</strong> <span id="modalGender"></span></p>
           <p><i class="bi bi-box-seam text-dark me-2"></i><strong>Stock:</strong> <span id="modalStock"></span></p>
+          <p><i class="bi bi-person-fill text-dark me-2"></i><strong>Owner:</strong> <span id="modalOwnerName"></span></p>
         </div>
 
         <p class="mb-2"><i class="bi bi-card-text text-dark me-2"></i><strong>Description:</strong></p>
@@ -37,10 +38,10 @@
 
 <div class="rating-stars-static text-warning fs-5 mb-2"></div>
         
-
-        <button id="modalAddToCartBtn" class="btn add-to-cart" data-id="<?= $productId ?>" data-name="<?= $productName ?>" data-price="<?= $productPrice ?>">
+        <!-- beta -->
+        <!-- <button id="modalAddToCartBtn" class="btn add-to-cart" data-id="<?= $productId ?>" data-name="<?= $productName ?>" data-price="<?= $productPrice ?>">
           <i class="bi bi-cart-plus-fill"></i> Add To Cart
-        </button>
+        </button> -->
       </div>
     </div>
 
@@ -84,4 +85,3 @@
 </div>
 </div>
 </div>
-

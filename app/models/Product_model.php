@@ -24,7 +24,8 @@ class Product_model
             c.slug AS category_slug,
             GROUP_CONCAT(pi.image_url) AS images,
             COALESCE(ratings_summary.average_rating, 0) AS average_rating,
-            COALESCE(ratings_summary.total_ratings, 0) AS total_ratings
+            COALESCE(ratings_summary.total_ratings, 0) AS total_ratings,
+            u.full_name AS owner_name
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
         LEFT JOIN product_images pi ON pi.product_id = p.id
@@ -36,6 +37,7 @@ class Product_model
             FROM product_ratings
             GROUP BY product_id
         ) AS ratings_summary ON ratings_summary.product_id = p.id
+        LEFT JOIN users u ON p.user_id = u.id
         WHERE p.deleted_at IS NULL AND p.is_active = 1
     ";
 
@@ -150,10 +152,12 @@ class Product_model
                 p.*, 
                 c.name AS category_name, 
                 c.slug AS category_slug,
-                GROUP_CONCAT(pi.image_url) AS images
+                GROUP_CONCAT(pi.image_url) AS images,
+                u.full_name AS owner_name
             FROM products p
             LEFT JOIN categories c ON p.category_id = c.id
             LEFT JOIN product_images pi ON pi.product_id = p.id
+            LEFT JOIN users u ON p.user_id = u.id
             WHERE p.deleted_at IS NULL AND p.is_active = 1
             GROUP BY p.id
             ORDER BY p.created_at DESC

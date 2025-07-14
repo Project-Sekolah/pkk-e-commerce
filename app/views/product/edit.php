@@ -101,32 +101,32 @@ $category["id"]
   </select>
 </div>
 
-    
     <!-- Existing Product Images -->
-<div class="mb-3">
-  <label class="form-label">Gambar Produk yang Sudah Ada</label>
-  <div class="row">
-    <?php if (!empty($data["product_images"])): ?>
-      <?php foreach ($data["product_images"] as $image): ?>
-        <div class="col-md-3">
-            <img src="<?= htmlspecialchars(
-              $image["image_url"]
-            ) ?>" class="img-fluid mb-2" alt="product">
-            <a href="<?= BASEURL ?>/product/deleteImage/<?= $image[
-  "id"
-] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus gambar ini?')">Hapus</a>
+    <div class="mb-3">
+        <label class="form-label">Gambar Produk yang Sudah Ada</label>
+        <div class="row">
+            <?php if (!empty($data["product_images"])): ?>
+                <?php foreach ($data["product_images"] as $image): ?>
+                    <div class="col-md-3">
+                        <img src="<?= htmlspecialchars(
+                          $image["image_url"]
+                        ) ?>" class="img-fluid mb-2" alt="product">
+                        <a href="<?= BASEURL ?>/product/deleteImage/<?= $image[
+                          "id"
+                        ] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus gambar ini?')">Hapus</a>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="col-md-12">
+                    <p>Tidak ada gambar produk yang tersedia.</p>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addImageModal">
+                        Tambah Gambar
+                    </button>
+                </div>
+            <?php endif; ?>
         </div>
-      <?php endforeach; ?>
-    <?php else: ?>
-      <div class="col-md-12">
-          <p>Tidak ada gambar produk yang tersedia.</p>
-          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addImageModal">
-            Tambah Gambar
-          </button>
-      </div>
-    <?php endif; ?>
-  </div>
-</div>
+    </div>
+
 
     <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
   </form>

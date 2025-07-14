@@ -45,6 +45,17 @@ class Product extends Controller
     $productIds = array_column($data["products"], "id");
     $data["ratings"] = $productModel->getAllRatingsForProductIds($productIds);
 
+    // Pastikan data owner_name diteruskan dengan benar
+    $data['products'] = array_map(function($product) {
+        if (!isset($product['owner_name'])) {
+            $product['owner_name'] = 'Unknown'; 
+        }
+        return $product;
+    }, $data['products']);
+
+    // Debugging: Log the products to ensure owner_name is present
+    error_log(print_r($data['products'], true));
+
     $this->render(["templates/hero", "product/index"], $data);
   }
 
@@ -242,8 +253,14 @@ class Product extends Controller
     }
   }
 
-  public function edit($id)
+  public function edit($id = null)
   {
+    if ($id === null) {
+      Flasher::setFlash("Error", "ID produk tidak diberikan.", "danger");
+      header("Location: " . BASEURL . "/product");
+      exit();
+    }
+
     $this->checkRole(["seller", "admin"]);
     $productModel = $this->model("Product_model");
     $discountModel = $this->model("Discount_model");
@@ -327,19 +344,30 @@ class Product extends Controller
   public function deleteImage($imageId)
   {
     $this->checkRole(["seller", "admin"]);
-    $result = $this->model("Product_model")->deleteProductImage($imageId);
 
-    if ($result > 0) {
-      Flasher::setFlash("Sukses", "Gambar produk berhasil dihapus.", "success");
-    } else {
-      Flasher::setFlash(
-        "Error",
-        "Gagal menghapus gambar produk. Coba lagi nanti.",
-        "danger"
-      );
+    // Fetch the product ID associated with the image
+    $productModel = $this->model("Product_model");
+    $image = $productModel->getProductImageById($imageId);
+
+    if (!$image) {
+        Flasher::setFlash("Error", "Gambar tidak ditemukan.", "danger");
+        header("Location: " . BASEURL . "/product");
+        exit();
     }
 
-    header("Location: " . BASEURL . "/product/edit/" . $_POST["product_id"]);
+    $productId = $image["product_id"];
+
+    // Delete the image
+    $result = $productModel->deleteProductImage($imageId);
+
+    if ($result > 0) {
+        Flasher::setFlash("Sukses", "Gambar produk berhasil dihapus.", "success");
+    } else {
+        Flasher::setFlash("Error", "Gagal menghapus gambar produk. Coba lagi nanti.", "danger");
+    }
+
+    // Redirect back to the product edit page
+    header("Location: " . BASEURL . "/product/edit/" . $productId);
     exit();
   }
 
@@ -427,6 +455,43 @@ class Product extends Controller
 
     header("Location: " . BASEURL . "/product/edit/$productId");
     exit();
+  }
+
+  public function addToCart()
+  {
+    if (!isset($_POST['product_id']) || !isset($_POST['quantity'])) {
+        http_response_code(400);
+        echo json_encode(["error" => "Invalid input data"]);
+        exit();
+    }
+
+    $productId = $_POST['product_id'];
+    $quantity = (int)$_POST['quantity'];
+
+    if ($quantity <= 0) {
+        http_response_code(400);
+        echo json_encode(["error" => "Quantity must be greater than zero"]);
+        exit();
+    }
+
+    $cartModel = $this->model('Cart_model');
+    $userId = $_SESSION['user']['id'] ?? null;
+
+    if (!$userId) {
+        http_response_code(401);
+        echo json_encode(["error" => "User not logged in"]);
+        exit();
+    }
+
+    $cart = $cartModel->getOrCreateCart($userId);
+    $result = $cartModel->addItem($cart['id'], $productId, $quantity);
+
+    if ($result) {
+        echo json_encode(["success" => true, "message" => "Item added to cart"]);
+    } else {
+        http_response_code(500);
+        echo json_encode(["error" => "Failed to add item to cart"]);
+    }
   }
 }
 

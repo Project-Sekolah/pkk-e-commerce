@@ -613,3 +613,13 @@ $(document).ready(function () {
         $("#ratingForm textarea[name='review_text']").val(""); // Kosongkan komentar
     });
 });
+
+document.addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget;
+    const ownerName = button.getAttribute('data-owner');
+    const modalOwnerName = document.getElementById('modalOwnerName');
+
+    if (modalOwnerName) {
+        modalOwnerName.textContent = ownerName || 'Unknown';
+    }
+});

@@ -102,6 +102,7 @@
                data-rating="<?= $count > 0 ? number_format($avg, 1) : "0" ?>"
                data-rating-count="<?= $count ?>"
                data-reviewers='<?= htmlspecialchars(json_encode($reviewers), ENT_QUOTES) ?>'
+               data-owner="<?= htmlspecialchars($product['owner_name'], ENT_QUOTES) ?>"
           >
           <div class="card-body text-center" style="background-color: #847e7b;">
             <h6 class="card-title"><?= htmlspecialchars($product["title"]) ?></h6>
@@ -139,3 +140,5 @@
     </a>
   </div>
 </div>
+
+

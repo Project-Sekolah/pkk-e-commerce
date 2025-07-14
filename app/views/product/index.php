@@ -101,6 +101,7 @@
                data-image="<?= $imageUrl ?>"
                data-stock="<?= (int) $product["stock"] ?>"
                data-rating="<?= $count > 0 ? number_format($avg, 1) : "0" ?>"
+               data-owner="<?= htmlspecialchars($product['owner_name'] ?? 'Unknown', ENT_QUOTES) ?>"
                data-rating-count="<?= $count ?>"
                data-reviewers='<?= htmlspecialchars(
                  json_encode($reviewers),

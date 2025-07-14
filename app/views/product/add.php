@@ -41,6 +41,7 @@
     <div class="mb-3">
       <label for="images" class="form-label">Gambar Produk</label>
       <input type="file" class="form-control" id="images" name="images[]" multiple>
+      <small class="text-muted">Anda dapat mengunggah beberapa gambar.</small>
     </div>
     <button type="submit" class="btn btn-primary">Tambah Produk</button>
   </form>
