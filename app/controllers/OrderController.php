@@ -14,18 +14,12 @@ class OrderController extends Controller
         $json = json_decode(file_get_contents("php://input"), true);
 
         $cart = $json["cart"] ?? null;
-        $discount = isset($json["discount"]) ? (float)$json["discount"] : 0;
+        $discountName = $json["discount"] ?? null;
 
-        // Validasi data keranjang
         if (!$cart || !is_array($cart)) {
             http_response_code(400);
-            echo json_encode(["error" => "Keranjang tidak valid"]);
+            echo json_encode(["error" => "Invalid cart data"]);
             exit();
-        }
-
-        // Validasi diskon
-        if ($discount < 0) {
-            $discount = 0;
         }
 
         $subtotal = 0;
@@ -33,10 +27,9 @@ class OrderController extends Controller
         $items = [];
 
         foreach ($cart as $item) {
-            // Validasi item keranjang
             if (!isset($item["id"], $item["name"], $item["price"], $item["quantity"])) {
                 http_response_code(400);
-                echo json_encode(["error" => "Data item tidak lengkap"]);
+                echo json_encode(["error" => "Incomplete item data"]);
                 exit();
             }
 
@@ -45,12 +38,12 @@ class OrderController extends Controller
 
             if ($price <= 0 || $qty <= 0) {
                 http_response_code(400);
-                echo json_encode(["error" => "Harga atau jumlah tidak valid"]);
+                echo json_encode(["error" => "Invalid price or quantity"]);
                 exit();
             }
 
             $subtotal += $price * $qty;
-            $tax += ($price * $qty) * 0.05; // Pajak 5% per item
+            $tax += ($price * $qty) * 0.05;
             $items[] = [
                 "id" => $item["id"],
                 "price" => $price,
@@ -59,18 +52,26 @@ class OrderController extends Controller
             ];
         }
 
-        $delivery = $subtotal * 0.1; // Ongkir 10% dari subtotal
-        $total = $subtotal + $delivery + $tax - $discount;
+        $delivery = $subtotal * 0.1;
 
-        // Batasi diskon agar tidak melebihi total
-        if ($discount > $total) {
-            $discount = $total;
+        $discount = 0;
+        if ($discountName) {
+            $discountModel = $this->model("Discount_model");
+            $cartItems = array_map(function ($item) {
+                return ["product_id" => $item["id"]];
+            }, $cart);
+
+            $validation = $discountModel->validateDiscount($discountName, $cartItems);
+            if ($validation["success"]) {
+                $discount = $subtotal * ($validation["discount_percentage"] / 100);
+            }
         }
+
+        $total = $subtotal + $delivery + $tax - $discount;
 
         $transaction_details = [
             "order_id" => uniqid("ORDER-"),
-            "gross_amount" => (int)round($total), // Pastikan integer untuk IDR
-            "currency" => "IDR", // Spesifikasikan mata uang
+            "gross_amount" => (int)round($total),
         ];
 
         $customer_details = [
@@ -83,7 +84,7 @@ class OrderController extends Controller
             "transaction_details" => $transaction_details,
             "item_details" => $items,
             "customer_details" => $customer_details,
-            "enabled_payments" => ["credit_card", "gopay", "bank_transfer"], // Spesifikasikan metode pembayaran
+            "enabled_payments" => ["credit_card", "gopay", "bank_transfer"],
         ];
 
         try {
@@ -92,7 +93,7 @@ class OrderController extends Controller
         } catch (\Exception $e) {
             http_response_code(500);
             error_log("Error generating Snap Token: " . $e->getMessage());
-            echo json_encode(["error" => "Gagal menginisiasi pembayaran"]);
+            echo json_encode(["error" => "Failed to initiate payment"]);
         }
     }
 }

@@ -55,14 +55,14 @@ class User extends Controller
     }
 
     if ($_SERVER["REQUEST_METHOD"] === "POST") {
-      $email = trim($_POST["email"] ?? "");
+      $username = trim($_POST["username"] ?? "");
       $password = $_POST["password"] ?? "";
 
-      if (!$email || !$password) {
+      if (!$username || !$password) {
         return $this->redirectWithFlash("Both fields are required.", "error");
       }
 
-      $user = $this->model("User_model")->getUserByEmail($email);
+      $user = $this->model("User_model")->getUserByUsername($username);
 
       if ($user && password_verify($password, $user["password"])) {
         $_SESSION["user"] = $user;

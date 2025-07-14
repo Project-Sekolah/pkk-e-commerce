@@ -74,6 +74,16 @@ class User_model
     return $this->db->execute();
   }
 
+  public function getUserByUsername($username)
+  {
+    $sql = "SELECT * FROM $this->table WHERE username = :username";
+
+    $this->db->query($sql);
+    $this->db->bind(":username", $username);
+
+    return $this->db->single();
+  }
+
   // ========================
   // USER ADDRESS MANAGEMENT
   // ========================

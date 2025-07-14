@@ -70,13 +70,13 @@ $addresses = $data["addresses"];
     } ?>" class="rounded-circle mx-auto mb-3" width="100" height="100" alt="avatar">
 
     <!-- Info User -->
-    <h5 class="fw-bold mb-1 text-center"><?= htmlspecialchars(
+    <h5 class="fw-bold mb-1 text-center">Username: <?= htmlspecialchars(
       $user["username"]
     ) ?></h5>
-    <p class="text-muted mb-1 text-center"><?= htmlspecialchars(
+    <p class="text-muted mb-1 text-center">Email: <?= htmlspecialchars(
       $user["email"]
     ) ?></p>
-    <p class="text-muted mb-4 text-center"><?= htmlspecialchars(
+    <p class="text-muted mb-4 text-center">Full Name: <?= htmlspecialchars(
       $user["full_name"]
     ) ?></p>
 

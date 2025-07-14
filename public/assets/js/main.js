@@ -1,5 +1,5 @@
-//const BASEURL = "http://localhost:8080/pkk-e-commerce-main/public/";
-const BASEURL = "//pkk-e-commerce-production.up.railway.app";
+const BASEURL = "http://localhost:8080/New%20folder/pkk-e-commerce/public";
+// const BASEURL = "//pkk-e-commerce-production.up.railway.app";
 
 const $cartItems = document.getElementById("cart-items");
 const $subtotal = document.getElementById("subtotal");
@@ -240,18 +240,46 @@ async function loadCartFromServer() {
     }
 }
 
-function syncAddItemToServer(productId, quantity = 1) {
-    fetch(`${BASEURL}/Cart/addItem`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ product_id: productId, quantity })
-    })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) loadCartFromServer();
+document.querySelectorAll(".add-to-cart").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const productId = btn.getAttribute("data-id");
+        const quantity = 1; // Default quantity to add
+
+        fetch(`${BASEURL}/Cart/addItem`, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ product_id: productId, quantity })
         })
-        .catch(err => console.error("Add item error:", err));
-}
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    loadCartFromServer();
+                    Swal.fire({
+                        icon: "success",
+                        title: "Added to Cart",
+                        text: "The product has been added to your cart.",
+                        confirmButtonText: "OK"
+                    });
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Failed",
+                        text: "Failed to add the product to the cart.",
+                        confirmButtonText: "OK"
+                    });
+                }
+            })
+            .catch(err => {
+                console.error("Add item error:", err);
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "An error occurred. Please try again later.",
+                    confirmButtonText: "OK"
+                });
+            });
+    });
+});
 
 function syncDecreaseItemFromServer(itemId) {
     fetch(`${BASEURL}/Cart/decreaseItem`, {
@@ -264,6 +292,19 @@ function syncDecreaseItemFromServer(itemId) {
             if (data.success) loadCartFromServer();
         })
         .catch(err => console.error("Decrease item error:", err));
+}
+
+function syncAddItemToServer(productId, quantity = 1) {
+    fetch(`${BASEURL}/Cart/addItem`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ product_id: productId, quantity })
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) loadCartFromServer();
+        })
+        .catch(err => console.error("Add item error:", err));
 }
 
 function syncDeleteItemFromServer(itemId) {
@@ -279,24 +320,24 @@ function syncDeleteItemFromServer(itemId) {
         .catch(err => console.error("Delete item error:", err));
 }
 document.addEventListener("DOMContentLoaded", () => {
-    // Ambil data cart dari server saat halaman selesai dimuat
+    // Load cart data from server when the page loads
     loadCartFromServer();
 
-    // Tambahkan event listener ke semua tombol "Add to Cart"
+    // Add event listeners to all "Add to Cart" buttons
     document.querySelectorAll(".add-to-cart").forEach(btn => {
         btn.addEventListener("click", () => {
-            // Cek apakah user sudah login
+            // Check if the user is logged in
             if (!IS_LOGGED_IN) {
                 Swal.fire({
                     icon: "warning",
-                    title: "Login Dulu!",
-                    text: "Kamu harus login untuk menambahkan produk ke keranjang.",
-                    confirmButtonText: "Ya"
+                    title: "Login Required!",
+                    text: "You need to log in to add products to the cart.",
+                    confirmButtonText: "OK"
                 });
                 return;
             }
 
-            // Jika sudah login, ambil ID produk dan kirim ke server
+            // If logged in, get the product ID and send it to the server
             const productId = btn.getAttribute("data-id");
             syncAddItemToServer(productId);
         });

@@ -28,8 +28,8 @@
             "csrf_token"
           ] ?? "" ?>">
           <div class="mb-3">
-            <label for="login-email" class="form-label">Email</label>
-            <input type="email" class="form-control" id="login-email" name="email" required>
+            <label for="login-username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="login-username" name="username" required>
           </div>
           <div class="mb-3">
             <label for="login-password" class="form-label">Password</label>
