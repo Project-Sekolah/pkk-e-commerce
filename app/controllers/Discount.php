@@ -70,9 +70,30 @@ class Discount extends Controller
     exit();
   }
 
+  // Validasi pemilik diskon sebelum manipulasi
+  private function validateDiscountOwnership($discountId)
+  {
+    $discountModel = $this->model("Discount_model");
+    $discount = $discountModel->getDiscountById($discountId);
+
+    if (!$discount) {
+      Flasher::setFlash("Error", "Diskon tidak ditemukan.", "danger");
+      header("Location: " . BASEURL . "/discount");
+      exit();
+    }
+
+    $userId = $_SESSION["user"]["id"] ?? null;
+    if ($discount["user_id"] !== $userId) {
+      Flasher::setFlash("Error", "Anda tidak memiliki izin untuk diskon ini.", "danger");
+      header("Location: " . BASEURL . "/discount");
+      exit();
+    }
+  }
+
   public function edit($id)
   {
     $this->checkRole(["seller", "admin"]);
+    $this->validateDiscountOwnership($id);
     $discountModel = $this->model("Discount_model");
     $data["discount"] = $discountModel->getDiscountById($id);
     $data["judul"] = "Edit Discount";
@@ -82,6 +103,7 @@ class Discount extends Controller
   public function update($id)
   {
     $this->checkRole(["seller", "admin"]);
+    $this->validateDiscountOwnership($id);
     if (
       !isset($_POST["name"]) ||
       !isset($_POST["percentage"]) ||
@@ -125,6 +147,7 @@ class Discount extends Controller
   public function delete($id)
   {
     $this->checkRole(["seller", "admin"]);
+    $this->validateDiscountOwnership($id);
     $result = $this->model("Discount_model")->deleteDiscount($id);
 
     if ($result > 0) {

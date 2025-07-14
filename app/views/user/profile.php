@@ -36,10 +36,12 @@ $addresses = $data["addresses"];
     }
 
     .profile-card {
+      margin: 20px;
+      margin-top: 80px;
       background-color: #847e7b;
       border-radius: 20px;
       color: #fff;
-      width: 340px;
+      width: 540px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     }
 
@@ -70,13 +72,13 @@ $addresses = $data["addresses"];
     } ?>" class="rounded-circle mx-auto mb-3" width="100" height="100" alt="avatar">
 
     <!-- Info User -->
-    <h5 class="fw-bold mb-1 text-center">Username: <?= htmlspecialchars(
+    <h5 class="fw-bold mb-1 text-center"><?= htmlspecialchars(
       $user["username"]
     ) ?></h5>
-    <p class="text-muted mb-1 text-center">Email: <?= htmlspecialchars(
+    <p class="text-muted mb-1 text-center"><?= htmlspecialchars(
       $user["email"]
     ) ?></p>
-    <p class="text-muted mb-4 text-center">Full Name: <?= htmlspecialchars(
+    <p class="text-muted mb-4 text-center"><?= htmlspecialchars(
       $user["full_name"]
     ) ?></p>
 
@@ -95,11 +97,13 @@ $addresses = $data["addresses"];
     </div>
 
     <!-- Tombol Seller & Logout -->
-    <a href="#" class="btn btn-dark rounded-pill px-4 mb-2">
-      <i class="bi bi-shop me-1"></i> Become Seller
-    </a>
+    <?php if ($user['role'] === 'buyer'): ?>
+      <button class="btn btn-dark rounded-pill text-secondary px-4 mb-2" data-bs-toggle="modal" data-bs-target="#becomeSellerModal">
+        <i class="bi bi-shop me-1"></i> Become Seller
+      </button>
+    <?php endif; ?>
 
-    <a href="<?= BASEURL ?>/auth/logout" class="btn btn-outline-dark rounded-pill px-4">
+    <a href="<?= BASEURL ?>/user/logout" class="btn btn-outline-dark text-secondary rounded-pill px-4">
       <i class="bi bi-box-arrow-in-left me-1"></i> Log Out
     </a>
 
@@ -109,34 +113,35 @@ $addresses = $data["addresses"];
 
       <?php foreach ($addresses as $address): ?>
         <div class="card p-3 mb-3">
-          <strong class="fw-bold"><?= htmlspecialchars(
-            $address["label"]
-          ) ?></strong>
+          <strong class="fw-bold">
+            <?= htmlspecialchars($address["label"]) ?>
+            <?php if ($address["is_default"]): ?>
+              <span class="badge bg-success">Default</span>
+            <?php endif; ?>
+          </strong>
           <div class="text-muted mb-2">
             <?= htmlspecialchars($address["address_line_1"]) ?><br>
-            <?= !empty($address["address_line_2"])
-              ? htmlspecialchars($address["address_line_2"]) . "<br>"
-              : "" ?>
-            <?= htmlspecialchars($address["city"]) ?>, <?= htmlspecialchars(
-  $address["country"]
-) ?><br>
+            <?= !empty($address["address_line_2"]) ? htmlspecialchars($address["address_line_2"]) . "<br>" : "" ?>
+            <?= htmlspecialchars($address["city"]) ?>, <?= htmlspecialchars($address["country"]) ?><br>
+            Postal Code: <?= htmlspecialchars($address["postal_code"]) ?><br>
             Phone: <?= htmlspecialchars($address["phone_number"]) ?>
           </div>
           <div class="d-flex justify-content-end mt-2">
-           <button class="btn btn-sm btn-outline-primary me-2" style="min-width: 80px;" data-bs-toggle="modal" data-bs-target="#editAddressModal<?= $address[
-             "id"
-           ] ?>">
-  <i class="bi bi-pencil"></i> Edit
-</button>
-
-<form action="<?= BASEURL ?>/user/deleteAddress/<?= $address[
-  "id"
-] ?>" method="POST" class="d-inline" onsubmit="return confirm('Delete this address?')">
-  <button type="submit" class="btn btn-sm btn-outline-danger" style="min-width: 80px;">
-    <i class="bi bi-trash"></i> Delete
-  </button>
-</form>
+            <button class="btn btn-sm btn-outline-primary me-2" style="min-width: 80px;" data-bs-toggle="modal" data-bs-target="#editAddressModal<?= $address['id'] ?>">
+              <i class="bi bi-pencil"></i> Edit
+            </button>
+            <form action="<?= BASEURL ?>/user/deleteAddress/<?= $address['id'] ?>" method="POST" class="d-inline" onsubmit="return confirm('Delete this address?')">
+              <button type="submit" class="btn btn-sm btn-outline-danger" style="min-width: 80px;">
+                <i class="bi bi-trash"></i> Delete
+              </button>
             </form>
+            <?php if (!$address["is_default"]): ?>
+              <form action="<?= BASEURL ?>/user/setDefaultAddress/<?= $address['id'] ?>" method="POST" class="d-inline">
+                <button type="submit" class="btn btn-sm btn-outline-success" style="min-width: 80px;">
+                  <i class="bi bi-check-circle"></i> Set Default
+                </button>
+              </form>
+            <?php endif; ?>
           </div>
         </div>
       <?php endforeach; ?>
@@ -226,15 +231,20 @@ $addresses = $data["addresses"];
           <label class="form-label">Country</label>
           <input type="text" class="form-control" name="country" required>
         </div>
+        <div class="col-md-12">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="is_default" id="isDefault">
+            <label class="form-check-label" for="isDefault">
+              Set as default address
+            </label>
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-primary">Add Address</button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
       </div>
     </form>
-  </div>
-</div>
-</form>
   </div>
 </div>
 
@@ -296,6 +306,14 @@ $addresses = $data["addresses"];
               $address["country"]
             ) ?>" required>
           </div>
+          <div class="col-md-12">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="is_default" id="isDefaultEdit<?= $address['id'] ?>" <?= $address['is_default'] ? 'checked' : '' ?>>
+              <label class="form-check-label" for="isDefaultEdit<?= $address['id'] ?>">
+                Set as default address
+              </label>
+            </div>
+          </div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-primary">Save Changes</button>
@@ -305,3 +323,42 @@ $addresses = $data["addresses"];
     </div>
   </div>
 <?php endforeach; ?>
+
+<!-- Modal Become Seller -->
+<div class="modal fade" id="becomeSellerModal" tabindex="-1" aria-labelledby="becomeSellerModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="becomeSellerModalLabel">Become a Seller</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Please read and accept the rules to become a seller:</p>
+        <ul>
+          <li>You must provide accurate and complete information.</li>
+          <li>Ensure your email is verified before proceeding.</li>
+          <li>Follow all platform guidelines and policies.</li>
+        </ul>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="acceptRules">
+          <label class="form-check-label" for="acceptRules">
+            I have read and agree to the rules.
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form action="<?= BASEURL ?>/user/becomeSeller" method="POST" class="d-inline">
+          <input type="hidden" name="userId" value="<?= $user['id'] ?>">
+          <button type="submit" class="btn btn-primary" id="confirmBecomeSeller" disabled>Accept</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('acceptRules').addEventListener('change', function () {
+    document.getElementById('confirmBecomeSeller').disabled = !this.checked;
+  });
+</script>

@@ -224,4 +224,32 @@ class Discount_model
       "applicable_products" => array_values($matchingProducts),
     ];
   }
+
+  // Validasi kepemilikan diskon
+  public function isDiscountOwner($discountId, $userId)
+  {
+    $this->db->query("SELECT id FROM discounts WHERE id = :id AND user_id = :user_id");
+    $this->db->bind("id", $discountId);
+    $this->db->bind("user_id", $userId);
+    return $this->db->single() ? true : false;
+  }
+
+  // Batasi akses detail diskon untuk produk yang dimiliki pengguna
+  public function getDiscountsForUserProducts($userId)
+  {
+    $query = "
+        SELECT d.* 
+        FROM product_discounts pd
+        JOIN discounts d ON pd.discount_id = d.id
+        JOIN products p ON pd.product_id = p.id
+        WHERE p.user_id = :user_id
+          AND d.deleted_at IS NULL
+          AND d.is_active = 1
+          AND d.start_date <= NOW()
+          AND d.end_date >= NOW()
+    ";
+    $this->db->query($query);
+    $this->db->bind("user_id", $userId);
+    return $this->db->resultSet();
+  }
 }

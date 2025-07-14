@@ -241,7 +241,12 @@ async function loadCartFromServer() {
 }
 
 document.querySelectorAll(".add-to-cart").forEach(btn => {
+    let isProcessing = false; // Flag to prevent duplicate requests
+
     btn.addEventListener("click", () => {
+        if (isProcessing) return; // Prevent further clicks while processing
+
+        isProcessing = true; // Set flag to true
         const productId = btn.getAttribute("data-id");
         const quantity = 1; // Default quantity to add
 
@@ -277,6 +282,11 @@ document.querySelectorAll(".add-to-cart").forEach(btn => {
                     text: "An error occurred. Please try again later.",
                     confirmButtonText: "OK"
                 });
+            })
+            .finally(() => {
+                setTimeout(() => {
+                    isProcessing = false; // Reset flag after 2 seconds
+                }, 2000);
             });
     });
 });

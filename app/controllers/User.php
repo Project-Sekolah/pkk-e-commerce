@@ -172,10 +172,25 @@ class User extends Controller
     $data = $this->getAddressInput();
     $data["user_id"] = $userId;
 
-    $this->model("User_model")->addUserAddress(...array_values($data));
+    // Logging data yang diterima
+    error_log("Data diterima di addAddress: " . print_r($data, true));
+
+    if ($data["is_default"] == 1) {
+      $this->model("User_model")->unsetOtherDefaultAddresses($userId);
+    }
+
+    $result = $this->model("User_model")->addUserAddress(...array_values($data));
+
+    // Logging hasil query
+    if ($result) {
+      error_log("Query berhasil dijalankan di addAddress.");
+    } else {
+      error_log("Query gagal dijalankan di addAddress.");
+    }
+
     return $this->redirectWithFlash(
-      "Address added successfully.",
-      "success",
+      $result ? "Address added successfully." : "Failed to add address.",
+      $result ? "success" : "error",
       "/user/profile"
     );
   }
@@ -195,6 +210,11 @@ class User extends Controller
     }
 
     $data = $this->getAddressInput();
+
+    if ($data["is_default"] == 1) {
+      $this->model("User_model")->unsetOtherDefaultAddresses($userId);
+    }
+
     $this->model("User_model")->updateUserAddress(
       $addressId,
       $userId,
@@ -220,6 +240,41 @@ class User extends Controller
       "success",
       "/user/profile"
     );
+  }
+
+  public function becomeSeller()
+  {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+      $userId = $_POST['userId'] ?? null;
+
+      if (!$userId) {
+        Flasher::setFlash('Error', 'User ID is missing.', 'danger');
+        header('Location: ' . BASEURL . '/user/profile');
+        exit();
+      }
+
+      // Pastikan model diinisialisasi dengan benar
+      $userModel = $this->model('User_model');
+
+      $result = $userModel->updateRole($userId, 'seller');
+
+      if ($result) {
+        // Perbarui sesi dengan data pengguna terbaru
+        $updatedUser = $userModel->getUserById($userId);
+        $_SESSION['user'] = $updatedUser;
+
+        Flasher::setFlash('Success', 'You are now a seller!', 'success');
+      } else {
+        Flasher::setFlash('Error', 'Failed to update role. Please try again.', 'danger');
+      }
+
+      header('Location: ' . BASEURL . '/user/profile');
+      exit();
+    }
+
+    Flasher::setFlash('Error', 'Invalid request method.', 'danger');
+    header('Location: ' . BASEURL . '/user/profile');
+    exit();
   }
 
   // ============================

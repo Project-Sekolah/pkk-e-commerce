@@ -74,15 +74,23 @@ class Cart_model
             );
             $this->db->bind(":quantity", $newQty);
             $this->db->bind(":id", $item["id"]);
-            return $this->db->execute();
+            $this->db->execute();
+        } else {
+            $this->db->query(
+                "INSERT INTO $this->itemTable (id, cart_id, product_id, quantity) VALUES (UUID(), :cart_id, :product_id, :quantity)"
+            );
+            $this->db->bind(":cart_id", $cartId);
+            $this->db->bind(":product_id", $productId);
+            $this->db->bind(":quantity", $quantity);
+            $this->db->execute();
         }
 
+        // Reduce stock of the product
         $this->db->query(
-            "INSERT INTO $this->itemTable (id, cart_id, product_id, quantity) VALUES (UUID(), :cart_id, :product_id, :quantity)"
+            "UPDATE products SET stock = stock - :quantity WHERE id = :product_id AND stock >= :quantity"
         );
-        $this->db->bind(":cart_id", $cartId);
-        $this->db->bind(":product_id", $productId);
         $this->db->bind(":quantity", $quantity);
+        $this->db->bind(":product_id", $productId);
         return $this->db->execute();
     }
 

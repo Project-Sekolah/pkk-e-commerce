@@ -629,3 +629,94 @@ textarea#ratingComment {
     font-size: 0.875rem;
     color: #6c757d;
 }
+
+/* ==========================
+   Responsive Adjustments
+========================== */
+@media (max-width: 991.98px) {
+    .hero {
+        padding: 60px 15px;
+        margin-top: 56px;
+    }
+    
+    .container {
+        padding-top: 15px;
+    }
+
+    .card {
+        margin-bottom: 20px;
+    }
+
+    .about-section .founder {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .about-section .founder img {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+
+    .collection-box {
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .navbar-brand {
+        font-size: 1.1rem;
+    }
+
+    .hero {
+        padding: 40px 15px;
+    }
+
+    .hero h1 {
+        font-size: 2rem;
+    }
+
+    .product-card {
+        margin-bottom: 15px;
+    }
+
+    .contact-section iframe {
+        height: 300px;
+    }
+
+    .summary-box {
+        width: 100% !important;
+        margin-bottom: 20px;
+    }
+
+    .collection-content {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .topbar {
+        padding: 0.5rem;
+    }
+
+    .hero h1 {
+        font-size: 1.75rem;
+    }
+
+    .hero .lead {
+        font-size: 1rem;
+    }
+
+    .btn-discover {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+
+    .modal-content.custom-modal {
+        margin: 10px;
+    }
+
+    .collection-box {
+        margin: 10px;
+    }
+}

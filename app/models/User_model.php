@@ -84,6 +84,16 @@ class User_model
     return $this->db->single();
   }
 
+  public function updateRole($userId, $newRole)
+  {
+    $query = "UPDATE users SET role = :role WHERE id = :id";
+    $this->db->query($query);
+    $this->db->bind('role', $newRole);
+    $this->db->bind('id', $userId);
+
+    return $this->db->execute();
+  }
+
   // ========================
   // USER ADDRESS MANAGEMENT
   // ========================
