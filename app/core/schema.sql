@@ -220,7 +220,6 @@ CREATE TABLE IF NOT EXISTS `user_addresses` (
   `city` varchar(100) NOT NULL,
   `postal_code` varchar(20) NOT NULL,
   `country` varchar(100) NOT NULL,
-  `phone_number` varchar(20) NOT NULL,
   `is_default` tinyint(1) DEFAULT 0,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),

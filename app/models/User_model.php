@@ -115,15 +115,14 @@ class User_model
     $city,
     $postal_code,
     $country,
-    $phone_number,
     $is_default
   ) {
     if ($is_default) {
       $this->unsetOtherDefaultAddresses($userId);
     }
 
-    $sql = "INSERT INTO user_addresses (id, user_id, label, address_line_1, address_line_2, city, postal_code, country, phone_number, is_default)
-                VALUES (UUID(), :user_id, :label, :address_line_1, :address_line_2, :city, :postal_code, :country, :phone_number, :is_default)";
+    $sql = "INSERT INTO user_addresses (id, user_id, label, address_line_1, address_line_2, city, postal_code, country, is_default)
+        VALUES (UUID(), :user_id, :label, :address_line_1, :address_line_2, :city, :postal_code, :country, :is_default)";
 
     $this->db->query($sql);
     $this->db->bind(":user_id", $userId);
@@ -133,7 +132,6 @@ class User_model
     $this->db->bind(":city", $city);
     $this->db->bind(":postal_code", $postal_code);
     $this->db->bind(":country", $country);
-    $this->db->bind(":phone_number", $phone_number);
     $this->db->bind(":is_default", $is_default);
 
     return $this->db->execute();
@@ -148,37 +146,47 @@ class User_model
     $city,
     $postal_code,
     $country,
-    $phone_number,
     $is_default
   ) {
     if ($is_default) {
       $this->unsetOtherDefaultAddresses($userId);
     }
 
-    $sql = "UPDATE user_addresses SET 
-                    label = :label, 
-                    address_line_1 = :address_line_1,
-                    address_line_2 = :address_line_2,
-                    city = :city,
-                    postal_code = :postal_code,
-                    country = :country,
-                    phone_number = :phone_number,
-                    is_default = :is_default,
-                    updated_at = CURRENT_TIMESTAMP()
-                WHERE id = :id AND user_id = :user_id AND deleted_at IS NULL";
-
+    // Only update fields that are not null
+    $fields = [];
+    $params = [":id" => $id, ":user_id" => $userId];
+    if ($label !== null) {
+      $fields[] = "label = :label";
+      $params[":label"] = $label;
+    }
+    if ($address_line_1 !== null) {
+      $fields[] = "address_line_1 = :address_line_1";
+      $params[":address_line_1"] = $address_line_1;
+    }
+    if ($address_line_2 !== null) {
+      $fields[] = "address_line_2 = :address_line_2";
+      $params[":address_line_2"] = $address_line_2;
+    }
+    if ($city !== null) {
+      $fields[] = "city = :city";
+      $params[":city"] = $city;
+    }
+    if ($postal_code !== null) {
+      $fields[] = "postal_code = :postal_code";
+      $params[":postal_code"] = $postal_code;
+    }
+    if ($country !== null) {
+      $fields[] = "country = :country";
+      $params[":country"] = $country;
+    }
+    $fields[] = "is_default = :is_default";
+    $params[":is_default"] = $is_default;
+    $fields[] = "updated_at = CURRENT_TIMESTAMP()";
+    $sql = "UPDATE user_addresses SET " . implode(", ", $fields) . " WHERE id = :id AND user_id = :user_id AND deleted_at IS NULL";
     $this->db->query($sql);
-    $this->db->bind(":label", $label);
-    $this->db->bind(":address_line_1", $address_line_1);
-    $this->db->bind(":address_line_2", $address_line_2);
-    $this->db->bind(":city", $city);
-    $this->db->bind(":postal_code", $postal_code);
-    $this->db->bind(":country", $country);
-    $this->db->bind(":phone_number", $phone_number);
-    $this->db->bind(":is_default", $is_default);
-    $this->db->bind(":id", $id);
-    $this->db->bind(":user_id", $userId);
-
+    foreach ($params as $key => $val) {
+      $this->db->bind($key, $val);
+    }
     return $this->db->execute();
   }
 
@@ -192,7 +200,7 @@ class User_model
     return $this->db->execute();
   }
 
-  private function unsetOtherDefaultAddresses($userId)
+  public function unsetOtherDefaultAddresses($userId)
   {
     $this->db->query(
       "UPDATE user_addresses SET is_default = 0 WHERE user_id = :user_id"

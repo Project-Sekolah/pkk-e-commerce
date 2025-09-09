@@ -169,9 +169,8 @@ class User extends Controller
     $this->checkLogin();
     $userId = $_SESSION["user"]["id"];
 
-    $data = $this->getAddressInput();
-    $data["user_id"] = $userId;
 
+    $data = $this->getAddressInput();
     // Logging data yang diterima
     error_log("Data diterima di addAddress: " . print_r($data, true));
 
@@ -179,7 +178,16 @@ class User extends Controller
       $this->model("User_model")->unsetOtherDefaultAddresses($userId);
     }
 
-    $result = $this->model("User_model")->addUserAddress(...array_values($data));
+    $result = $this->model("User_model")->addUserAddress(
+      $userId,
+      $data["label"],
+      $data["address_line_1"],
+      $data["address_line_2"],
+      $data["city"],
+      $data["postal_code"],
+      $data["country"],
+      $data["is_default"]
+    );
 
     // Logging hasil query
     if ($result) {
@@ -306,7 +314,6 @@ class User extends Controller
       "city" => $_POST["city"] ?? "",
       "postal_code" => $_POST["postal_code"] ?? "",
       "country" => $_POST["country"] ?? "",
-      "phone_number" => $_POST["phone_number"] ?? "",
       "is_default" => isset($_POST["is_default"]) ? 1 : 0,
     ];
   }
