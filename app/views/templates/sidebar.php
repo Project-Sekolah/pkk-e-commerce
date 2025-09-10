@@ -156,7 +156,7 @@ loading="lazy">
     <a href="<?= BASEURL ?>/" class="d-flex align-items-center mb-3"><i class="bi bi-house-door-fill"></i><span class="ms-2">Home</span></a>
     <a href="<?= BASEURL ?>/about" class="d-flex align-items-center mb-3"><i class="bi bi-info-circle-fill"></i><span class="ms-2">About</span></a>
     <a href="<?= BASEURL ?>/product" class="d-flex align-items-center mb-3"><i class="bi bi-bag-fill"></i><span class="ms-2">Produk</span></a>
-    <a href="<?= BASEURL ?>/order" class="d-flex align-items-center mb-3"><i class="bi bi-credit-card-fill"></i><span class="ms-2">Pembayaran</span></a>
+    <!-- <a href="<?= BASEURL ?>/order" class="d-flex align-items-center mb-3"><i class="bi bi-credit-card-fill"></i><span class="ms-2">Pembayaran</span></a> -->
     <a href="<?= BASEURL ?>/faq" class="d-flex align-items-center mb-3"><i class="bi bi-question-circle-fill"></i><span class="ms-2">Faq</span></a>
     <hr>
    <?php if (
