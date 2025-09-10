@@ -238,10 +238,72 @@ function checkout(mode) {
         });
         return;
     }
+    // Ambil total harga dari tampilan
+    const totalText = $total ? $total.innerText : '';
+    // Ambil input nomor HP dan password dari header
+    const phone = document.getElementById('phoneInput')?.value.trim();
+    const pass = document.getElementById('passwordInput')?.value.trim();
+    if (!phone || !pass) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Data belum lengkap',
+            text: 'Nomor HP dan Password akun wajib diisi!'
+        });
+        return;
+    }
     Swal.fire({
-        icon: "success",
-        title: "Checkout",
-        text: "Lanjut sebagai " + (mode === "guest" ? "tamu" : "member")
+        title: `Apakah anda yakin ingin membeli sejumlah ${totalText}?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya',
+        cancelButtonText: 'Tidak',
+    }).then(async result => {
+        if (result.isConfirmed) {
+            // Validasi password ke backend
+            try {
+                const res = await fetch(`${BASEURL}/order/validatePayment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        phone: phone,
+                        password: pass,
+                        total: totalText.replace(/[^\d.]/g, '')
+                    })
+                });
+                if (!res.ok) {
+                    const text = await res.text();
+                    throw new Error(`HTTP ${res.status}: ${text}`);
+                }
+                const data = await res.json();
+                if (data.success && data.pdf_url) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Pembayaran Berhasil',
+                        text: 'Struk akan diunduh otomatis.'
+                    });
+                    // Download PDF struk
+                    window.open(data.pdf_url, '_blank');
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Pembayaran Gagal',
+                        text: data.message || 'Password salah, saldo tidak cukup, atau nomor HP tidak valid.'
+                    });
+                }
+            } catch (err) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error Pembayaran',
+                    text: err.message || 'Terjadi kesalahan saat memproses pembayaran. Cek koneksi dan data Anda.'
+                });
+            }
+        } else {
+            Swal.fire({
+                icon: 'info',
+                title: 'Dibatalkan',
+                text: 'Transaksi dibatalkan.'
+            });
+        }
     });
 }
 
@@ -468,6 +530,7 @@ function handleProductModalShow(event) {
     const stock = button.data("stock");
     const rating = parseFloat(button.data("rating")) || 0;
     const ratingCount = button.data("ratingcount") || "";
+    const ownerPhone = button.data("owner-phone") || "";
 
     // Ambil product_id dan user_id
     const productId = button.data("productid");
@@ -487,6 +550,9 @@ function handleProductModalShow(event) {
         rating,
         ratingCount
     });
+    // Set owner phone in modal
+    const phoneSpan = document.getElementById("modalOwnerPhone");
+    if (phoneSpan) phoneSpan.textContent = ownerPhone;
 
     // Set hidden input di form rating
     modal.find("input[name='product_id']").val(productId);
@@ -601,9 +667,14 @@ $(document).ready(function () {
 document.addEventListener('show.bs.modal', function (event) {
     const button = event.relatedTarget;
     const ownerName = button.getAttribute('data-owner');
+    const ownerPhone = button.getAttribute('data-owner-phone');
     const modalOwnerName = document.getElementById('modalOwnerName');
+    const modalOwnerPhone = document.getElementById('modalOwnerPhone');
 
     if (modalOwnerName) {
         modalOwnerName.textContent = ownerName || 'Unknown';
+    }
+    if (modalOwnerPhone) {
+        modalOwnerPhone.textContent = ownerPhone || '-';
     }
 });

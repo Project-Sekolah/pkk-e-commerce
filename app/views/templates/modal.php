@@ -26,6 +26,7 @@
           <p><i class="bi bi-gender-ambiguous text-dark me-2"></i><strong>Gender:</strong> <span id="modalGender"></span></p>
           <p><i class="bi bi-box-seam text-dark me-2"></i><strong>Stock:</strong> <span id="modalStock"></span></p>
           <p><i class="bi bi-person-fill text-dark me-2"></i><strong>Owner:</strong> <span id="modalOwnerName"></span></p>
+          <p><i class="bi bi-telephone-fill text-dark me-2"></i><strong>Phone:</strong> <span id="modalOwnerPhone"></span></p>
         </div>
 
         <p class="mb-2"><i class="bi bi-card-text text-dark me-2"></i><strong>Description:</strong></p>

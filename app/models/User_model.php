@@ -14,18 +14,18 @@ class User_model
   // USER ACCOUNT MANAGEMENT
   // =======================
 
-  public function register($username, $full_name, $email, $passwordHash)
+  public function register($username, $full_name, $email, $passwordHash, $phone_number)
   {
     $defaultImage = "assets/img/default.jpg";
-    $sql = "INSERT INTO $this->table (id, username, full_name, email, password, image, role)
-        VALUES (UUID(), :username, :full_name, :email, :password, :image,
-        'buyer')";
+    $sql = "INSERT INTO $this->table (id, username, full_name, email, password, phone_number, image, role)
+        VALUES (UUID(), :username, :full_name, :email, :password, :phone_number, :image, 'buyer')";
 
     $this->db->query($sql);
     $this->db->bind(":username", $username);
     $this->db->bind(":full_name", $full_name);
     $this->db->bind(":email", $email);
     $this->db->bind(":password", $passwordHash);
+    $this->db->bind(":phone_number", $phone_number);
     $this->db->bind(":image", $defaultImage);
 
     return $this->db->execute();
@@ -53,9 +53,10 @@ class User_model
     $username,
     $full_name,
     $email,
+    $phone_number,
     $image = null
   ) {
-    $sql = "UPDATE $this->table SET username = :username, full_name = :full_name, email = :email";
+    $sql = "UPDATE $this->table SET username = :username, full_name = :full_name, email = :email, phone_number = :phone_number";
 
     if ($image !== null) {
       $sql .= ", image = :image";
@@ -67,6 +68,7 @@ class User_model
     $this->db->bind(":username", $username);
     $this->db->bind(":full_name", $full_name);
     $this->db->bind(":email", $email);
+    $this->db->bind(":phone_number", $phone_number);
     if ($image !== null) {
       $this->db->bind(":image", $image);
     }

@@ -103,6 +103,7 @@
                data-rating-count="<?= $count ?>"
                data-reviewers='<?= htmlspecialchars(json_encode($reviewers), ENT_QUOTES) ?>'
                data-owner="<?= htmlspecialchars($product['owner_name'], ENT_QUOTES) ?>"
+               data-owner-phone="<?= htmlspecialchars($product['owner_phone'] ?? '', ENT_QUOTES) ?>"
           >
           <div class="card-body text-center" style="background-color: #847e7b;">
             <h6 class="card-title"><?= htmlspecialchars($product["title"]) ?></h6>
@@ -122,6 +123,7 @@
                     data-id="<?= htmlspecialchars($product["id"]) ?>"
                     data-name="<?= htmlspecialchars($product["title"]) ?>"
                     data-price="<?= htmlspecialchars($product["price"]) ?>">
+                    
                 Add to Cart
             </button>
           </div>
