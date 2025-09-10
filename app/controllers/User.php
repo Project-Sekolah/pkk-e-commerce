@@ -2,6 +2,17 @@
 
 class User extends Controller
 {
+  public function index()
+  {
+    // Redirect ke profile jika sudah login, atau ke login jika belum
+    if (!empty($_SESSION["logged_in"])) {
+      header("Location: " . BASEURL . "/user/profile");
+    } else {
+      header("Location: " . BASEURL . "/");
+    }
+    exit();
+  }
+
   // ============================
   //         AUTH HANDLERS
   // ============================

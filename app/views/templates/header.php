@@ -38,6 +38,11 @@
 
   <!-- SweetAlert -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Tambahkan ini di HTML kamu -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
   
   <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -140,10 +145,9 @@
   <label class="form-check-label" for="agreeTerms">  
     Saya menyetujui <a href="#">syarat & ketentuan</a>  
   </label>  
-</div>  
+</div>
 
-<button class="btn btn-primary w-100 mb-2"  
-onclick="checkout('guest')">Checkout</button>  
+<button class="btn btn-primary w-100 mb-2" onclick="checkout()" >Checkout</button>  
 
 
   </div>  

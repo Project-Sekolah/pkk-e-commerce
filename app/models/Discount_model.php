@@ -29,9 +29,9 @@ class Discount_model
     $data["id"] = $this->generateUUID();
 
     $query = "INSERT INTO discounts (
-                    id, name, percentage, start_date, end_date, is_active
+                    id, name, percentage, start_date, end_date, is_active, user_id
                   ) VALUES (
-                    :id, :name, :percentage, :start_date, :end_date, :is_active
+                    :id, :name, :percentage, :start_date, :end_date, :is_active, :user_id
                   )";
 
     $this->db->query($query);
@@ -41,6 +41,7 @@ class Discount_model
     $this->db->bind("start_date", $data["start_date"]);
     $this->db->bind("end_date", $data["end_date"]);
     $this->db->bind("is_active", $data["is_active"]);
+    $this->db->bind("user_id", $data["user_id"]);
 
     $this->db->execute();
     return $data["id"];
@@ -250,6 +251,14 @@ class Discount_model
     ";
     $this->db->query($query);
     $this->db->bind("user_id", $userId);
+    return $this->db->resultSet();
+  }
+
+  public function getDiscountsByUserId($userId)
+  {
+    $sql = "SELECT * FROM discounts WHERE user_id = :user_id AND deleted_at IS NULL AND is_active = 1";
+    $this->db->query($sql);
+    $this->db->bind(":user_id", $userId);
     return $this->db->resultSet();
   }
 }

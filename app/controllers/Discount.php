@@ -14,7 +14,14 @@ class Discount extends Controller
   {
     $discountModel = $this->model("Discount_model");
 
-    $data["discounts"] = $discountModel->getAllDiscounts();
+    $userId = $_SESSION["user"]["id"] ?? null;
+    if (!$userId) {
+      Flasher::setFlash("Error", "Anda harus login untuk melihat diskon.", "danger");
+      header("Location: " . BASEURL . "/login");
+      exit();
+    }
+
+    $data["discounts"] = $discountModel->getDiscountsByUserId($userId);
     $data["judul"] = "Discounts";
 
     $this->render(["templates/hero", "discount/index"], $data);
@@ -46,12 +53,20 @@ class Discount extends Controller
       exit();
     }
 
+    $userId = $_SESSION["user"]["id"] ?? null;
+    if (!$userId) {
+      Flasher::setFlash("Error", "Anda harus login untuk menambahkan diskon.", "danger");
+      header("Location: " . BASEURL . "/login");
+      exit();
+    }
+
     $data = [
       "name" => $_POST["name"],
       "percentage" => $_POST["percentage"],
       "start_date" => $_POST["start_date"],
       "end_date" => $_POST["end_date"],
       "is_active" => 1,
+      "user_id" => $userId,
     ];
 
     $result = $this->model("Discount_model")->addDiscount($data);

@@ -1,5 +1,4 @@
 const BASEURL = "http://localhost/raj/ecommerce/pkk-e-commerce/public";
-// const BASEURL = "//pkk-e-commerce-production.up.railway.app";
 
 const $cartItems = document.getElementById("cart-items");
 const $subtotal = document.getElementById("subtotal");
@@ -18,102 +17,88 @@ let taxes = 0;
 let discount = 0;
 let activeDiscount = null;
 
-document
-    .getElementById("applyDiscountBtn")
-    ?.addEventListener("click", function () {
-        // Cegah diskon diterapkan lebih dari sekali
-        if (this.disabled) {
-            Swal.fire({
-                icon: "info",
-                title: "Diskon sudah diterapkan",
-                text: "Tidak bisa apply lagi."
-            });
-            return;
-        }
-        const discountName = document
-            .getElementById("discountInput")
-            .value.trim();
+// Function to apply discount
+function applyDiscount() {
+    const discountName = $discountInput?.value.trim();
 
-        if (!discountName) {
-            Swal.fire({
-                icon: "warning",
-                title: "Nama diskon kosong",
-                text: "Please enter a valid discount name"
-            });
-            return;
-        }
-        if (/^[0-9]+$/.test(discountName)) {
-            Swal.fire({
-                icon: "warning",
-                title: "Nama diskon tidak valid",
-                text: "Discount name cannot be a number"
-            });
-            return;
-        }
+    if (!discountName) {
+        Swal.fire({
+            icon: "warning",
+            title: "Nama diskon kosong",
+            text: "Please enter a valid discount name"
+        });
+        return;
+    }
 
-        fetch(`${BASEURL}/Cart/validateDiscount`, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({ discount_name: discountName })
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    // Disable tombol agar tidak bisa apply lagi
-                    document.getElementById("applyDiscountBtn").disabled = true;
-                    activeDiscount = {
-                        percentage: parseFloat(data.discount_percentage),
-                        applicableProducts: data.applicable_products
-                    };
+    if (/^[0-9]+$/.test(discountName)) {
+        Swal.fire({
+            icon: "warning",
+            title: "Nama diskon tidak valid",
+            text: "Discount name cannot be a number"
+        });
+        return;
+    }
 
-                    // Update cart items with discount information
-                    cart.forEach(item => {
-                        if (
-                            activeDiscount.applicableProducts.includes(item.id)
-                        ) {
-                            item.discount_name = discountName;
-                            item.discount_percentage =
-                                activeDiscount.percentage;
-                        }
-                    });
+    fetch(`${BASEURL}/Cart/validateDiscount`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ discount_name: discountName })
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById("applyDiscountBtn").disabled = true;
+                activeDiscount = {
+                    percentage: parseFloat(data.discount_percentage),
+                    applicableProducts: data.applicable_products
+                };
 
-                    // Hitung ulang diskon total
-                    let discountAmount = 0;
-                    cart.forEach(item => {
-                        const price = parseFloat(item.price) || 0;
-                        const quantity = item.quantity || 0;
-                        if (item.discount_percentage) {
-                            discountAmount += price * quantity * (parseFloat(item.discount_percentage) / 100);
-                        }
-                    });
-                    updateDisplay(calculateSubtotal(), discountAmount);
-                    Swal.fire({
-                        icon: "success",
-                        title: "Diskon berhasil!",
-                        text: `${data.discount_percentage}% off applicable items`
-                    });
-                } else {
-                    Swal.fire({
-                        icon: "error",
-                        title: "Diskon gagal",
-                        text: data.message
-                    });
-                }
-            })
-            .catch(err => {
-                console.error("Discount validation error:", err);
+                cart.forEach(item => {
+                    if (activeDiscount.applicableProducts.includes(item.id)) {
+                        item.discount_name = discountName;
+                        item.discount_percentage = activeDiscount.percentage;
+                    }
+                });
+
+                const discountAmount = cart.reduce((sum, item) => {
+                    const price = parseFloat(item.price) || 0;
+                    const quantity = item.quantity || 0;
+                    return sum + (item.discount_percentage ? price * quantity * (item.discount_percentage / 100) : 0);
+                }, 0);
+
+                updateDisplay(calculateSubtotal(), discountAmount);
+                Swal.fire({
+                    icon: "success",
+                    title: "Diskon berhasil!",
+                    text: `${data.discount_percentage}% off applicable items`
+                });
+            } else {
                 Swal.fire({
                     icon: "error",
-                    title: "Validasi diskon gagal",
-                    text: "Failed to validate discount. Please try again."
+                    title: "Diskon gagal",
+                    text: data.message
                 });
+            }
+        })
+        .catch(err => {
+            console.error("Discount validation error:", err);
+            Swal.fire({
+                icon: "error",
+                title: "Validasi diskon gagal",
+                text: "Failed to validate discount. Please try again."
             });
-    });
-
-function formatDollar(num) {
-    return "$" + num.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,");
+        });
 }
 
+// Attach event listener to discount button
+document.getElementById("applyDiscountBtn")?.addEventListener("click", applyDiscount);
+
+// Function to format currency
+function formatDollar(num) {
+    return "$" + num.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&, ");
+}
+
+// Function to update display
 function updateDisplay(subtotal, discountAmount = 0) {
     delivery = subtotal * 0.1;
     taxes = cart.reduce(
@@ -126,20 +111,15 @@ function updateDisplay(subtotal, discountAmount = 0) {
     $taxes.innerText = formatDollar(taxes);
 
     discountAmount = isNaN(discountAmount) ? 0 : discountAmount;
-    if (discountAmount > 0) {
-        $discount.innerText = "- " + formatDollar(discountAmount);
-    } else {
-        $discount.innerText = "- $0.00";
-    }
+    $discount.innerText = discountAmount > 0 ? "- " + formatDollar(discountAmount) : "- $0.00";
 
-    // Total = subtotal + delivery + taxes - diskon (diskon hanya dikurangkan sekali)
     const total = subtotal + delivery + taxes - discountAmount;
     $total.innerText = formatDollar(total);
     if ($totalPriceElement) $totalPriceElement.innerText = formatDollar(total);
 }
 
+// Function to calculate subtotal
 function calculateSubtotal() {
-    // Subtotal selalu dari harga asli semua barang, tanpa diskon
     return cart.reduce((sum, item) => {
         const price = parseFloat(item.price);
         const quantity = item.quantity;
@@ -147,22 +127,22 @@ function calculateSubtotal() {
     }, 0);
 }
 
+
+// Function to render cart items
 function renderCartItems() {
     $cartItems.innerHTML = "";
     let total = 0;
     let itemCount = 0;
     let discountAmount = 0;
 
-    // Cek apakah diskon sudah diterapkan (tombol apply disabled)
     const isDiscountApplied = document.getElementById("applyDiscountBtn").disabled;
 
     cart.forEach(item => {
-        const price = parseFloat(item.price); // harga asli
+        const price = parseFloat(item.price);
         const quantity = item.quantity;
-        const subtotal = price * quantity; // harga asli x jumlah
+        const subtotal = price * quantity;
         let itemDiscount = 0;
 
-        // Hitung diskon hanya untuk tampilan, tidak mengubah subtotal
         if (isDiscountApplied && item.discount_percentage) {
             itemDiscount = subtotal * (item.discount_percentage / 100);
             discountAmount += itemDiscount;
@@ -182,9 +162,7 @@ function renderCartItems() {
             ${formatDollar(price)} x ${quantity} = ${formatDollar(subtotal)}
             ${
                 isDiscountApplied && item.discount_name
-                    ? `<br><small class=\"text-danger\">- ${
-                          item.discount_percentage
-                      }% (${formatDollar(itemDiscount)})</small>`
+                    ? `<br><small class="text-danger">- ${item.discount_percentage}% (${formatDollar(itemDiscount)})</small>`
                     : ""
             }
         `;
@@ -195,23 +173,17 @@ function renderCartItems() {
         const minusBtn = document.createElement("button");
         minusBtn.className = "btn btn-sm btn-outline-secondary";
         minusBtn.textContent = "-";
-        minusBtn.addEventListener("click", () => {
-            syncDecreaseItemFromServer(item.item_id);
-        });
+        minusBtn.addEventListener("click", () => syncDecreaseItemFromServer(item.item_id));
 
         const plusBtn = document.createElement("button");
         plusBtn.className = "btn btn-sm btn-outline-secondary";
         plusBtn.textContent = "+";
-        plusBtn.addEventListener("click", () => {
-            syncAddItemToServer(item.id, 1);
-        });
+        plusBtn.addEventListener("click", () => syncAddItemToServer(item.id, 1));
 
         const removeBtn = document.createElement("button");
         removeBtn.className = "btn btn-sm btn-danger";
         removeBtn.textContent = "Remove";
-        removeBtn.addEventListener("click", () => {
-            syncDeleteItemFromServer(item.item_id);
-        });
+        removeBtn.addEventListener("click", () => syncDeleteItemFromServer(item.item_id));
 
         btnGroup.appendChild(minusBtn);
         btnGroup.appendChild(plusBtn);
@@ -222,90 +194,10 @@ function renderCartItems() {
         $cartItems.appendChild(li);
     });
 
-    // Total tetap harga asli semua item, diskon hanya dikurangkan di updateDisplay
     updateDisplay(total, discountAmount);
     if ($cartCount) $cartCount.textContent = itemCount;
 }
 
-// Perhitungan diskon hanya terjadi saat tombol Apply Discount ditekan
-
-function checkout(mode) {
-    if (!$agreeTerms.checked) {
-        Swal.fire({
-            icon: "warning",
-            title: "Syarat & Ketentuan",
-            text: "Harap setujui syarat & ketentuan terlebih dahulu."
-        });
-        return;
-    }
-    // Ambil total harga dari tampilan
-    const totalText = $total ? $total.innerText : '';
-    // Ambil input nomor HP dan password dari header
-    const phone = document.getElementById('phoneInput')?.value.trim();
-    const pass = document.getElementById('passwordInput')?.value.trim();
-    if (!phone || !pass) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Data belum lengkap',
-            text: 'Nomor HP dan Password akun wajib diisi!'
-        });
-        return;
-    }
-    Swal.fire({
-        title: `Apakah anda yakin ingin membeli sejumlah ${totalText}?`,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Ya',
-        cancelButtonText: 'Tidak',
-    }).then(async result => {
-        if (result.isConfirmed) {
-            // Validasi password ke backend
-            try {
-                const res = await fetch(`${BASEURL}/order/validatePayment`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({
-                        phone: phone,
-                        password: pass,
-                        total: totalText.replace(/[^\d.]/g, '')
-                    })
-                });
-                if (!res.ok) {
-                    const text = await res.text();
-                    throw new Error(`HTTP ${res.status}: ${text}`);
-                }
-                const data = await res.json();
-                if (data.success && data.pdf_url) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Pembayaran Berhasil',
-                        text: 'Struk akan diunduh otomatis.'
-                    });
-                    // Download PDF struk
-                    window.open(data.pdf_url, '_blank');
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Pembayaran Gagal',
-                        text: data.message || 'Password salah, saldo tidak cukup, atau nomor HP tidak valid.'
-                    });
-                }
-            } catch (err) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error Pembayaran',
-                    text: err.message || 'Terjadi kesalahan saat memproses pembayaran. Cek koneksi dan data Anda.'
-                });
-            }
-        } else {
-            Swal.fire({
-                icon: 'info',
-                title: 'Dibatalkan',
-                text: 'Transaksi dibatalkan.'
-            });
-        }
-    });
-}
 
 async function loadCartFromServer() {
     try {
@@ -678,3 +570,150 @@ document.addEventListener('show.bs.modal', function (event) {
         modalOwnerPhone.textContent = ownerPhone || '-';
     }
 });
+
+// Function to view invoice
+document.querySelectorAll('.view-invoice-btn').forEach(button => {
+    button.addEventListener('click', function () {
+        const orderId = this.dataset.orderId;
+        if (!orderId) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Order ID is missing!'
+            });
+            return;
+        }
+
+        window.open(`${BASEURL}/OrderController/viewInvoice/${orderId}`, '_blank');
+    });
+});
+
+
+async function checkout() {
+    if (!$agreeTerms.checked) {
+        Swal.fire({
+            icon: "warning",
+            title: "Syarat & Ketentuan",
+            text: "Harap setujui syarat & ketentuan terlebih dahulu.",
+            confirmButtonColor: "#d33"
+        });
+        return;
+    }
+
+    const totalText = $total ? $total.innerText : '';
+    const phone = document.getElementById('phoneInput')?.value.trim();
+    const pass = document.getElementById('passwordInput')?.value.trim();
+
+    if (!phone || !pass) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Data Belum Lengkap',
+            text: 'Nomor HP dan Password akun wajib diisi!',
+            confirmButtonColor: "#f39c12"
+        });
+        return;
+    }
+
+    const transaksiId = "TRX" + Date.now();
+    const tanggal = new Date().toLocaleString();
+
+    const isDiscountApplied = document.getElementById("applyDiscountBtn")?.disabled;
+    const discountAmount = isDiscountApplied
+        ? cart.reduce((sum, item) => {
+              const price = parseFloat(item.price) || 0;
+              const quantity = item.quantity || 0;
+              return sum + (item.discount_percentage ? price * quantity * (item.discount_percentage / 100) : 0);
+          }, 0)
+        : 0;
+
+    Swal.fire({
+        title: `Konfirmasi Pembelian`,
+        html: `
+            <p><b>Nomor HP:</b> ${phone}</p>
+            <p><b>Total Bayar:</b> ${totalText}</p>
+            ${isDiscountApplied ? `<p><b>Diskon:</b> -${formatDollar(discountAmount)}</p>` : ''}
+            <p><b>Tanggal:</b> ${tanggal}</p>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Lanjutkan',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: "#27ae60",
+        cancelButtonColor: "#c0392b"
+    }).then(async result => {
+        if (result.isConfirmed) {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                // Header
+                doc.setFontSize(18);
+                doc.setFont("helvetica", "bold");
+                doc.text("STRUK PEMBAYARAN", 105, 20, { align: "center" });
+
+                doc.setFontSize(11);
+                doc.setFont("helvetica", "normal");
+                doc.text(`ID Transaksi: ${transaksiId}`, 20, 35);
+                doc.text(`Nomor HP   : ${phone}`, 20, 42);
+                doc.text(`Tanggal     : ${tanggal}`, 20, 49);
+
+                // Data produk → tabel
+                const tableData = cart.map(item => [
+                    item.name,
+                    item.quantity,
+                    formatDollar(item.price),
+                    formatDollar(item.price * item.quantity)
+                ]);
+
+                doc.autoTable({
+                    startY: 60,
+                    head: [["Produk", "Qty", "Harga", "Subtotal"]],
+                    body: tableData,
+                    styles: { fontSize: 10 },
+                    headStyles: { fillColor: [39, 174, 96] }, // hijau
+                });
+
+                // Total
+                let finalY = doc.lastAutoTable.finalY + 10;
+                doc.setFontSize(13);
+                doc.setFont("helvetica", "bold");
+                doc.text(`TOTAL: ${totalText}`, 20, finalY);
+                if (isDiscountApplied) {
+                    doc.text(`DISKON: -${formatDollar(discountAmount)}`, 20, finalY + 7);
+                }
+
+                // Footer
+                finalY += 20;
+                doc.setFontSize(10);
+                doc.setFont("helvetica", "italic");
+                doc.text("Terima kasih telah berbelanja di PKK E-Commerce.", 105, finalY, { align: "center" });
+
+                // Simpan PDF
+                doc.save(`struk-${transaksiId}.pdf`);
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Pembayaran Berhasil 🎉',
+                    html: `Transaksi <b>${transaksiId}</b> berhasil.<br>Struk berhasil diunduh.`,
+                    confirmButtonColor: "#27ae60"
+                });
+            } catch (err) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal Membuat Struk',
+                    text: err.message,
+                    confirmButtonColor: "#c0392b"
+                });
+            }
+        } else {
+            Swal.fire({
+                icon: 'info',
+                title: 'Transaksi Dibatalkan',
+                text: 'Anda membatalkan proses pembayaran.',
+                confirmButtonColor: "#3498db"
+            });
+        }
+    });
+}
+
+
