@@ -181,6 +181,7 @@ CREATE TABLE IF NOT EXISTS `cart_items` (
 CREATE TABLE IF NOT EXISTS `orders` (
   `id` char(36) NOT NULL,
   `user_id` char(36) NOT NULL,
+  `customer_address` varchar(255) NOT NULL,
   `total` decimal(10,2) NOT NULL,
   `status` enum('pending','paid','shipped','completed','cancelled') DEFAULT 'pending',
   `created_at` timestamp NULL DEFAULT current_timestamp(),

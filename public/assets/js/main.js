@@ -229,7 +229,7 @@ function renderCartItems() {
 
 // Perhitungan diskon hanya terjadi saat tombol Apply Discount ditekan
 
-function checkout(mode) {
+async function checkout() {
     if (!$agreeTerms.checked) {
         Swal.fire({
             icon: "warning",
@@ -238,19 +238,31 @@ function checkout(mode) {
         });
         return;
     }
-    // Ambil total harga dari tampilan
+
     const totalText = $total ? $total.innerText : '';
-    // Ambil input nomor HP dan password dari header
     const phone = document.getElementById('phoneInput')?.value.trim();
     const pass = document.getElementById('passwordInput')?.value.trim();
-    if (!phone || !pass) {
+
+    // Validate phone number and password
+    const phoneRegex = /^\d{10,15}$/;
+    if (!phoneRegex.test(phone)) {
         Swal.fire({
             icon: 'warning',
-            title: 'Data belum lengkap',
-            text: 'Nomor HP dan Password akun wajib diisi!'
+            title: 'Nomor HP tidak valid',
+            text: 'Nomor HP harus terdiri dari 10-15 digit angka.'
         });
         return;
     }
+
+    if (pass.length < 6) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Password terlalu pendek',
+            text: 'Password harus memiliki minimal 6 karakter.'
+        });
+        return;
+    }
+
     Swal.fire({
         title: `Apakah anda yakin ingin membeli sejumlah ${totalText}?`,
         icon: 'question',
@@ -259,53 +271,35 @@ function checkout(mode) {
         cancelButtonText: 'Tidak',
     }).then(async result => {
         if (result.isConfirmed) {
-            // Validasi password ke backend
             try {
-                const res = await fetch(`${BASEURL}/order/validatePayment`, {
+                const response = await fetch(`${BASEURL}/order/checkout`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({
-                        phone: phone,
-                        password: pass,
-                        total: totalText.replace(/[^\d.]/g, '')
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, pass, cart })
                 });
-                if (!res.ok) {
-                    const text = await res.text();
-                    throw new Error(`HTTP ${res.status}: ${text}`);
-                }
-                const data = await res.json();
+
+                const data = await response.json();
+
                 if (data.success && data.pdf_url) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Pembayaran Berhasil',
-                        text: 'Struk akan diunduh otomatis.'
-                    });
-                    // Download PDF struk
                     window.open(data.pdf_url, '_blank');
                 } else {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Pembayaran Gagal',
-                        text: data.message || 'Password salah, saldo tidak cukup, atau nomor HP tidak valid.'
+                        title: 'Checkout gagal',
+                        text: data.error || 'Terjadi kesalahan saat checkout.'
                     });
                 }
-            } catch (err) {
+            } catch (error) {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Error Pembayaran',
-                    text: err.message || 'Terjadi kesalahan saat memproses pembayaran. Cek koneksi dan data Anda.'
+                    title: 'Kesalahan server',
+                    text: 'Tidak dapat terhubung ke server.'
                 });
             }
-        } else {
-            Swal.fire({
-                icon: 'info',
-                title: 'Dibatalkan',
-                text: 'Transaksi dibatalkan.'
-            });
         }
     });
 }
+
 
 async function loadCartFromServer() {
     try {

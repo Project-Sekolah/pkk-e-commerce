@@ -11,6 +11,13 @@ class Order extends Controller
     $this->orderModel = $this->model("Order_model");
   }
 
+  public function index()
+  {
+    // Redirect to order history page as the default view
+    header("Location: " . BASEURL . "/order/history");
+    exit;
+  }
+
   /**
    * Menampilkan riwayat pesanan
    */
