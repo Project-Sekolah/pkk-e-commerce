@@ -11,11 +11,11 @@
     <hr class="my-5">
 
     <h2 class="text-center mb-4">Para Pendiri Kami</h2>
-    <div class="row g-4">
+    <div class="row g-4 founder" style="display:flex; justify-content: center; align-items: center;">
       <!-- Founder Template -->
       <div class="col-md-6 col-lg-4" style="display: flex;">
         <div class="card shadow-sm flex-fill">
-          <img src="assets/img/rajendra.jpg" class="card-img-top" alt="Rajendra">
+          <img src="assets/img/rajendra.jpg" class="card-img-top mx-auto d-block" alt="Rajendra">
           <div class="card-body">
             <h5 class="card-title">Rajendra Athallah Fawwaz</h5>
             <h6 class="text-muted mb-1">XI RPL 4</h6>
@@ -30,7 +30,7 @@
       <!-- Najla -->
 <div class="col-md-6 col-lg-4 d-flex">
   <div class="card shadow-sm flex-fill">
-    <img src="assets/img/najla.jpg" class="card-img-top" alt="Najla Ajauza">
+  <img src="assets/img/najla.jpg" class="card-img-top mx-auto d-block" alt="Najla Ajauza">
     <div class="card-body">
       <h5 class="card-title">Najla Ajauza</h5>
       <h6 class="text-muted mb-1">XI RPL 4</h6>
@@ -44,7 +44,7 @@
 <!-- Syafira -->
 <div class="col-md-6 col-lg-4 d-flex">
   <div class="card shadow-sm flex-fill">
-    <img src="assets/img/pira.jpg" class="card-img-top" alt="Syafira Azahra Br Ginting">
+  <img src="assets/img/pira.jpg" class="card-img-top mx-auto d-block" alt="Syafira Azahra Br Ginting">
     <div class="card-body">
       <h5 class="card-title">Syafira Azahra Br Ginting</h5>
       <h6 class="text-muted mb-1">XI RPL 4</h6>
@@ -58,7 +58,7 @@
 <!-- Alzira -->
 <div class="col-md-6 col-lg-4 d-flex">
   <div class="card shadow-sm flex-fill">
-    <img src="assets/img/alzira.jpg" class="card-img-top" alt="Alzira Ukhty Zaskia">
+  <img src="assets/img/alzira.jpg" class="card-img-top mx-auto d-block" alt="Alzira Ukhty Zaskia">
     <div class="card-body">
       <h5 class="card-title">Alzira Ukhty Zaskia</h5>
       <h6 class="text-muted mb-1">XI RPL 4</h6>
@@ -72,7 +72,7 @@
 <!-- Brenda -->
 <div class="col-md-6 col-lg-4 d-flex">
   <div class="card shadow-sm flex-fill">
-    <img src="assets/img/brenda.jpg" class="card-img-top" alt="Brenda Estella Silalahi">
+  <img src="assets/img/brenda.jpg" class="card-img-top mx-auto d-block" alt="Brenda Estella Silalahi">
     <div class="card-body">
       <h5 class="card-title">Brenda Estella Silalahi</h5>
       <h6 class="text-muted mb-1">XI RPL 4</h6>
@@ -86,7 +86,7 @@
 <!-- Haidil -->
 <div class="col-md-6 col-lg-4 d-flex">
   <div class="card shadow-sm flex-fill">
-    <img src="assets/img/haidil.jpg" class="card-img-top" alt="Haidil Habibi">
+  <img src="assets/img/haidil.jpg" class="card-img-top mx-auto d-block" alt="Haidil Habibi">
     <div class="card-body">
       <h5 class="card-title">Haidil Habibi</h5>
       <h6 class="text-muted mb-1">XI RPL 4</h6>
