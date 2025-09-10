@@ -130,7 +130,7 @@ footer {
    About Us
 ========================== */
 .about-section {
-    margin-top: 40%;
+    margin-top: 100px;
     color: #4a3f35;
 }
 
@@ -142,7 +142,6 @@ footer {
 
 .about-section .founder {
     display: flex;
-    align-items: flex-start;
     margin-bottom: 40px;
 }
 
@@ -151,7 +150,7 @@ footer {
     height: 120px;
     border-radius: 50%;
     object-fit: cover;
-    margin-right: 20px;
+    margin: 10px 0;
     border: 3px solid #e0dcd5;
 }
 
@@ -353,7 +352,7 @@ footer {
 .card-3d img {
     display: block;
     width: 100%;
-    height: auto;
+    height: 350px;
     transform-style: preserve-3d;
     transition:
         transform 0.2s ease,

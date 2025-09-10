@@ -126,6 +126,15 @@
   <span id="total">Rp 0</span>  
 </div>  
 
+<div class="mb-3">
+  <label for="phoneInput" class="form-label">Nomor HP (aktif Dana)</label>
+  <input type="text" id="phoneInput" class="form-control" placeholder="Masukkan nomor HP aktif Dana Anda" value="<?= isset($_SESSION['user']['phone_number']) ? htmlspecialchars($_SESSION['user']['phone_number']) : '' ?>" required>
+</div>
+<div class="mb-3">
+  <label for="passwordInput" class="form-label">Password Akun</label>
+  <input type="password" id="passwordInput" class="form-control" placeholder="Masukkan password akun Anda">
+</div>
+
 <div class="form-check mb-3">  
   <input class="form-check-input" type="checkbox" id="agreeTerms" />  
   <label class="form-check-label" for="agreeTerms">  
@@ -135,8 +144,6 @@
 
 <button class="btn btn-primary w-100 mb-2"  
 onclick="checkout('guest')">Checkout</button>  
-<button class="btn btn-outline-primary w-100"  
-onclick="checkout('member')">Download Struct</button>
 
 
   </div>  

@@ -94,6 +94,9 @@ $addresses = $data["addresses"];
     <p class="text-muted mb-4 text-center"><?= htmlspecialchars(
                                               $user["full_name"]
                                             ) ?></p>
+                                            <p class="text-muted mb-4 text-center"> Phone: <?= htmlspecialchars(
+                                              $user["phone_number"]
+                                            ) ?></p>
 
     <!-- Tombol Aksi -->
     <div class="text-start mb-4">
@@ -181,6 +184,10 @@ $addresses = $data["addresses"];
           <input type="email" name="email" class="form-control" value="<?= htmlspecialchars(
                                                                           $user["email"]
                                                                         ) ?>" required>
+        </div>
+        <div class="col-md-12">
+          <label class="form-label">Nomor HP (aktif Dana)</label>
+          <input type="text" name="phone_number" class="form-control" value="<?= htmlspecialchars($user['phone_number'] ?? '') ?>" required>
         </div>
         <div class="col-md-12">
           <label class="form-label">Profile Image</label>

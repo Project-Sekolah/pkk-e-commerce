@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `email` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
   `image` varchar(255) DEFAULT NULL,
+  `phone_number` varchar(20) NOT NULL,
   `verification_token` varchar(255) DEFAULT NULL,
   `email_verified_at` timestamp NULL DEFAULT NULL,
   `is_active` tinyint(1) DEFAULT 1,

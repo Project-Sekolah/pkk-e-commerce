@@ -18,13 +18,15 @@ class User extends Controller
       $email = trim($_POST["email"] ?? "");
       $password = $_POST["password"] ?? "";
       $confirm_password = $_POST["confirm_password"] ?? "";
+      $phone_number = trim($_POST["phone_number"] ?? "");
 
       if (
         !$username ||
         !$full_name ||
         !$email ||
         !$password ||
-        !$confirm_password
+        !$confirm_password ||
+        !$phone_number
       ) {
         return $this->redirectWithFlash("All fields are required.", "error");
       }
@@ -38,7 +40,8 @@ class User extends Controller
         $username,
         $full_name,
         $email,
-        $passwordHash
+        $passwordHash,
+        $phone_number
       );
 
       return $this->redirectWithFlash(
@@ -118,6 +121,7 @@ class User extends Controller
     $username = trim($_POST["username"] ?? "");
     $full_name = trim($_POST["full_name"] ?? "");
     $email = trim($_POST["email"] ?? "");
+    $phone_number = trim($_POST["phone_number"] ?? "");
 
     $userModel = $this->model("User_model");
     $user = $userModel->getUserById($userId);
@@ -151,6 +155,7 @@ class User extends Controller
       $username,
       $full_name,
       $email,
+      $phone_number,
       $imagePath
     );
     return $this->redirectWithFlash(
