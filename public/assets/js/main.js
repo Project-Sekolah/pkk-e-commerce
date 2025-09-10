@@ -21,6 +21,11 @@ let activeDiscount = null;
 document
     .getElementById("applyDiscountBtn")
     ?.addEventListener("click", function () {
+        // Cegah diskon diterapkan lebih dari sekali
+        if (this.disabled) {
+            alert("Diskon sudah diterapkan. Tidak bisa apply lagi.");
+            return;
+        }
         const discountName = document
             .getElementById("discountInput")
             .value.trim();
@@ -42,6 +47,8 @@ document
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
+                    // Disable tombol agar tidak bisa apply lagi
+                    document.getElementById("applyDiscountBtn").disabled = true;
                     activeDiscount = {
                         percentage: parseFloat(data.discount_percentage),
                         applicableProducts: data.applicable_products
@@ -58,7 +65,16 @@ document
                         }
                     });
 
-                    updateDisplay(calculateSubtotal());
+                    // Hitung ulang diskon total
+                    let discountAmount = 0;
+                    cart.forEach(item => {
+                        const price = parseFloat(item.price) || 0;
+                        const quantity = item.quantity || 0;
+                        if (item.discount_percentage) {
+                            discountAmount += price * quantity * (parseFloat(item.discount_percentage) / 100);
+                        }
+                    });
+                    updateDisplay(calculateSubtotal(), discountAmount);
                     alert(
                         `Discount applied! ${data.discount_percentage}% off applicable items`
                     );
@@ -76,35 +92,35 @@ function formatDollar(num) {
     return "$" + num.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&,");
 }
 
-function updateDisplay(subtotal) {
+function updateDisplay(subtotal, discountAmount = 0) {
     delivery = subtotal * 0.1;
     taxes = cart.reduce(
-        (sum, item) => sum + item.price * item.quantity * 0.05,
+        (sum, item) => sum + (parseFloat(item.price) || 0) * (item.quantity || 0) * 0.05,
         0
     );
 
     $subtotal.innerText = formatDollar(subtotal);
     $delivery.innerText = formatDollar(delivery);
     $taxes.innerText = formatDollar(taxes);
-    $discount.innerText = "- " + formatDollar(discount);
 
-    const total = subtotal + delivery + taxes - discount;
+    discountAmount = isNaN(discountAmount) ? 0 : discountAmount;
+    if (discountAmount > 0) {
+        $discount.innerText = "- " + formatDollar(discountAmount);
+    } else {
+        $discount.innerText = "- $0.00";
+    }
+
+    const total = subtotal + delivery + taxes - discountAmount;
     $total.innerText = formatDollar(total);
     if ($totalPriceElement) $totalPriceElement.innerText = formatDollar(total);
 }
 
 function calculateSubtotal() {
+    // Subtotal selalu dari harga asli semua barang, tanpa diskon
     return cart.reduce((sum, item) => {
         const price = parseFloat(item.price);
         const quantity = item.quantity;
-        let subtotal = price * quantity;
-
-        // Apply discount if available
-        if (item.discount_percentage) {
-            subtotal -= subtotal * (item.discount_percentage / 100);
-        }
-
-        return sum + subtotal;
+        return sum + price * quantity;
     }, 0);
 }
 
@@ -114,32 +130,35 @@ function renderCartItems() {
     let itemCount = 0;
     let discountAmount = 0;
 
+    // Cek apakah diskon sudah diterapkan (tombol apply disabled)
+    const isDiscountApplied = document.getElementById("applyDiscountBtn").disabled;
+
     cart.forEach(item => {
         const price = parseFloat(item.price);
         const quantity = item.quantity;
-        const subtotal = price * quantity;
+        let subtotal = price * quantity;
+        let itemDiscount = 0;
+
+        if (isDiscountApplied && item.discount_percentage) {
+            itemDiscount = subtotal * (item.discount_percentage / 100);
+            discountAmount += itemDiscount;
+            subtotal -= itemDiscount;
+        }
+
         total += subtotal;
         itemCount += quantity;
 
-        // Calculate discount for the item
-        let itemDiscount = 0;
-        if (item.discount_percentage) {
-            itemDiscount = subtotal * (item.discount_percentage / 100);
-            discountAmount += itemDiscount;
-        }
-
         const li = document.createElement("li");
-        li.className =
-            "list-group-item d-flex justify-content-between align-items-center";
+        li.className = "list-group-item d-flex justify-content-between align-items-center";
 
         const itemInfo = document.createElement("div");
         itemInfo.className = "me-3";
         itemInfo.innerHTML = `
             <strong>${item.name}</strong>
             <br>
-            ${formatDollar(price)} x ${quantity} = ${formatDollar(subtotal)}
+            ${formatDollar(price)} x ${quantity} = ${formatDollar(price * quantity)}
             ${
-                item.discount_name
+                isDiscountApplied && item.discount_name
                     ? `<br><small class="text-danger">- ${
                           item.discount_percentage
                       }% (${formatDollar(itemDiscount)})</small>`
@@ -187,7 +206,7 @@ function renderCartItems() {
 function updateDisplay(subtotal, discountAmount) {
     delivery = subtotal * 0.1;
     taxes = cart.reduce(
-        (sum, item) => sum + item.price * item.quantity * 0.05,
+        (sum, item) => sum + (parseFloat(item.price) || 0) * (item.quantity || 0) * 0.05,
         0
     );
 
@@ -195,6 +214,7 @@ function updateDisplay(subtotal, discountAmount) {
     $delivery.innerText = formatDollar(delivery);
     $taxes.innerText = formatDollar(taxes);
 
+    discountAmount = isNaN(discountAmount) ? 0 : discountAmount;
     if (discountAmount > 0) {
         $discount.innerText = "- " + formatDollar(discountAmount);
     } else {
@@ -206,12 +226,7 @@ function updateDisplay(subtotal, discountAmount) {
     if ($totalPriceElement) $totalPriceElement.innerText = formatDollar(total);
 }
 
-$discountInput?.addEventListener("input", function () {
-    const subtotal = calculateSubtotal();
-    const value = parseInt(this.value);
-    discount = isNaN(value) ? 0 : Math.min(value, subtotal + delivery + taxes);
-    updateDisplay(subtotal);
-});
+// Perhitungan diskon hanya terjadi saat tombol Apply Discount ditekan
 
 function checkout(mode) {
     if (!$agreeTerms.checked) {

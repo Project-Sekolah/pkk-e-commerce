@@ -352,7 +352,7 @@ footer {
 .card-3d img {
     display: block;
     width: 100%;
-    height: auto;
+    height: 350px;
     transform-style: preserve-3d;
     transition:
         transform 0.2s ease,
