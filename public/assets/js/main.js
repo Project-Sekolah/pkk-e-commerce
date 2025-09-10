@@ -1,4 +1,4 @@
-const BASEURL = "http://localhost:8080/New%20folder/pkk-e-commerce/public";
+const BASEURL = "http://localhost/raj/ecommerce/pkk-e-commerce/public";
 // const BASEURL = "//pkk-e-commerce-production.up.railway.app";
 
 const $cartItems = document.getElementById("cart-items");
@@ -240,56 +240,6 @@ async function loadCartFromServer() {
     }
 }
 
-document.querySelectorAll(".add-to-cart").forEach(btn => {
-    let isProcessing = false; // Flag to prevent duplicate requests
-
-    btn.addEventListener("click", () => {
-        if (isProcessing) return; // Prevent further clicks while processing
-
-        isProcessing = true; // Set flag to true
-        const productId = btn.getAttribute("data-id");
-        const quantity = 1; // Default quantity to add
-
-        fetch(`${BASEURL}/Cart/addItem`, {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({ product_id: productId, quantity })
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    loadCartFromServer();
-                    Swal.fire({
-                        icon: "success",
-                        title: "Added to Cart",
-                        text: "The product has been added to your cart.",
-                        confirmButtonText: "OK"
-                    });
-                } else {
-                    Swal.fire({
-                        icon: "error",
-                        title: "Failed",
-                        text: "Failed to add the product to the cart.",
-                        confirmButtonText: "OK"
-                    });
-                }
-            })
-            .catch(err => {
-                console.error("Add item error:", err);
-                Swal.fire({
-                    icon: "error",
-                    title: "Error",
-                    text: "An error occurred. Please try again later.",
-                    confirmButtonText: "OK"
-                });
-            })
-            .finally(() => {
-                setTimeout(() => {
-                    isProcessing = false; // Reset flag after 2 seconds
-                }, 2000);
-            });
-    });
-});
 
 function syncDecreaseItemFromServer(itemId) {
     fetch(`${BASEURL}/Cart/decreaseItem`, {

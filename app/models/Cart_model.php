@@ -60,38 +60,47 @@ class Cart_model
 
     public function addItem($cartId, $productId, $quantity)
     {
-        $this->db->query(
-            "SELECT * FROM $this->itemTable WHERE cart_id = :cart_id AND product_id = :product_id"
-        );
+        // 1. Validasi produk
+        $this->db->query("SELECT stock FROM products WHERE id = :product_id");
+        $this->db->bind(":product_id", $productId);
+        $product = $this->db->single();
+        if (!$product) {
+            return ["success" => false, "message" => "Produk tidak ditemukan."];
+        }
+        if ($product['stock'] < $quantity) {
+            return ["success" => false, "message" => "Stok produk tidak cukup."];
+        }
+
+        // 2. Cek apakah item sudah ada di cart
+        $this->db->query("SELECT * FROM $this->itemTable WHERE cart_id = :cart_id AND product_id = :product_id");
         $this->db->bind(":cart_id", $cartId);
         $this->db->bind(":product_id", $productId);
         $item = $this->db->single();
 
         if ($item) {
             $newQty = $item["quantity"] + $quantity;
-            $this->db->query(
-                "UPDATE $this->itemTable SET quantity = :quantity WHERE id = :id"
-            );
+            if ($product['stock'] < ($newQty - $item['quantity'])) {
+                return ["success" => false, "message" => "Stok produk tidak cukup."];
+            }
+            $this->db->query("UPDATE $this->itemTable SET quantity = :quantity WHERE id = :id");
             $this->db->bind(":quantity", $newQty);
             $this->db->bind(":id", $item["id"]);
             $this->db->execute();
         } else {
-            $this->db->query(
-                "INSERT INTO $this->itemTable (id, cart_id, product_id, quantity) VALUES (UUID(), :cart_id, :product_id, :quantity)"
-            );
+            $this->db->query("INSERT INTO $this->itemTable (id, cart_id, product_id, quantity) VALUES (UUID(), :cart_id, :product_id, :quantity)");
             $this->db->bind(":cart_id", $cartId);
             $this->db->bind(":product_id", $productId);
             $this->db->bind(":quantity", $quantity);
             $this->db->execute();
         }
 
-        // Reduce stock of the product
-        $this->db->query(
-            "UPDATE products SET stock = stock - :quantity WHERE id = :product_id AND stock >= :quantity"
-        );
+        // 3. Kurangi stok produk
+        $this->db->query("UPDATE products SET stock = stock - :quantity WHERE id = :product_id AND stock >= :quantity");
         $this->db->bind(":quantity", $quantity);
         $this->db->bind(":product_id", $productId);
-        return $this->db->execute();
+        $this->db->execute();
+
+        return ["success" => true, "message" => "Produk berhasil ditambahkan ke keranjang."];
     }
 
     public function clearCart($cartId)
@@ -103,40 +112,65 @@ class Cart_model
 
     public function increaseItemQuantity($itemId, $amount = 1)
     {
-        $this->db->query(
-            "UPDATE $this->itemTable SET quantity = quantity + :amount WHERE id = :id"
-        );
+        $item = $this->getCartItemById($itemId);
+        if (!$item) return ["success" => false, "message" => "Item tidak ditemukan."];
+        // Cek stok produk
+        $this->db->query("SELECT stock FROM products WHERE id = :product_id");
+        $this->db->bind(":product_id", $item['product_id']);
+        $product = $this->db->single();
+        if (!$product || $product['stock'] < $amount) {
+            return ["success" => false, "message" => "Stok produk tidak cukup."];
+        }
+        $this->db->query("UPDATE $this->itemTable SET quantity = quantity + :amount WHERE id = :id");
         $this->db->bind(":amount", $amount);
         $this->db->bind(":id", $itemId);
-        return $this->db->execute();
+        $this->db->execute();
+        // Kurangi stok produk
+        $this->db->query("UPDATE products SET stock = stock - :amount WHERE id = :product_id AND stock >= :amount");
+        $this->db->bind(":amount", $amount);
+        $this->db->bind(":product_id", $item['product_id']);
+        $this->db->execute();
+        return ["success" => true, "message" => "Jumlah item berhasil ditambah."];
     }
 
     public function decreaseItemQuantity($itemId, $amount = 1)
     {
         $item = $this->getCartItemById($itemId);
         if (!$item) {
-            return false;
+            return ["success" => false, "message" => "Item tidak ditemukan."];
         }
-
         $newQty = $item["quantity"] - $amount;
-
+        // Kembalikan stok produk
+        $this->db->query("UPDATE products SET stock = stock + :amount WHERE id = :product_id");
+        $this->db->bind(":amount", $amount);
+        $this->db->bind(":product_id", $item['product_id']);
+        $this->db->execute();
         if ($newQty > 0) {
-            $this->db->query(
-                "UPDATE $this->itemTable SET quantity = :quantity WHERE id = :id"
-            );
+            $this->db->query("UPDATE $this->itemTable SET quantity = :quantity WHERE id = :id");
             $this->db->bind(":quantity", $newQty);
             $this->db->bind(":id", $itemId);
-            return $this->db->execute();
+            $this->db->execute();
+            return ["success" => true, "message" => "Jumlah item dikurangi."];
         } else {
-            return $this->deleteCartItemById($itemId);
+            $this->deleteCartItemById($itemId);
+            return ["success" => true, "message" => "Item dihapus dari keranjang."];
         }
     }
 
     public function deleteCartItemById($itemId)
     {
+        $item = $this->getCartItemById($itemId);
+        if ($item) {
+            // Kembalikan stok produk
+            $this->db->query("UPDATE products SET stock = stock + :quantity WHERE id = :product_id");
+            $this->db->bind(":quantity", $item['quantity']);
+            $this->db->bind(":product_id", $item['product_id']);
+            $this->db->execute();
+        }
         $this->db->query("DELETE FROM $this->itemTable WHERE id = :id");
         $this->db->bind(":id", $itemId);
-        return $this->db->execute();
+        $this->db->execute();
+        return ["success" => true, "message" => "Item dihapus dari keranjang."];
     }
 
     public function getCartItemById($itemId)
