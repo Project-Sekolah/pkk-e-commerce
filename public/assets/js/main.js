@@ -23,7 +23,11 @@ document
     ?.addEventListener("click", function () {
         // Cegah diskon diterapkan lebih dari sekali
         if (this.disabled) {
-            alert("Diskon sudah diterapkan. Tidak bisa apply lagi.");
+            Swal.fire({
+                icon: "info",
+                title: "Diskon sudah diterapkan",
+                text: "Tidak bisa apply lagi."
+            });
             return;
         }
         const discountName = document
@@ -31,11 +35,19 @@ document
             .value.trim();
 
         if (!discountName) {
-            alert("Please enter a valid discount name");
+            Swal.fire({
+                icon: "warning",
+                title: "Nama diskon kosong",
+                text: "Please enter a valid discount name"
+            });
             return;
         }
         if (/^[0-9]+$/.test(discountName)) {
-            alert("Discount name cannot be a number");
+            Swal.fire({
+                icon: "warning",
+                title: "Nama diskon tidak valid",
+                text: "Discount name cannot be a number"
+            });
             return;
         }
 
@@ -75,16 +87,26 @@ document
                         }
                     });
                     updateDisplay(calculateSubtotal(), discountAmount);
-                    alert(
-                        `Discount applied! ${data.discount_percentage}% off applicable items`
-                    );
+                    Swal.fire({
+                        icon: "success",
+                        title: "Diskon berhasil!",
+                        text: `${data.discount_percentage}% off applicable items`
+                    });
                 } else {
-                    alert(data.message);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Diskon gagal",
+                        text: data.message
+                    });
                 }
             })
             .catch(err => {
                 console.error("Discount validation error:", err);
-                alert("Failed to validate discount. Please try again.");
+                Swal.fire({
+                    icon: "error",
+                    title: "Validasi diskon gagal",
+                    text: "Failed to validate discount. Please try again."
+                });
             });
     });
 
@@ -110,6 +132,7 @@ function updateDisplay(subtotal, discountAmount = 0) {
         $discount.innerText = "- $0.00";
     }
 
+    // Total = subtotal + delivery + taxes - diskon (diskon hanya dikurangkan sekali)
     const total = subtotal + delivery + taxes - discountAmount;
     $total.innerText = formatDollar(total);
     if ($totalPriceElement) $totalPriceElement.innerText = formatDollar(total);
@@ -134,15 +157,15 @@ function renderCartItems() {
     const isDiscountApplied = document.getElementById("applyDiscountBtn").disabled;
 
     cart.forEach(item => {
-        const price = parseFloat(item.price);
+        const price = parseFloat(item.price); // harga asli
         const quantity = item.quantity;
-        let subtotal = price * quantity;
+        const subtotal = price * quantity; // harga asli x jumlah
         let itemDiscount = 0;
 
+        // Hitung diskon hanya untuk tampilan, tidak mengubah subtotal
         if (isDiscountApplied && item.discount_percentage) {
             itemDiscount = subtotal * (item.discount_percentage / 100);
             discountAmount += itemDiscount;
-            subtotal -= itemDiscount;
         }
 
         total += subtotal;
@@ -156,10 +179,10 @@ function renderCartItems() {
         itemInfo.innerHTML = `
             <strong>${item.name}</strong>
             <br>
-            ${formatDollar(price)} x ${quantity} = ${formatDollar(price * quantity)}
+            ${formatDollar(price)} x ${quantity} = ${formatDollar(subtotal)}
             ${
                 isDiscountApplied && item.discount_name
-                    ? `<br><small class="text-danger">- ${
+                    ? `<br><small class=\"text-danger\">- ${
                           item.discount_percentage
                       }% (${formatDollar(itemDiscount)})</small>`
                     : ""
@@ -199,41 +222,27 @@ function renderCartItems() {
         $cartItems.appendChild(li);
     });
 
+    // Total tetap harga asli semua item, diskon hanya dikurangkan di updateDisplay
     updateDisplay(total, discountAmount);
     if ($cartCount) $cartCount.textContent = itemCount;
-}
-
-function updateDisplay(subtotal, discountAmount) {
-    delivery = subtotal * 0.1;
-    taxes = cart.reduce(
-        (sum, item) => sum + (parseFloat(item.price) || 0) * (item.quantity || 0) * 0.05,
-        0
-    );
-
-    $subtotal.innerText = formatDollar(subtotal);
-    $delivery.innerText = formatDollar(delivery);
-    $taxes.innerText = formatDollar(taxes);
-
-    discountAmount = isNaN(discountAmount) ? 0 : discountAmount;
-    if (discountAmount > 0) {
-        $discount.innerText = "- " + formatDollar(discountAmount);
-    } else {
-        $discount.innerText = "- $0.00";
-    }
-
-    const total = subtotal + delivery + taxes - discountAmount;
-    $total.innerText = formatDollar(total);
-    if ($totalPriceElement) $totalPriceElement.innerText = formatDollar(total);
 }
 
 // Perhitungan diskon hanya terjadi saat tombol Apply Discount ditekan
 
 function checkout(mode) {
     if (!$agreeTerms.checked) {
-        alert("Harap setujui syarat & ketentuan terlebih dahulu.");
+        Swal.fire({
+            icon: "warning",
+            title: "Syarat & Ketentuan",
+            text: "Harap setujui syarat & ketentuan terlebih dahulu."
+        });
         return;
     }
-    alert("Lanjut sebagai " + (mode === "guest" ? "tamu" : "member"));
+    Swal.fire({
+        icon: "success",
+        title: "Checkout",
+        text: "Lanjut sebagai " + (mode === "guest" ? "tamu" : "member")
+    });
 }
 
 async function loadCartFromServer() {
