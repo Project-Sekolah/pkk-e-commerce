@@ -106,7 +106,10 @@
                data-owner-phone="<?= htmlspecialchars($product['owner_phone'] ?? '', ENT_QUOTES) ?>"
           >
           <div class="card-body text-center" style="background-color: #847e7b;">
-            <h6 class="card-title"><?= htmlspecialchars($product["title"]) ?></h6>
+
+          <h6 class="card-title"><?= htmlspecialchars($product['title']) ?></h6>
+
+
             <p class="card-text">$<?= number_format($product["price"], 2) ?></p>
 
             <!-- Rating summary -->
