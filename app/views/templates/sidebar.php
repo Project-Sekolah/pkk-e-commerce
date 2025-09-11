@@ -67,6 +67,10 @@
             <input type="text" class="form-control" id="reg-fullname" name="full_name" required>
           </div>
           <div class="mb-3">
+            <label for="reg-phone" class="form-label">No. Telpon</label>
+            <input type="number" class="form-control" id="reg-phone" name="phone_number" required>
+          </div>
+          <div class="mb-3">
             <label for="reg-email" class="form-label">Email</label>
             <input type="email" class="form-control" id="reg-email" name="email" required>
           </div>
