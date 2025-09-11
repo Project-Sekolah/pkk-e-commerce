@@ -149,21 +149,23 @@ class Product_model
   public function getLimitedProducts($limit)
   {
     $query = "
-            SELECT 
-                p.*, 
-                c.name AS category_name, 
-                c.slug AS category_slug,
-                GROUP_CONCAT(pi.image_url) AS images,
-                u.full_name AS owner_name
-            FROM products p
-            LEFT JOIN categories c ON p.category_id = c.id
-            LEFT JOIN product_images pi ON pi.product_id = p.id
-            LEFT JOIN users u ON p.user_id = u.id
-            WHERE p.deleted_at IS NULL AND p.is_active = 1
-            GROUP BY p.id
-            ORDER BY p.created_at DESC
-            LIMIT :limit
-        ";
+    SELECT 
+        p.*, 
+        c.name AS category_name, 
+        c.slug AS category_slug,
+        GROUP_CONCAT(pi.image_url) AS images,
+        u.full_name AS owner_name,
+        u.phone_number AS owner_phone
+    FROM products p
+    LEFT JOIN categories c ON p.category_id = c.id
+    LEFT JOIN product_images pi ON pi.product_id = p.id
+    LEFT JOIN users u ON p.user_id = u.id
+    WHERE p.deleted_at IS NULL AND p.is_active = 1
+    GROUP BY p.id
+    ORDER BY p.created_at DESC
+    LIMIT :limit
+";
+
 
     $this->db->query($query);
     $this->db->bind(":limit", (int) $limit, PDO::PARAM_INT);

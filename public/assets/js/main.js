@@ -445,7 +445,7 @@ function handleProductModalShow(event) {
     });
     // Set owner phone in modal
     const phoneSpan = document.getElementById("modalOwnerPhone");
-    if (phoneSpan) phoneSpan.textContent = ownerPhone;
+    if (phoneSpan){ phoneSpan.textContent = ownerPhone;}
 
     // Set hidden input di form rating
     modal.find("input[name='product_id']").val(productId);
