@@ -31,7 +31,8 @@
  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https://*; font-src 'self' https://*;"> -->
 
   <!-- Favicon -->
-  <link rel="icon" href="../img/logotoko.png" type="image/x-icon">
+  <link rel="icon" href="https://res.cloudinary.com/dripo32vz/image/upload/v1757645375/8dcd840d-3393-4a92-b52a-d2d116a63a51.png" type="image/png">
+
 
   <!-- Judul Halaman -->
   <title><?= $data["judul"] ?></title>  
