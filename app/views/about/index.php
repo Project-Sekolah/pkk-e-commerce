@@ -102,26 +102,50 @@
 
     </div>
 
-    <hr class="my-5 fade-in">
+<hr class="my-5 fade-in">
 
-    <h2 class="text-center mb-3 fade-in">Visi & Misi</h2>
-    <div class="mb-4 fade-in">
-        <h4>Visi Kami</h4>
-        <p>Menjadi merek lokal yang mendunia dengan produk bernilai, bercerita, dan penuh sentuhan personal.</p>
-    </div>
-    <div class="fade-in">
-        <h4>Misi Kami</h4>
-        <ul>
-            <li>Desain orisinal dan kualitas tinggi</li>
-            <li>Dukungan terhadap pengrajin lokal</li>
-            <li>Edukasi tentang keberlanjutan dan mindful living</li>
-            <li>Pengalaman belanja yang hangat dan terpercaya</li>
-        </ul>
+<h2 class="text-center mb-5 fade-in">Visi & Misi</h2>
+
+<div class="row text-center justify-content-center gap-4 fade-in">
+
+    <!-- Visi -->
+    <div class="col-md-5">
+        <div class="card shadow-sm h-100 border-0">
+            <div class="card-body">
+                <div class="mb-3">
+                    <i class="bi bi-eye-fill fs-2 text-primary"></i> <!-- Icon Bootstrap Icons -->
+                </div>
+                <h4 class="card-title fw-bold mb-3">Visi Kami</h4>
+                <p class="card-text">
+                    Menjadi merek lokal yang mendunia dengan produk bernilai, bercerita, dan penuh sentuhan personal.
+                </p>
+            </div>
+        </div>
     </div>
 
-    <div class="text-center my-4 fade-in">
-        <a href="<?= BASEURL ?>/product" class="cta-button">Lihat Koleksi Kami</a>
+    <!-- Misi -->
+    <div class="col-md-5">
+        <div class="card shadow-sm h-100 border-0">
+            <div class="card-body">
+                <div class="mb-3">
+                    <i class="bi bi-flag-fill fs-2 text-success"></i> <!-- Icon Bootstrap Icons -->
+                </div>
+                <h4 class="card-title fw-bold mb-3">Misi Kami</h4>
+                <ul class="list-unstyled text-start">
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Desain orisinal dan kualitas tinggi</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Dukungan terhadap pengrajin lokal</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Edukasi tentang keberlanjutan dan mindful living</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Pengalaman belanja yang hangat dan terpercaya</li>
+                </ul>
+            </div>
+        </div>
     </div>
+
+</div>
+
+<div class="text-center my-4 fade-in">
+    <a href="<?= BASEURL ?>/product" class="btn btn-primary btn-lg">Lihat Koleksi Kami</a>
+</div>
 
 </section>
 
