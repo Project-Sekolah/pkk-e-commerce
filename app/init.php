@@ -2,7 +2,7 @@
 
 // Load environment and dependencies
 require_once __DIR__ . "/../vendor/autoload.php";
-
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
 use Dotenv\Dotenv;
 
 // Pakai createMutable
