@@ -144,7 +144,7 @@
 </div>
 
 <div class="text-center my-4 fade-in">
-    <a href="<?= BASEURL ?>/product" class="btn btn-primary btn-lg">Lihat Koleksi Kami</a>
+    <a href="<?= BASEURL ?>/product" class="btn btn-lg">Lihat Koleksi Kami</a>
 </div>
 
 </section>
