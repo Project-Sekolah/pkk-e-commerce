@@ -26,6 +26,14 @@
   </script>
   <!-- End Google tag -->
 
+  <!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-P7BL3D5J');</script>
+<!-- End Google Tag Manager -->
+
   <!-- Open Graph (sosial media) -->
   <meta property="og:title" content="Lunerburg & Co - Toko Online Terpercaya">
   <meta property="og:description" content="Jelajahi produk terbaik dan nikmati pengalaman belanja yang mudah dan aman bersama Lunerburg & Co.">
@@ -83,6 +91,11 @@
 </head>  
 <body>
 
+  <!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P7BL3D5J"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+  
   <nav class="navbar navbar-expand-lg topbar fixed-top shadow-sm">
     <div class="container-fluid d-flex justify-content-between px-3">
       <button class="btn border-0 me-2" id="menu-toggle" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
