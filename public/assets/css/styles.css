@@ -152,7 +152,7 @@ footer {
 ========================== */
 .about-section {
     margin-top: 50px;
-    overflow-x: hidden;
+    width: 90%;
 }
 
 .about-section h1, .about-section h2, .about-section h3 {
