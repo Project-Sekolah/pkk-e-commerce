@@ -1,5 +1,9 @@
 Options -Multiviews
 
+
+# 🚨 Pengecualian untuk file verifikasi Google
+RewriteRule ^google8ede901847f78d19\.html$ - [L]
+
 RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
