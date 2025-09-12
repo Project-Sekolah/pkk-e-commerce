@@ -14,6 +14,18 @@
   <meta name="keywords" content="lunerburg, e-commerce, produk, checkout, login, register, FAQ, pengujian, belanja online">
   <meta name="author" content="Tim Pengembang Lunerburg & Co">
 
+  
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-W44SYM7XQM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-W44SYM7XQM');
+  </script>
+  <!-- End Google tag -->
+
   <!-- Open Graph (sosial media) -->
   <meta property="og:title" content="Lunerburg & Co - Toko Online Terpercaya">
   <meta property="og:description" content="Jelajahi produk terbaik dan nikmati pengalaman belanja yang mudah dan aman bersama Lunerburg & Co.">
