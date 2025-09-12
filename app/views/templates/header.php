@@ -31,7 +31,7 @@
  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https://*; font-src 'self' https://*;"> -->
 
   <!-- Favicon -->
-  <link rel="icon" href="<?= BASEURL ?>/assets/img/logotoko.png" type="image/x-icon">
+  <link rel="icon" href="../img/logotoko.png" type="image/x-icon">
 
   <!-- Judul Halaman -->
   <title><?= $data["judul"] ?></title>  
@@ -136,7 +136,7 @@
   <input type="text" id="phoneInput" class="form-control" placeholder="Masukkan nomor HP aktif Dana Anda" value="<?= isset($_SESSION['user']['phone_number']) ? htmlspecialchars($_SESSION['user']['phone_number']) : '' ?>" required>
 </div>
 <div class="mb-3">
-  <label for="passwordInput" class="form-label">Password Akun</label>
+  <label for="passwordInput" class="form-label">Password Akun Dana</label>
   <input type="password" id="passwordInput" class="form-control" placeholder="Masukkan password akun Anda">
 </div>
 
