@@ -135,7 +135,7 @@ footer {
    Parallax Header
 ========================== */
 .parallax-header {
-    background-image: url('assets/img/parallax-bg.jpg');
+    background-image: url('assets/img/background.jpg');
     background-attachment: fixed;
     background-size: cover;
     background-position: center;
