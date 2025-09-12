@@ -9,6 +9,7 @@
   <meta name="theme-color" content="#F0E8DA">
 
   <!-- SEO dasar -->
+  <meta name="google-site-verification" content="ef5zoyHmuCvzG_XZiq3Fdr_5d_2fu0cSOJRL2Z0SZ5g" />
   <meta name="description" content="Toko online Lunerburg & Co. Menyediakan produk-produk terbaik dengan layanan checkout, login, register, dan FAQ.">
   <meta name="keywords" content="lunerburg, e-commerce, produk, checkout, login, register, FAQ, pengujian, belanja online">
   <meta name="author" content="Tim Pengembang Lunerburg & Co">
