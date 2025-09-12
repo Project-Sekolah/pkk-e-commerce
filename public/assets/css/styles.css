@@ -126,31 +126,74 @@ footer {
     z-index: 0;
 }
 
-/* ==========================
-   About Us
-========================== */
-.about-section {
-    margin-top: 100px;
-    color: #4a3f35;
+.parallax-header h1 {
+    font-size: 3rem;
+    font-weight: 700;
 }
 
-.about-section h1,
-.about-section h2,
-.about-section h3 {
+/* ==========================
+   Parallax Header
+========================== */
+.parallax-header {
+    background-image: url('assets/img/parallax-bg.jpg');
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+    height: 50vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+}
+
+/* ==========================
+   About Section
+========================== */
+.about-section {
+    margin-top: 50px;
+}
+
+.about-section h1, .about-section h2, .about-section h3 {
     color: inherit;
+    font-weight: 700;
+}
+
+.about-section p {
+    color: #4a3f35;
 }
 
 .about-section .founder {
     display: flex;
-    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 30px;
+    justify-content: center;
+    margin-bottom: 50px;
+}
+
+.about-section .founder .card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    max-width: 300px;
+}
+
+.about-section .founder .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
 }
 
 .about-section .founder img {
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    object-fit: cover;
-    margin: 10px 0;
+    object-fit: contain;
+    background-color: #f0f0f0;
+    margin-top: 15px;
     border: 3px solid #e0dcd5;
 }
 
@@ -187,68 +230,41 @@ footer {
     background-color: #9e8a73;
 }
 
-.about-section .fade-in {
-    animation: fadeIn 1s ease-in;
+/* ==========================
+   Fade-in Animation
+========================== */
+.fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.8s ease-out;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.fade-in.show {
+    opacity: 1;
+    transform: translateY(0);
 }
 
+/* ==========================
+   Contact Section
+========================== */
 .contact-section {
     text-align: center;
     background: #fff;
-    padding: 20px;
-    margin: 20px auto;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
+    padding: 40px 20px;
+    margin: 40px auto;
+    border-radius: 16px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.05);
 }
 
 .contact-info {
     margin: 10px 0;
 }
 
-.contact-section iframe {
+#leaflet-map {
     margin-top: 15px;
-    border-radius: 8px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.contact-section .card {
-    border: none;
-    border-radius: 16px;
-    overflow: hidden;
-    transition: transform 0.3s ease;
-}
-
-.about-section .card:hover {
-    transform: translateY(-5px);
-}
-
-.about-section .founder img {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: contain; /* dari cover jadi contain */
-    background-color: #f0f0f0; /* supaya ada background saat ada ruang kosong */
-    margin-right: 20px;
-    border: 3px solid #e0dcd5;
-}
-
-.about-section .btn-dark {
-    background-color: #333;
-    border: none;
+    border-radius: 12px;
+    height: 300px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 /* ==========================
