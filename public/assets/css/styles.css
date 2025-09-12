@@ -145,6 +145,7 @@ footer {
     justify-content: center;
     color: white;
     text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    max-width: 90%;
 }
 
 /* ==========================
@@ -152,7 +153,7 @@ footer {
 ========================== */
 .about-section {
     margin-top: 50px;
-    width: 90%;
+    max-width: 90%;
 }
 
 .about-section h1, .about-section h2, .about-section h3 {
