@@ -1,5 +1,5 @@
-// const BASEURL = "http://localhost/raj/ecommerce/pkk-e-commerce/public";
-const BASEURL = "https://lunerburg.up.railway.app";
+const BASEURL = "http://localhost/raj/ecommerce/pkk-e-commerce/public";
+// const BASEURL = "https://lunerburg.up.railway.app";
 
 const $cartItems = document.getElementById("cart-items");
 const $subtotal = document.getElementById("subtotal");

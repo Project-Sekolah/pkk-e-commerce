@@ -23,18 +23,15 @@ $genders = [
 ] ?>" method="POST" enctype="multipart/form-data">
     <!-- Form fields for product details -->
     <div class="mb-3">
-      <label for="title" class="form-label">Nama Produk</label>
-      <input type="text" class="form-control" id="title" name="title" value="<?= $data[
-        "product"
-      ]["title"] ?>" required>
-    </div>
-    <!-- Other form fields -->
-   <div class="mb-3">
-      <label for="title" class="form-label">Nama Produk</label>
-      <input type="text" class="form-control" id="title" name="title" value="<?= htmlspecialchars(
-        $product["title"]
-      ) ?>" required>
-    </div>
+  <label for="title" class="form-label">Nama Produk</label>
+  <input type="text" 
+         class="form-control" 
+         id="title" 
+         name="title" 
+         value="<?= htmlspecialchars($product['title'] ?? '') ?>" 
+         required>
+</div>
+
 
     <div class="mb-3">
       <label for="description" class="form-label">Deskripsi</label>

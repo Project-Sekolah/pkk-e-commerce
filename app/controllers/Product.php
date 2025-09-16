@@ -111,7 +111,7 @@ class Product extends Controller
       );
     }
 
-    header("Location: " . BASEURL . "/product");
+    header("Location: " . BASEURL . "/product/seller");
     exit();
   }
 
@@ -235,7 +235,7 @@ class Product extends Controller
       Flasher::setFlash("Error", "Gagal menambahkan produk.", "danger");
     }
 
-    header("Location: " . BASEURL . "/product");
+    header("Location: " . BASEURL . "/product/seller");
     exit();
   }
 
@@ -257,16 +257,17 @@ class Product extends Controller
   {
     if ($id === null) {
       Flasher::setFlash("Error", "ID produk tidak diberikan.", "danger");
-      header("Location: " . BASEURL . "/product");
+      header("Location: " . BASEURL . "/product/seller");
       exit();
     }
 
     $this->checkRole(["seller", "admin"]);
     $productModel = $this->model("Product_model");
+    $userId = $_SESSION["user"]["id"] ?? null;
     $discountModel = $this->model("Discount_model");
+    $data["discounts"] = $discountModel->getDiscountsByUserId($userId);
     $data["product"] = $productModel->getProductById($id);
     $data["categories"] = $this->model("Category_model")->getAllCategories();
-    $data["discounts"] = $discountModel->getAllDiscounts();
     $data["productDiscounts"] = $productModel->getProductDiscounts($id);
 
     // Ensure product_images is available
@@ -274,7 +275,7 @@ class Product extends Controller
       $data["product_images"] = [];
     } else {
       $data["product_images"] = $data["product"]["images"];
-    }
+    } 
 
     $data["judul"] = "Edit Produk";
     $this->render(["product/edit"], $data);
@@ -335,7 +336,7 @@ class Product extends Controller
         );
     }
 
-    header("Location: " . BASEURL . "/product");
+    header("Location: " . BASEURL . "/product/seller");
     exit();
 }
 
