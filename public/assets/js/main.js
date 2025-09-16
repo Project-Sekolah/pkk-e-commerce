@@ -1,5 +1,5 @@
-// const BASEURL = "http://localhost/raj/ecommerce/pkk-e-commerce/public";
-const BASEURL = "https://lunerburg.up.railway.app";
+const BASEURL = "http://localhost/raj/ecommerce/pkk-e-commerce/public";
+// const BASEURL = "https://lunerburg.up.railway.app";
 
 const $cartItems = document.getElementById("cart-items");
 const $subtotal = document.getElementById("subtotal");
@@ -275,10 +275,66 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
                 return;
             }
-
             // If logged in, get the product ID and send it to the server
             const productId = btn.getAttribute("data-id");
             syncAddItemToServer(productId);
+        });
+    });
+
+    // SweetAlert konfirmasi hapus produk
+    document.querySelectorAll('.btn-hapus-produk').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const href = btn.getAttribute('href');
+            Swal.fire({
+                title: 'Konfirmasi Hapus Produk',
+                text: 'Apakah Anda yakin ingin menghapus produk ini?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    window.location.href = href;
+                }
+            });
+        });
+    });
+
+    // SweetAlert konfirmasi hapus diskon
+    document.querySelectorAll('.btn-hapus-diskon').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const href = btn.getAttribute('href');
+            Swal.fire({
+                title: 'Konfirmasi Hapus Diskon',
+                text: 'Apakah Anda yakin ingin menghapus diskon ini?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    window.location.href = href;
+                }
+            });
+        });
+    });
+
+    // Product Image Click - Modal Detail
+    document.querySelectorAll(".product-img").forEach(img => {
+        img.addEventListener("click", function () {
+            document.getElementById("modalTitle").textContent = this.dataset.title;
+            document.getElementById("modalPrice").textContent = this.dataset.price;
+            document.getElementById("modalCategory").textContent = this.dataset.category;
+            document.getElementById("modalGender").textContent = this.dataset.gender;
+            document.getElementById("modalDescription").textContent = this.dataset.description || "No description available.";
+            document.getElementById("modalStock").textContent = this.dataset.stock;
+            document.getElementById("modalImage").src = this.dataset.image;
         });
     });
 });

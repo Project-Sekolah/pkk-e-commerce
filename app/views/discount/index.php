@@ -11,7 +11,7 @@
                         <p class="card-text">Tanggal Mulai: <?= date("d/m/Y", strtotime($discount["start_date"])) ?></p>
                         <p class="card-text">Tanggal Berakhir: <?= date("d/m/Y", strtotime($discount["end_date"])) ?></p>
                         <a href="<?= BASEURL ?>/discount/edit/<?= $discount["id"] ?>" class="btn btn-sm btn-warning">Edit</a>
-                        <a href="<?= BASEURL ?>/discount/delete/<?= $discount["id"] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus diskon ini?')">Hapus</a>
+                        <a href="<?= BASEURL ?>/discount/delete/<?= $discount["id"] ?>" class="btn btn-sm btn-danger btn-hapus-diskon">Hapus</a>
                     </div>
                 </div>
             </div>

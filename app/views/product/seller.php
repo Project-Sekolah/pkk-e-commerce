@@ -14,7 +14,7 @@
             <h6 class="card-title"><?= htmlspecialchars($product["title"]) ?></h6>
             <p class="card-text">$<?= number_format($product["price"], 2) ?></p>
             <a href="<?= BASEURL ?>/product/edit/<?= $product["id"] ?>" class="btn btn-sm btn-warning">Edit</a>
-            <a href="<?= BASEURL ?>/product/delete/<?= $product["id"] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus produk ini?')">Hapus</a>
+            <a href="<?= BASEURL ?>/product/delete/<?= $product["id"] ?>" class="btn btn-sm btn-danger btn-hapus-produk">Hapus</a>
           </div>
         </div>
       </div>
