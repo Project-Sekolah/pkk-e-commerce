@@ -10,6 +10,17 @@ class Cart_model
         $this->db = new Database();
     }
 
+        /**
+     * Hapus semua item keranjang berdasarkan product_id
+     */
+    public function deleteItemsByProductId($productId)
+    {
+    // Hapus item keranjang jika produk sudah tidak aktif atau sudah dihapus (soft delete)
+    $this->db->query("DELETE FROM cart_items WHERE product_id = :product_id OR product_id IN (SELECT id FROM products WHERE is_active = 0 OR deleted_at IS NOT NULL)");
+    $this->db->bind(":product_id", $productId);
+    return $this->db->execute();
+    }
+
     public function getOrCreateCart($userId)
     {
         $this->db->query(

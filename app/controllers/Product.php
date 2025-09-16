@@ -99,7 +99,11 @@ class Product extends Controller
   public function delete($id)
   {
     $this->checkRole(["seller", "admin"]);
-    $result = $this->model("Product_model")->deleteProduct($id);
+  $result = $this->model("Product_model")->deleteProduct($id);
+
+  // Hapus semua item keranjang yang terkait dengan produk ini
+  $cartModel = $this->model("Cart_model");
+  $cartModel->deleteItemsByProductId($id);
 
     if ($result > 0) {
       Flasher::setFlash("Sukses", "Produk berhasil dihapus.", "success");
