@@ -140,10 +140,53 @@
     // Skrip untuk menginisialisasi DataTables
     $(document).ready(function() {
         $('#users-table').DataTable({
-            "language": {
-                "url": "//cdn.datatables.net/plug-ins/1.11.3/i18n/id.json"
-            }
+            // Untuk menghindari error CORS, hapus atau ganti ke lokal jika ada
+            // "language": { "url": "<?= BASEURL ?>/assets/js/id.json" }
         });
+    // Statistik chart user
+    $(document).ready(function () {
+        const userChart2 = document.getElementById('userChart2');
+        if (userChart2 && typeof Chart !== 'undefined') {
+            const userTypeCounts = <?php 
+                $roles = ['buyer'=>0,'seller'=>0,'admin'=>0];
+                foreach($data['users'] as $u){
+                    if(isset($u['role'])) $roles[$u['role']]++;
+                }
+                echo json_encode(array_values($roles));
+            ?>;
+
+            const userData = {
+                labels: ['Buyer', 'Seller', 'Admin'],
+                datasets: [{
+                    label: 'Jumlah Pengguna',
+                    data: userTypeCounts,
+                    backgroundColor: ['#36A2EB', '#FFCE56', '#FF6384'],
+                    hoverOffset: 10
+                }]
+            };
+
+            const userConfig = {
+                type: 'doughnut',
+                data: userData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        title: {
+                            display: true,
+                            text: 'Distribusi Pengguna',
+                            padding: { top: 10, bottom: 10 },
+                            font: { size: 16, weight: 'bold' }
+                        }
+                    }
+                }
+            };
+
+            const userCtx = userChart2.getContext('2d');
+            new Chart(userCtx, userConfig);
+        }
+    });
     });
 
     // Skrip untuk mengisi data ke modal saat tombol detail diklik
