@@ -75,6 +75,6 @@ class Controller
     foreach ($views as $view) {
       $this->view($view, $data);
     }
-    $this->view("admin/templates/footer");
+    $this->view("admin/templates/footer", $data);
   }
 }

@@ -26,7 +26,7 @@
                     </div>
                     <div>
                         <h6 class="text-muted text-uppercase mb-0">Total User</h6>
-                        <h4 class="fw-bold mt-1">1,250</h4>
+                        <h4 class="fw-bold mt-1"><?php echo htmlspecialchars($data['total_users']); ?></h4>
                     </div>
                 </div>
             </div>
@@ -39,7 +39,7 @@
                     </div>
                     <div>
                         <h6 class="text-muted text-uppercase mb-0">Total Produk</h6>
-                        <h4 class="fw-bold mt-1">450</h4>
+                        <h4 class="fw-bold mt-1"><?php echo htmlspecialchars($data['total_products']); ?></h4>
                     </div>
                 </div>
             </div>
@@ -52,7 +52,7 @@
                     </div>
                     <div>
                         <h6 class="text-muted text-uppercase mb-0">Total Transaksi</h6>
-                        <h4 class="fw-bold mt-1">2,100</h4>
+                        <h4 class="fw-bold mt-1"><?php echo htmlspecialchars($data['total_orders']); ?></h4>
                     </div>
                 </div>
             </div>
@@ -65,7 +65,7 @@
                     </div>
                     <div>
                         <h6 class="text-muted text-uppercase mb-0">Pendapatan Bersih</h6>
-                        <h4 class="fw-bold mt-1">Rp 12,5 Juta</h4>
+                        <h4 class="fw-bold mt-1">Rp <?php echo number_format($data['total_revenue'], 0, ',', '.'); ?></h4>
                     </div>
                 </div>
             </div>
@@ -104,41 +104,15 @@
                             </tr>
                         </thead>
                         <tbody>
+                        <?php foreach ($data['top_products'] as $i => $product): ?>
                             <tr>
-                                <th scope="row">1</th>
-                                <td>Baju Kaos Pria Classic</td>
-                                <td>Seller A</td>
-                                <td>250</td>
-                                <td>Pakaian</td>
+                                <th scope="row"><?php echo $i + 1; ?></th>
+                                <td><?php echo htmlspecialchars($product['title']); ?></td>
+                                <td><?php echo htmlspecialchars($product['seller_name']); ?></td>
+                                <td><?php echo htmlspecialchars($product['sold']); ?></td>
+                                <td><?php echo htmlspecialchars($product['category']); ?></td>
                             </tr>
-                            <tr>
-                                <th scope="row">2</th>
-                                <td>Tas Kulit Sintetis</td>
-                                <td>Seller B</td>
-                                <td>180</td>
-                                <td>Aksesoris</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">3</th>
-                                <td>Sepatu Casual Sneakers</td>
-                                <td>Seller C</td>
-                                <td>155</td>
-                                <td>Sepatu</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">4</th>
-                                <td>Jam Tangan Elegan</td>
-                                <td>Seller D</td>
-                                <td>140</td>
-                                <td>Aksesoris</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">5</th>
-                                <td>Celana Jeans Slim Fit</td>
-                                <td>Seller E</td>
-                                <td>130</td>
-                                <td>Pakaian</td>
-                            </tr>
+                        <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
