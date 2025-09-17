@@ -9,6 +9,12 @@
             </h2>
         </div>
         <div class="accordion-item border-0">
+            <a href="<?php echo $BASEURL ?>/user/majement" class="nav-link py-1 accordion-header py-2 mx-3">
+                    <i class="bi bi-person-circle me-2"></i>Manajemen User
+            </a>
+        </div>  
+
+        <div class="accordion-item border-0">
             <h2 class="accordion-header">
                 <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProduct">
                     <i class="bi bi-box-seam me-2"></i>Manajemen Produk
@@ -24,22 +30,7 @@
                 </div>
             </div>
         </div>
-        <div class="accordion-item border-0">
-            <h2 class="accordion-header">
-                <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseUser">
-                    <i class="bi bi-person-circle me-2"></i>Manajemen User
-                </button>
-            </h2>
-            <div id="collapseUser" class="accordion-collapse collapse" data-bs-parent="#sidebarMenu">
-                <div class="accordion-body">
-                    <ul class="nav flex-column">
-                        <li class="nav-item"><a class="nav-link py-1" href="#">Kelola Buyer</a></li>
-                        <li class="nav-item"><a class="nav-link py-1" href="#">Kelola Seller</a></li>
-                        <li class="nav-item"><a class="nav-link py-1" href="#">Kelola Admin</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+        
         <div class="accordion-item border-0">
             <h2 class="accordion-header">
                 <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseReport">
