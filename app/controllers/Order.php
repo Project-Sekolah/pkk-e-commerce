@@ -1,5 +1,12 @@
 <?php
 class Order extends Controller {
+
+    public function __construct() {
+        parent::__construct();
+        $this->checkLogin(); // pastikan user login dulu
+    }
+
+
 public function history() {
     $userId = $_SESSION['user']['id'];
     $orderModel = $this->model('Order_model');

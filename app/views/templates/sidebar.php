@@ -160,8 +160,11 @@ loading="lazy">
     <a href="<?= BASEURL ?>/" class="d-flex align-items-center mb-3"><i class="bi bi-house-door-fill"></i><span class="ms-2">Home</span></a>
     <a href="<?= BASEURL ?>/about" class="d-flex align-items-center mb-3"><i class="bi bi-info-circle-fill"></i><span class="ms-2">About</span></a>
     <a href="<?= BASEURL ?>/product" class="d-flex align-items-center mb-3"><i class="bi bi-bag-fill"></i><span class="ms-2">Produk</span></a>
+      <?php if (
+     isset($_SESSION["logged_in"])): ?>
     <a href="<?= BASEURL ?>/order/history" class="d-flex align-items-center mb-3">
     <i class="bi bi-hourglass-split"></i><span class="ms-2">Riwayat Order</span></a>
+    <?php endif; ?>
     <a href="<?= BASEURL ?>/faq" class="d-flex align-items-center mb-3"><i class="bi bi-question-circle-fill"></i><span class="ms-2">Faq</span></a>
     <hr>
    <?php if (

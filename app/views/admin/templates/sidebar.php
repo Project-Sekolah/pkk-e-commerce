@@ -57,7 +57,7 @@
         </div>
     </div>
     <div class="mt-auto pt-3 border-top">
-        <a class="nav-link text-danger" href="#"><i class="bi bi-box-arrow-left me-2"></i>Keluar</a>
+        <a class="nav-link text-danger" href="<?= BASEURL ?>"><i class="bi bi-box-arrow-left me-2"></i>Keluar</a>
     </div>
 </div>
 
@@ -122,7 +122,7 @@
             </div>
         </div>
         <div class="mt-auto pt-3 border-top">
-            <a class="nav-link text-danger" href="#"><i class="bi bi-box-arrow-left me-2"></i>Keluar</a>
+            <a class="nav-link text-danger" href="<?= BASEURL ?>"><i class="bi bi-box-arrow-left me-2"></i>Keluar</a>
         </div>
     </div>
 </div>
