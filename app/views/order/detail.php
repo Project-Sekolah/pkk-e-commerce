@@ -4,6 +4,9 @@ $order_items = $data['order_items'] ?? [];
 ?>
 <div class="container py-4">
     <h2>Detail Order</h2>
+    <a href="<?= BASEURL ?>/order/history" class="btn btn-secondary mb-3">
+        <i class="bi bi-arrow-left-short"></i> Kembali ke History
+    </a>
     <?php Flasher::flash(); ?>
     <?php if (!empty($order)): ?>
         <div class="card mb-4">

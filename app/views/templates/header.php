@@ -177,9 +177,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </label>  
 </div>
 
-<button class="btn btn-primary w-100 mb-2" onclick="checkout()" >Checkout</button>  
+<!-- <button class="btn btn-primary w-100 mb-2" onclick="checkout()" >Checkout</button>   -->
 <form action="<?php echo BASEURL; ?>/order/checkout" method="post">
-    <button type="submit" class="btn btn-success">Checkout</button>
+    <button type="submit" class="btn btn-primary w-100 mb-2" >Checkout</button>
 </form>
 
   </div>  
@@ -191,3 +191,4 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <?php Flasher::flash(); ?>
     </div>
   </div>
+

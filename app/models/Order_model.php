@@ -150,29 +150,64 @@ class Order_model {
         return $stmt->execute(["status" => $status, "order_id" => $orderId]);
     }
 
-    public function getOrderHistory(string $userId, int $limit = 10, int $offset = 0): array
-    {
-        $stmt = $this->db->prepare("
-            SELECT 
-                o.id, 
-                o.total, 
-                o.status, 
-                o.customer_address,
-                o.created_at,
-                COUNT(oi.id) AS item_count
-            FROM orders o
-            LEFT JOIN order_items oi ON o.id = oi.order_id
-            WHERE o.user_id = :user_id
-            GROUP BY o.id
-            ORDER BY o.created_at DESC
-            LIMIT :limit OFFSET :offset
-        ");
-        $stmt->bindValue("user_id", $userId);
-        $stmt->bindValue("limit", (int)$limit, PDO::PARAM_INT);
-        $stmt->bindValue("offset", (int)$offset, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    public function getOrderHistory(string $userId): array
+{
+    $stmt = $this->db->prepare("
+        SELECT 
+            o.id AS order_id,
+            o.total,
+            o.status,
+            o.customer_address,
+            o.created_at,
+            oi.id AS order_item_id,
+            oi.quantity,
+            oi.price AS item_price,
+            p.id AS product_id,
+            p.title AS product_name
+        FROM orders o
+        LEFT JOIN order_items oi ON o.id = oi.order_id
+        LEFT JOIN products p ON oi.product_id = p.id
+        WHERE o.user_id = :user_id
+        ORDER BY o.created_at DESC
+    ");
+    $stmt->bindValue("user_id", $userId);
+    $stmt->execute();
+
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $orders = [];
+    foreach ($rows as $row) {
+        $oid = $row['order_id'];
+
+        if (!isset($orders[$oid])) {
+            $orders[$oid] = [
+                'id' => $row['order_id'],
+                'total' => $row['total'],
+                'status' => $row['status'],
+                'customer_address' => $row['customer_address'],
+                'created_at' => $row['created_at'],
+                'items' => [],
+                'item_count' => 0
+            ];
+        }
+
+        if ($row['order_item_id']) {
+            $orders[$oid]['items'][] = [
+                'id' => $row['order_item_id'],
+                'product_id' => $row['product_id'],
+                'name' => $row['product_name'],
+                'quantity' => (int)$row['quantity'],
+                'price' => (float)$row['item_price']
+            ];
+            $orders[$oid]['item_count'] += (int)$row['quantity'];
+        }
     }
+
+    return array_values($orders);
+}
+
+
+
 
     public function getOrderItems(string $orderId): array
     {

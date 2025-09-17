@@ -1,11 +1,17 @@
 <?php
 class Order extends Controller {
-    public function history() {
-        $userId = $_SESSION['user']['id'];
-        $orderModel = $this->model('Order_model');
-        $orders = $orderModel->getOrderHistory($userId, 20, 0);
-        $this->render(['order/history'], ['orders' => $orders]);
-    }
+public function history() {
+    $userId = $_SESSION['user']['id'];
+    $orderModel = $this->model('Order_model');
+    $orders = $orderModel->getOrderHistory($userId);
+    $this->render(
+        ['order/history'],
+        [
+            'orders' => $orders,
+            'judul' => 'History'
+        ]
+    );
+}
 
 public function detail($orderId = null) {
     if (!$orderId) {
@@ -17,12 +23,25 @@ public function detail($orderId = null) {
     $orderModel = $this->model('Order_model');
     $order = $orderModel->getOrderById($userId, $orderId);
     $order_items = $orderModel->getOrderItems($orderId);
-    $this->render(['order/detail'], ['order' => $order, 'order_items' => $order_items]);
+    $this->render(
+        ['order/detail'],
+        [
+            'order' => $order,
+            'order_items' => $order_items,
+            'judul' => 'Order Detail'
+        ]
+    );
 }
 
-    public function success() {
-        $this->render(['order/success']);
-    }
+public function success() {
+    $this->render(
+        ['order/success'],
+        [
+            'judul' => 'Order'
+        ]
+    );
+}
+
 
      public function index() {
         // Redirect ke halaman riwayat order atau tampilkan pesan
