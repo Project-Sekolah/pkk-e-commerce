@@ -10,6 +10,14 @@ class User_model
     $this->db = new Database();
   }
 
+  // Ambil semua user
+  public function getAllUsers()
+  {
+    $sql = "SELECT * FROM $this->table";
+    $this->db->query($sql);
+    return $this->db->resultSet();
+  }
+
   // =======================
   // USER ACCOUNT MANAGEMENT
   // =======================

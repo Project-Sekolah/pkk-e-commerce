@@ -2,6 +2,35 @@
 
 class Order_model
 {
+    // ...existing code...
+
+    // Total transaksi
+    public function getTotalOrders()
+    {
+        $stmt = $this->db->prepare("SELECT COUNT(*) as total FROM orders");
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'] ?? 0;
+    }
+
+    // Total pendapatan
+    public function getTotalRevenue()
+    {
+        $stmt = $this->db->prepare("SELECT SUM(total) as revenue FROM orders WHERE status = 'completed'");
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['revenue'] ?? 0;
+    }
+
+    // Grafik penjualan bulanan (jumlah transaksi per bulan)
+    public function getMonthlySalesChart($year = null)
+    {
+        if (!$year) $year = date('Y');
+        $stmt = $this->db->prepare("SELECT MONTH(created_at) as month, COUNT(*) as total FROM orders WHERE YEAR(created_at) = :year GROUP BY MONTH(created_at) ORDER BY month ASC");
+        $stmt->execute(['year' => $year]);
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $result;
+    }
     private $table = "orders";
     private $db;
 

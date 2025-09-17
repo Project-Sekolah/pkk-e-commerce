@@ -104,7 +104,7 @@ class Category_model
         $this->validateCategory($name, $slug);
 
         try {
-            $this->db->beginTransaction();
+            // ...existing code...
 
             // Check for duplicate slug
             if ($this->getCategoryBySlug($slug)) {
@@ -128,12 +128,8 @@ class Category_model
             $this->db->bind(':name', trim($name));
             $this->db->bind(':slug', $this->sanitizeSlug($slug));
 
-            $result = $this->db->execute();
-            $this->db->commit();
-            
-            return $result;
+            return $this->db->execute();
         } catch (PDOException $e) {
-            $this->db->rollBack();
             error_log("Failed to add category: " . $e->getMessage());
             throw new RuntimeException("Failed to create category");
         }
@@ -154,7 +150,7 @@ class Category_model
         $this->validateCategory($name, $slug);
 
         try {
-            $this->db->beginTransaction();
+            // ...existing code...
 
             // Check if category exists
             $existingCategory = $this->getCategoryById($id);
@@ -163,7 +159,7 @@ class Category_model
             }
 
             // Check for duplicate slug (excluding current category)
-            $duplicateSlug = $this->db->query("
+            $this->db->query("
                 SELECT id FROM " . self::TABLE . "
                 WHERE slug = :slug AND id != :id
             ");
@@ -186,12 +182,8 @@ class Category_model
             $this->db->bind(':name', trim($name));
             $this->db->bind(':slug', $this->sanitizeSlug($slug));
 
-            $result = $this->db->execute();
-            $this->db->commit();
-            
-            return $result;
+            return $this->db->execute();
         } catch (PDOException $e) {
-            $this->db->rollBack();
             error_log("Failed to update category: " . $e->getMessage());
             throw new RuntimeException("Failed to update category");
         }
@@ -208,7 +200,7 @@ class Category_model
     public function deleteCategory(int $id): bool
     {
         try {
-            $this->db->beginTransaction();
+            // ...existing code...
 
             // Check if category exists
             if (!$this->getCategoryById($id)) {
@@ -231,12 +223,8 @@ class Category_model
             $this->db->query("DELETE FROM " . self::TABLE . " WHERE id = :id");
             $this->db->bind(':id', $id);
 
-            $result = $this->db->execute();
-            $this->db->commit();
-            
-            return $result;
+            return $this->db->execute();
         } catch (PDOException $e) {
-            $this->db->rollBack();
             error_log("Failed to delete category: " . $e->getMessage());
             throw new RuntimeException("Failed to delete category");
         }
