@@ -8,12 +8,22 @@
     </div>
 
     <header class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-        <h2 class="mb-2 mb-md-0">Beranda</h2>
-        <div class="d-flex flex-column flex-md-row align-items-md-center">
-            <label for="date-start" class="me-2 text-md-end">Periode:</label>
-            <input type="date" id="date-start" class="form-control me-2 mb-2 mb-md-0" value="<?php echo date('Y-m-d'); ?>">
-            <span class="d-none d-md-block">-</span>
-            <input type="date" id="date-end" class="form-control ms-md-2" value="<?php echo date('Y-m-d'); ?>">
+        <h2 class="mb-2 mb-md-0 d-none d-lg-block">Beranda</h2>
+        
+        <div class="d-flex align-items-center ms-auto">
+            <h5 class="fw-bold mb-0 me-3">
+                <?= isset($data['user']['username']) ? htmlspecialchars($data['user']['username']) : 'Pengguna' ?>
+            </h5>
+            
+            <div class="profile-pic">
+                <img 
+                    src="<?= isset($data['user']['image']) ? htmlspecialchars($data['user']['image']) : 'https://via.placeholder.com/40' ?>" 
+                    alt="Foto Profil" 
+                    class="rounded-circle" 
+                    width="40" 
+                    height="40"
+                >
+            </div>
         </div>
     </header>
 
