@@ -13,6 +13,7 @@
 </script>
 
 <script>
+    
 
     $(document).ready(function () {
         // Init DataTable
@@ -130,6 +131,124 @@
         };
         const salesCtx = document.getElementById('salesChart').getContext('2d');
         new Chart(salesCtx, salesConfig);
+</script>
+
+
+
+<script>
+    // Skrip untuk menginisialisasi DataTables
+    $(document).ready(function() {
+        $('#users-table').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.11.3/i18n/id.json"
+            }
+        });
+
+        // Statistik chart user
+        var ctx = document.getElementByClass('userChart');
+        if (ctx) {
+            var userData = <?php
+                $roles = ['buyer' => 0, 'seller' => 0, 'admin' => 0];
+                foreach ($data['users'] as $u) {
+                    if (isset($u['role'])) {
+                        $roles[$u['role']] = isset($roles[$u['role']]) ? $roles[$u['role']] + 1 : 1;
+                    }
+                }
+                echo json_encode(array_values($roles));
+            ?>;
+            var userLabels = ['Buyer', 'Seller', 'Admin'];
+            new Chart(ctx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: userLabels,
+                    datasets: [{
+                        data: userData,
+                        backgroundColor: ['#36A2EB', '#FFCE56', '#FF6384'],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+    });
+
+    // Skrip untuk mengisi data ke modal saat tombol detail diklik
+    var userDetailModal = document.getElementById('user-detail-modal');
+    userDetailModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+        var username = button.getAttribute('data-username');
+        var email = button.getAttribute('data-email');
+        var role = button.getAttribute('data-role');
+        var created = button.getAttribute('data-created');
+        var updated = button.getAttribute('data-updated');
+
+        var modalUsername = userDetailModal.querySelector('#modal-username');
+        var modalEmail = userDetailModal.querySelector('#modal-email');
+        var modalRole = userDetailModal.querySelector('#modal-role');
+        var modalCreated = userDetailModal.querySelector('#modal-created');
+        var modalUpdated = userDetailModal.querySelector('#modal-updated');
+
+        modalUsername.textContent = username || '-';
+        modalEmail.textContent = email || '-';
+        modalRole.textContent = role || '-';
+        modalCreated.textContent = created || '-';
+        modalUpdated.textContent = updated || '-';
+    });
+
+
+    $(document).ready(function () {
+    // Data user dari PHP
+    const userTypeCounts = <?php 
+        $roles = ['buyer'=>0,'seller'=>0,'admin'=>0];
+        foreach($data['users'] as $u){
+            if(isset($u['role'])) $roles[$u['role']]++;
+        }
+        echo json_encode(array_values($roles));
+    ?>;
+
+    const userData = {
+        labels: ['Buyer', 'Seller', 'Admin'],
+        datasets: [{
+            label: 'Jumlah Pengguna',
+            data: userTypeCounts,
+            backgroundColor: ['#36A2EB', '#FFCE56', '#FF6384'],
+            hoverOffset: 10
+        }]
+    };
+
+    const userConfig = {
+        type: 'doughnut',
+        data: userData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false, // penting agar chart tidak melebar
+            plugins: {
+                legend: { position: 'bottom' },
+                title: {
+                    display: true,
+                    text: 'Distribusi Pengguna',
+                    padding: { top: 10, bottom: 10 },
+                    font: { size: 16, weight: 'bold' }
+                }
+            }
+        }
+    };
+
+    const userCtx = document.getElementById('userChart2').getContext('2d');
+    new Chart(userCtx, userConfig);
+
+    // Tampilkan data users di console
+    console.log(<?= json_encode($data['users'] ?? [], JSON_PRETTY_PRINT); ?>);
+});
+
+
+      // Tampilkan data users di console
+    console.log(<?= json_encode($data['users'] ?? [], JSON_PRETTY_PRINT); ?>);
 </script>
 </body>
 </html>

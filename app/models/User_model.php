@@ -19,11 +19,32 @@ class User_model {
 
 
   // Ambil semua user
+
+  // Ambil semua user yang tidak dihapus (soft delete)
   public function getAllUsers()
   {
-    $sql = "SELECT * FROM $this->table";
+    $sql = "SELECT * FROM $this->table WHERE deleted_at IS NULL";
     $this->db->query($sql);
     return $this->db->resultSet();
+  }
+
+  // Soft delete user (nonaktifkan akun)
+  public function softDeleteUser($userId)
+  {
+    $sql = "UPDATE $this->table SET deleted_at = CURRENT_TIMESTAMP WHERE id = :id AND deleted_at IS NULL";
+    $this->db->query($sql);
+    $this->db->bind(":id", $userId);
+    return $this->db->execute();
+  }
+
+  // Toggle block/unblock user
+  public function toggleBlockUser($userId, $block = true)
+  {
+    $sql = "UPDATE $this->table SET is_blocked = :block WHERE id = :id AND deleted_at IS NULL";
+    $this->db->query($sql);
+    $this->db->bind(":block", $block ? 1 : 0);
+    $this->db->bind(":id", $userId);
+    return $this->db->execute();
   }
 
   // =======================
