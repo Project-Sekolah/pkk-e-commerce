@@ -1,5 +1,34 @@
 <?php
 class Order extends Controller {
+    public function history() {
+        $userId = $_SESSION['user']['id'];
+        $orderModel = $this->model('Order_model');
+        $orders = $orderModel->getOrderHistory($userId, 20, 0);
+        $this->render(['order/history'], ['orders' => $orders]);
+    }
+
+public function detail($orderId = null) {
+    if (!$orderId) {
+        Flasher::setFlash('Order tidak ditemukan!', 'ID order tidak valid.', 'error');
+        header('Location: ' . BASEURL . '/order/history');
+        exit;
+    }
+    $userId = $_SESSION['user']['id'];
+    $orderModel = $this->model('Order_model');
+    $order = $orderModel->getOrderById($userId, $orderId);
+    $order_items = $orderModel->getOrderItems($orderId);
+    $this->render(['order/detail'], ['order' => $order, 'order_items' => $order_items]);
+}
+
+    public function success() {
+        $this->render(['order/success']);
+    }
+
+     public function index() {
+        // Redirect ke halaman riwayat order atau tampilkan pesan
+        header('Location: ' . BASEURL . '/order/history/');
+        exit;
+    }
     public function checkout() {
         $userId = $_SESSION['user']['id'];
         $userModel = $this->model('User_model');

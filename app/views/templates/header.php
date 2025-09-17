@@ -178,7 +178,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div>
 
 <button class="btn btn-primary w-100 mb-2" onclick="checkout()" >Checkout</button>  
-
+<form action="<?php echo BASEURL; ?>/order/checkout" method="post">
+    <button type="submit" class="btn btn-success">Checkout</button>
+</form>
 
   </div>  
 </div>  </div> 
