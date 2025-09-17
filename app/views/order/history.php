@@ -60,14 +60,6 @@ $userPhone = $data['user']['phone_number'] ?? '-';
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
-$(document).ready(function() {
-    $('#ordersTable').DataTable({
-        responsive: true,
-        pageLength: 10,
-        lengthMenu: [5, 10, 25, 50],
-        order: [[1, 'desc']] // default sorting by tanggal desc
-    });
-});
 
 async function downloadStruk(orderId, total, tanggal, phone, items) {
     try {

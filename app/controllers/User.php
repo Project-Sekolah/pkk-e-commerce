@@ -17,63 +17,63 @@ class User extends Controller {
   //     ADMIN USER MANAGEMENT
   // ============================
 
-  public function manajemen()
-  {
-    $this->checkAdmin();
-    $userModel = $this->model("User_model");
-    $data = [
-      "judul" => "Manajemen Pengguna",
-      "users" => $userModel->getAllUsers(),
-      "user" => $_SESSION["user"]
-    ];
-    $this->renderAdmin(["admin/pages/manajement_user/manajement_user"], $data);
-  }
+  // public function manajemen()
+  // {
+  //   $this->checkAdmin();
+  //   $userModel = $this->model("User_model");
+  //   $data = [
+  //     "judul" => "Manajemen Pengguna",
+  //     "users" => $userModel->getAllUsers(),
+  //     "user" => $_SESSION["user"]
+  //   ];
+  //   $this->renderAdmin(["admin/pages/manajement_user/manajement_user"], $data);
+  // }
 
-  public function softDelete($id)
-  {
-    $this->checkAdmin();
-    $userModel = $this->model("User_model");
-    $result = $userModel->softDeleteUser($id);
-    if ($result) {
-      Flasher::setFlash("Success", "Akun berhasil dinonaktifkan.", "success");
-    } else {
-      Flasher::setFlash("Error", "Gagal menonaktifkan akun.", "danger");
-    }
-    header("Location: " . BASEURL . "/user/manajemen");
-    exit();
-  }
+  // public function softDelete($id)
+  // {
+  //   $this->checkAdmin();
+  //   $userModel = $this->model("User_model");
+  //   $result = $userModel->softDeleteUser($id);
+  //   if ($result) {
+  //     Flasher::setFlash("Success", "Akun berhasil dinonaktifkan.", "success");
+  //   } else {
+  //     Flasher::setFlash("Error", "Gagal menonaktifkan akun.", "danger");
+  //   }
+  //   header("Location: " . BASEURL . "/user/manajemen");
+  //   exit();
+  // }
 
-  public function toggleBlock($id)
-  {
-    $this->checkAdmin();
-    $userModel = $this->model("User_model");
-    $user = $userModel->getUserById($id);
-    $block = !$user["is_blocked"];
-    $result = $userModel->toggleBlockUser($id, $block);
-    if ($result) {
-      $msg = $block ? "Akun berhasil diblokir." : "Akun berhasil diaktifkan.";
-      Flasher::setFlash("Success", $msg, "success");
-    } else {
-      Flasher::setFlash("Error", "Gagal mengubah status akun.", "danger");
-    }
-    header("Location: " . BASEURL . "/user/manajemen");
-    exit();
-  }
+  // public function toggleBlock($id)
+  // {
+  //   $this->checkAdmin();
+  //   $userModel = $this->model("User_model");
+  //   $user = $userModel->getUserById($id);
+  //   $block = !$user["is_blocked"];
+  //   $result = $userModel->toggleBlockUser($id, $block);
+  //   if ($result) {
+  //     $msg = $block ? "Akun berhasil diblokir." : "Akun berhasil diaktifkan.";
+  //     Flasher::setFlash("Success", $msg, "success");
+  //   } else {
+  //     Flasher::setFlash("Error", "Gagal mengubah status akun.", "danger");
+  //   }
+  //   header("Location: " . BASEURL . "/user/manajemen");
+  //   exit();
+  // }
 
-  public function updateRole($id)
-  {
-    $this->checkAdmin();
-    $userModel = $this->model("User_model");
-    $newRole = $_POST["role"] ?? "buyer";
-    $result = $userModel->updateRole($id, $newRole);
-    if ($result) {
-      Flasher::setFlash("Success", "Peran berhasil diubah.", "success");
-    } else {
-      Flasher::setFlash("Error", "Gagal mengubah peran.", "danger");
-    }
-    header("Location: " . BASEURL . "/user/manajemen");
-    exit();
-  }
+  // public function updateRole($id)
+  // {
+  //   $this->checkAdmin();
+  //   $userModel = $this->model("User_model");
+  //   $newRole = $_POST["role"] ?? "buyer";
+  //   $result = $userModel->updateRole($id, $newRole);
+  //   if ($result) {
+  //     Flasher::setFlash("Success", "Peran berhasil diubah.", "success");
+  //   } else {
+  //     Flasher::setFlash("Error", "Gagal mengubah peran.", "danger");
+  //   }
+  //   header("Location: " . BASEURL . "/user/manajemen");
+  //   exit();
+  // }
 
   // ============================
   //         AUTH HANDLERS
