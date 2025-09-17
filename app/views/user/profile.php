@@ -7,6 +7,13 @@ $addresses = $data["addresses"];
   <!-- SweetAlert2 CDN -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style type="text/css" media="all">
+    body {
+      font-family: "Poppins", sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+
     .bungkus {
       background-image: url("/assets/img/background.jpg");
       background-size: cover;
@@ -15,6 +22,7 @@ $addresses = $data["addresses"];
       position: relative;
       z-index: 1;
       width: 100vw;
+      min-height: 100vh;
     }
 
     .bungkus::before {
@@ -24,7 +32,7 @@ $addresses = $data["addresses"];
       left: 0;
       height: 100%;
       width: 100%;
-      background-color: rgba(0, 0, 0, 0);
+      background-color: rgba(0, 0, 0, 0.3);
       transition: background-color 0.5s ease;
       z-index: -1;
     }
@@ -34,23 +42,90 @@ $addresses = $data["addresses"];
     }
 
     .bungkus:hover::before {
-      background-color: rgba(0, 0, 0, 0.4);
+      background-color: rgba(0, 0, 0, 0.5);
     }
 
     .profile-card {
       margin: 20px;
       margin-top: 80px;
-      background-color: #847e7b;
+      background: linear-gradient(135deg, #6a6a6a, #444);
       border-radius: 20px;
       color: #fff;
-      width: 540px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 540px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease;
+    }
+
+    .profile-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .profile-card img {
+      object-fit: cover;
+      border: 4px solid #fff;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
     }
 
     .bungkus a {
       text-decoration: none;
-      color: #fff;
+      color: inherit;
     }
+
+    .profile-card h3 {
+      letter-spacing: 1px;
+    }
+
+    .profile-card .btn {
+      font-weight: 500;
+      border-radius: 30px;
+      transition: all 0.3s ease;
+    }
+
+    .profile-card .btn:hover {
+      transform: scale(1.05);
+    }
+
+    .profile-card .card {
+      border: none;
+      background: #fff;
+      color: #333;
+      border-radius: 12px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .profile-card .card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .profile-card .badge {
+      font-size: 0.75rem;
+      padding: 5px 10px;
+      border-radius: 10px;
+    }
+
+    /* Modal styling */
+    .userModal .modal-content {
+      border-radius: 15px;
+      border: none;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .userModal .modal-header {
+      border-bottom: none;
+      background: #f8f9fa;
+      border-radius: 15px 15px 0 0;
+    }
+
+    .userModal .modal-footer {
+      border-top: none;
+      background: #f8f9fa;
+      border-radius: 0 0 15px 15px;
+    }
+  </style>
+</head>
+
   </style>
 </head>
 
@@ -94,9 +169,14 @@ $addresses = $data["addresses"];
     <p class="text-muted mb-4 text-center"><?= htmlspecialchars(
                                               $user["full_name"]
                                             ) ?></p>
-                                            <p class="text-muted mb-4 text-center"> Phone: <?= htmlspecialchars(
+   <p class="text-muted mb-4 text-center"> Phone: <?= htmlspecialchars(
                                               $user["phone_number"]
                                             ) ?></p>
+ <p class="text-muted">
+        Role: <?= htmlspecialchars(
+                                              $user["role"]
+                                            ) ?>
+      </p>
 
     <!-- Tombol Aksi -->
     <div class="text-start mb-4">

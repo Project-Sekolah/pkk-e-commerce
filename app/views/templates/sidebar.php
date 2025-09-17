@@ -160,7 +160,8 @@ loading="lazy">
     <a href="<?= BASEURL ?>/" class="d-flex align-items-center mb-3"><i class="bi bi-house-door-fill"></i><span class="ms-2">Home</span></a>
     <a href="<?= BASEURL ?>/about" class="d-flex align-items-center mb-3"><i class="bi bi-info-circle-fill"></i><span class="ms-2">About</span></a>
     <a href="<?= BASEURL ?>/product" class="d-flex align-items-center mb-3"><i class="bi bi-bag-fill"></i><span class="ms-2">Produk</span></a>
-    <!-- <a href="<?= BASEURL ?>/order" class="d-flex align-items-center mb-3"><i class="bi bi-credit-card-fill"></i><span class="ms-2">Pembayaran</span></a> -->
+    <a href="<?= BASEURL ?>/order/history" class="d-flex align-items-center mb-3">
+    <i class="bi bi-hourglass-split"></i><span class="ms-2">Riwayat Order</span></a>
     <a href="<?= BASEURL ?>/faq" class="d-flex align-items-center mb-3"><i class="bi bi-question-circle-fill"></i><span class="ms-2">Faq</span></a>
     <hr>
    <?php if (
@@ -175,9 +176,17 @@ loading="lazy">
         <a href="<?= BASEURL ?>/discount" class="d-flex align-items-center
         mb-3"><i class="bi bi-tag-fill"></i><span class="ms-2">Discount
         Saya</span></a>
+
+            <?php if (
+              $_SESSION["user"]["role"] === "admin"
+            ): ?>
+              <a href="<?= BASEURL ?>/adminDashboard" class="d-flex align-items-center mb-3"><i class="bi bi-person-fill-check"></i><span class="ms-2">Admin</span></a>
+          <?php endif; ?>
       <?php endif; ?>
       <a href="<?= BASEURL ?>/user/logout" class="d-flex align-items-center mb-3"><i class="bi bi-door-closed-fill" id="logout-link"></i><span class="ms-2">Logout</span></a>
     <?php endif; ?>
+
+
   </div>
 </div>
 

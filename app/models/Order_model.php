@@ -1,7 +1,6 @@
 <?php
 
-class Order_model
-{
+class Order_model {
     private $table = "orders";
     private $db;
 
@@ -25,7 +24,39 @@ class Order_model
         }
     }
 
-    public function createOrderFromCart(string $userId): ?string
+    // ======= ANALYTICS =======
+    public function getTotalOrders(): int
+    {
+        $stmt = $this->db->prepare("SELECT COUNT(*) as total FROM orders");
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return (int)($result['total'] ?? 0);
+    }
+
+    public function getTotalRevenue(): float
+    {
+        $stmt = $this->db->prepare("SELECT SUM(total) as revenue FROM orders WHERE status = 'completed'");
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return (float)($result['revenue'] ?? 0);
+    }
+
+    public function getMonthlySalesChart($year = null): array
+    {
+        if (!$year) $year = date('Y');
+        $stmt = $this->db->prepare("
+            SELECT MONTH(created_at) as month, COUNT(*) as total 
+            FROM orders 
+            WHERE YEAR(created_at) = :year 
+            GROUP BY MONTH(created_at) 
+            ORDER BY month ASC
+        ");
+        $stmt->execute(['year' => $year]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // ======= ORDER FLOW =======
+    public function createOrderFromCart(string $userId, string $customerAddress): ?string
     {
         try {
             $this->db->beginTransaction();
@@ -37,7 +68,8 @@ class Order_model
 
             $this->validateProductAvailability($cartItems);
             $total = $this->calculateOrderTotal($cartItems);
-            $orderId = $this->createOrderRecord($userId, $total);
+
+            $orderId = $this->createOrderRecord($userId, $total, $customerAddress);
             $this->createOrderItems($orderId, $cartItems);
             $this->clearCart($cartItems[0]['cart_id']);
 
@@ -50,6 +82,47 @@ class Order_model
         }
     }
 
+    private function createOrderRecord(string $userId, float $total, string $customerAddress): string
+    {
+        $id = uniqid('ord_'); // generate custom ID biar konsisten
+        $stmt = $this->db->prepare("
+            INSERT INTO orders (id, user_id, total, status, customer_address, created_at)
+            VALUES (:id, :user_id, :total, 'pending', :customer_address, NOW())
+        ");
+        $stmt->execute([
+            "id" => $id,
+            "user_id" => $userId,
+            "total" => $total,
+            "customer_address" => $customerAddress
+        ]);
+        return $id;
+    }
+
+    private function createOrderItems(string $orderId, array $cartItems): void
+    {
+        $stmt = $this->db->prepare("
+            INSERT INTO order_items (id, order_id, product_id, quantity, price)
+            VALUES (:id, :order_id, :product_id, :quantity, :price)
+        ");
+
+        foreach ($cartItems as $item) {
+            $stmt->execute([
+                "id" => uniqid('oi_'),
+                "order_id" => $orderId,
+                "product_id" => $item['product_id'],
+                "quantity" => $item['quantity'],
+                "price" => $item['price']
+            ]);
+        }
+    }
+
+    private function clearCart(string $cartId): void
+    {
+        $this->db->prepare("DELETE FROM cart_items WHERE cart_id = :cart_id")
+            ->execute(["cart_id" => $cartId]);
+    }
+
+    // ======= ORDER QUERIES =======
     public function getOrderById(string $userId, string $orderId): ?array
     {
         $stmt = $this->db->prepare("
@@ -57,13 +130,14 @@ class Order_model
                 o.id, 
                 o.total, 
                 o.status, 
+                o.customer_address,
                 o.created_at,
                 o.user_id
             FROM orders o
             WHERE o.id = :order_id AND o.user_id = :user_id
         ");
         $stmt->execute(["order_id" => $orderId, "user_id" => $userId]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }
 
     public function updateOrderStatus(string $orderId, string $status): bool
@@ -76,30 +150,83 @@ class Order_model
         return $stmt->execute(["status" => $status, "order_id" => $orderId]);
     }
 
-    public function getOrderHistory(string $userId, int $limit = 10, int $offset = 0): array
+    public function getOrderHistory(string $userId): array
+{
+    $stmt = $this->db->prepare("
+        SELECT 
+            o.id AS order_id,
+            o.total,
+            o.status,
+            o.customer_address,
+            o.created_at,
+            oi.id AS order_item_id,
+            oi.quantity,
+            oi.price AS item_price,
+            p.id AS product_id,
+            p.title AS product_name
+        FROM orders o
+        LEFT JOIN order_items oi ON o.id = oi.order_id
+        LEFT JOIN products p ON oi.product_id = p.id
+        WHERE o.user_id = :user_id
+        ORDER BY o.created_at DESC
+    ");
+    $stmt->bindValue("user_id", $userId);
+    $stmt->execute();
+
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $orders = [];
+    foreach ($rows as $row) {
+        $oid = $row['order_id'];
+
+        if (!isset($orders[$oid])) {
+            $orders[$oid] = [
+                'id' => $row['order_id'],
+                'total' => $row['total'],
+                'status' => $row['status'],
+                'customer_address' => $row['customer_address'],
+                'created_at' => $row['created_at'],
+                'items' => [],
+                'item_count' => 0
+            ];
+        }
+
+        if ($row['order_item_id']) {
+            $orders[$oid]['items'][] = [
+                'id' => $row['order_item_id'],
+                'product_id' => $row['product_id'],
+                'name' => $row['product_name'],
+                'quantity' => (int)$row['quantity'],
+                'price' => (float)$row['item_price']
+            ];
+            $orders[$oid]['item_count'] += (int)$row['quantity'];
+        }
+    }
+
+    return array_values($orders);
+}
+
+
+
+
+    public function getOrderItems(string $orderId): array
     {
         $stmt = $this->db->prepare("
             SELECT 
-                o.id, 
-                o.total, 
-                o.status, 
-                o.created_at,
-                COUNT(oi.id) AS item_count
-            FROM orders o
-            LEFT JOIN order_items oi ON o.id = oi.order_id
-            WHERE o.user_id = :user_id
-            GROUP BY o.id
-            ORDER BY o.created_at DESC
-            LIMIT :limit OFFSET :offset
+                oi.id, 
+                oi.product_id, 
+                oi.quantity, 
+                oi.price, 
+                p.title AS name
+            FROM order_items oi
+            JOIN products p ON oi.product_id = p.id
+            WHERE oi.order_id = :order_id
         ");
-        $stmt->execute([
-            "user_id" => $userId,
-            "limit" => (int)$limit,
-            "offset" => (int)$offset
-        ]);
+        $stmt->execute(["order_id" => $orderId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // ======= HELPERS =======
     private function getCartWithItems(string $userId): array
     {
         $stmt = $this->db->prepare("
@@ -135,55 +262,5 @@ class Order_model
             $total += $item["quantity"] * $item["price"];
         }
         return round($total, 2);
-    }
-
-    private function createOrderRecord(string $userId, float $total): string
-    {
-        $stmt = $this->db->prepare("
-            INSERT INTO orders (id, user_id, total, status, created_at)
-            VALUES (UUID(), :user_id, :total, 'pending', NOW())
-        ");
-        $stmt->execute(["user_id" => $userId, "total" => $total]);
-        return $this->db->lastInsertId();
-    }
-
-    private function createOrderItems(string $orderId, array $cartItems): void
-    {
-        $sql = "
-            INSERT INTO order_items (id, order_id, product_id, quantity, price)
-            VALUES " . rtrim(str_repeat('(:id, :order_id, :product_id, :quantity, :price),', count($cartItems)), ',');
-        
-        $stmt = $this->db->prepare($sql);
-        foreach ($cartItems as $index => $item) {
-            $stmt->bindValue(":id_$index", uniqid());
-            $stmt->bindValue(":order_id_$index", $orderId);
-            $stmt->bindValue(":product_id_$index", $item['product_id']);
-            $stmt->bindValue(":quantity_$index", $item['quantity']);
-            $stmt->bindValue(":price_$index", $item['price']);
-        }
-        $stmt->execute();
-    }
-
-    private function clearCart(string $cartId): void
-    {
-        $this->db->prepare("DELETE FROM cart_items WHERE cart_id = :cart_id")
-            ->execute(["cart_id" => $cartId]);
-    }
-
-    public function getOrderItems(string $orderId): array
-    {
-        $stmt = $this->db->prepare("
-            SELECT 
-                oi.id, 
-                oi.product_id, 
-                oi.quantity, 
-                oi.price, 
-                p.title AS name
-            FROM order_items oi
-            JOIN products p ON oi.product_id = p.id
-            WHERE oi.order_id = :order_id
-        ");
-        $stmt->execute(["order_id" => $orderId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

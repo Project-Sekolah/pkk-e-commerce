@@ -24,6 +24,16 @@ class Controller
     return new $model();
   }
 
+  public function checkAdmin()
+{
+    // Cek apakah user sudah login dan merupakan admin
+    if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+        header('Location: ' . BASEURL . '/');
+        exit;
+    }
+}
+
+
   public function checkLogin()
   {
     if (!isset($_SESSION["logged_in"]) || $_SESSION["logged_in"] !== true) {
@@ -54,5 +64,17 @@ class Controller
       $this->view($view, $data);
     }
     $this->view("templates/footer");
+  }
+
+    protected function renderAdmin($views = [], $data = [])
+  {
+    $this->attachUserData($data);
+
+    $this->view("admin/templates/header", $data);
+    $this->view("admin/templates/sidebar", $data);
+    foreach ($views as $view) {
+      $this->view($view, $data);
+    }
+    $this->view("admin/templates/footer", $data);
   }
 }

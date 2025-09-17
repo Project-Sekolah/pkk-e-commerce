@@ -1,6 +1,5 @@
 <?php
-class Cart_model
-{
+class Cart_model {
     private $cartTable = "carts";
     private $itemTable = "cart_items";
     private $db;

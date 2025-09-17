@@ -65,6 +65,11 @@ class User extends Controller
   public function login()
   {
     if (!empty($_SESSION["logged_in"])) {
+      // Jika sudah login dan admin, redirect ke dashboard admin
+      if (isset($_SESSION["user"]) && $_SESSION["user"]["role"] === "admin") {
+        header("Location: " . BASEURL . "/AdminDashboard");
+        exit();
+      }
       return $this->redirectHome();
     }
 
@@ -81,6 +86,11 @@ class User extends Controller
       if ($user && password_verify($password, $user["password"])) {
         $_SESSION["user"] = $user;
         $_SESSION["logged_in"] = true;
+        // Jika admin, redirect ke dashboard admin
+        if ($user["role"] === "admin") {
+          header("Location: " . BASEURL . "/AdminDashboard");
+          exit();
+        }
         return $this->redirectWithFlash("Login successful.", "success");
       }
 

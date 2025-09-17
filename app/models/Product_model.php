@@ -1,13 +1,55 @@
 <?php
 
-class Product_model
-{
+class Product_model {
+  // ...existing code...
+
   private $table = "products";
   private $db;
 
   public function __construct()
   {
     $this->db = new Database();
+  }
+
+  public function reduceProductStock(array $cartItems): void
+{
+    $sql = "UPDATE products 
+            SET stock = GREATEST(stock - :qty, 0) 
+            WHERE id = :pid AND stock >= :qty";
+    $this->db->query($sql);
+
+    foreach ($cartItems as $item) {
+        $this->db->bind(":qty", $item['quantity']);
+        $this->db->bind(":pid", $item['product_id']);
+        $this->db->execute();
+    }
+}
+
+
+  // Total produk aktif
+  public function getTotalProducts(){
+      $sql = "SELECT COUNT(*) as total FROM products WHERE deleted_at IS NULL AND is_active = 1";
+      $this->db->query($sql);
+      $result = $this->db->single();
+      return $result['total'] ?? 0;
+    }
+
+  // 5 produk terlaris berdasarkan jumlah penjualan
+  public function getTopSellingProducts($limit = 5)
+  {
+    $sql = "SELECT p.id, p.title, u.full_name AS seller_name, c.name AS category, SUM(oi.quantity) AS sold
+            FROM products p
+            JOIN order_items oi ON oi.product_id = p.id
+            JOIN orders o ON o.id = oi.order_id
+            JOIN users u ON p.user_id = u.id
+            JOIN categories c ON p.category_id = c.id
+            WHERE p.deleted_at IS NULL AND p.is_active = 1
+            GROUP BY p.id, p.title, u.full_name, c.name
+            ORDER BY sold DESC
+            LIMIT :limit";
+    $this->db->query($sql);
+    $this->db->bind(':limit', $limit, PDO::PARAM_INT);
+    return $this->db->resultSet();
   }
 
   public function getFilteredProductsPaginated(
@@ -108,8 +150,10 @@ class Product_model
     }
 
     $this->db->query($sql);
-    $this->db->execute($params);
-
+    foreach ($params as $key => $value) {
+      $paramType = is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR;
+      $this->db->bind($key + 1, $value, $paramType);
+    }
     $result = $this->db->single();
     return $result["total"] ?? 0;
   }

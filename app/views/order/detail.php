@@ -1,47 +1,47 @@
 <?php
-// app/views/order/detail.php
-$this->view("templates/header", $data);
+$order = $data['order'] ?? [];
+$order_items = $data['order_items'] ?? [];
 ?>
-
-<div class="container mt-5">
-    <h1 class="mb-4"><?= htmlspecialchars($data['judul']); ?></h1>
-
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Order ID: <?= htmlspecialchars($data['order']['id']); ?></h5>
-                    <p class="card-text">Total: $<?= number_format($data['order']['total'], 2); ?></p>
-                    <p class="card-text">Status: <?= htmlspecialchars($data['order']['status']); ?></p>
-                    <p class="card-text">Date: <?= htmlspecialchars($data['order']['created_at']); ?></p>
-                </div>
+<div class="container py-4">
+    <h2>Detail Order</h2>
+    <a href="<?= BASEURL ?>/order/history" class="btn btn-secondary mb-3">
+        <i class="bi bi-arrow-left-short"></i> Kembali ke History
+    </a>
+    <?php Flasher::flash(); ?>
+    <?php if (!empty($order)): ?>
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Order #<?= htmlspecialchars($order['id']); ?></h5>
+                <p>Status: <span class="badge bg-info text-dark"><?= htmlspecialchars($order['status']); ?></span></p>
+                <p>Alamat Pengiriman: <?= htmlspecialchars($order['customer_address']); ?></p>
+                <p>Tanggal: <?= htmlspecialchars($order['created_at']); ?></p>
+                <p>Total: <strong>Rp <?= number_format($order['total'], 0, ',', '.'); ?></strong></p>
             </div>
-
-            <h2 class="mt-4">Order Items</h2>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Product</th>
-                        <th>Quantity</th>
-                        <th>Price</th>
-                        <th>Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($data['order']['items'] as $item): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($item['name']); ?></td>
-                            <td><?= htmlspecialchars($item['quantity']); ?></td>
-                            <td>$<?= number_format($item['price'], 2); ?></td>
-                            <td>$<?= number_format($item['quantity'] * $item['price'], 2); ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
         </div>
-    </div>
+        <div class="card">
+            <div class="card-header">Produk yang Dibeli</div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Produk</th>
+                            <th>Qty</th>
+                            <th>Harga</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($order_items as $item): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($item['name']); ?></td>
+                                <td><?= $item['quantity']; ?></td>
+                                <td>Rp <?= number_format($item['price'], 0, ',', '.'); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    <?php else: ?>
+        <div class="alert alert-warning">Order tidak ditemukan.</div>
+    <?php endif; ?>
 </div>
-
-<?php
-$this->view("templates/footer");
-?>
