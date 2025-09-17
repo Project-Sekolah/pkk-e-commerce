@@ -3,11 +3,10 @@ $orders = $data['orders'] ?? [];
 $userPhone = $data['user']['phone_number'] ?? '-';
 ?>
 
-<div class="container py-4">
-    <h2>Riwayat Order</h2>
+<div class="container py-4 mt-4">
     <?php Flasher::flash(); ?>
     <?php if (!empty($orders)): ?>
-        <table class="table table-bordered">
+        <table id="ordersTable" class="table table-bordered table-striped mt-4">
             <thead>
                 <tr>
                     <th>ID Order</th>
@@ -54,18 +53,27 @@ $userPhone = $data['user']['phone_number'] ?? '-';
     <?php endif; ?>
 </div>
 
-<script>
-    console.log(<?php echo json_encode($data); ?>);
-</script>
+<!-- Include jQuery & DataTables CSS/JS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
-
 <script>
+$(document).ready(function() {
+    $('#ordersTable').DataTable({
+        responsive: true,
+        pageLength: 10,
+        lengthMenu: [5, 10, 25, 50],
+        order: [[1, 'desc']] // default sorting by tanggal desc
+    });
+});
+
 async function downloadStruk(orderId, total, tanggal, phone, items) {
     try {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
 
-        // Header
         doc.setFontSize(18);
         doc.setFont("helvetica", "bold");
         doc.text("STRUK PEMBAYARAN", 105, 20, { align: "center" });
@@ -76,7 +84,6 @@ async function downloadStruk(orderId, total, tanggal, phone, items) {
         doc.text(`Nomor HP   : ${phone || "-"}`, 20, 42);
         doc.text(`Tanggal     : ${tanggal}`, 20, 49);
 
-        // Format item dari PHP (nama, qty, harga, subtotal)
         const body = items.map(item => [
             item.name,
             item.quantity,
@@ -92,23 +99,19 @@ async function downloadStruk(orderId, total, tanggal, phone, items) {
             headStyles: { fillColor: [39, 174, 96] },
         });
 
-        // Total
         let finalY = doc.lastAutoTable.finalY + 10;
         doc.setFontSize(13);
         doc.setFont("helvetica", "bold");
         doc.text(`TOTAL: Rp ${total}`, 20, finalY);
 
-        // Footer
         finalY += 20;
         doc.setFontSize(10);
         doc.setFont("helvetica", "italic");
         doc.text("Terima kasih telah berbelanja di PKK E-Commerce.", 105, finalY, { align: "center" });
 
-        // === PREVIEW DI TAB BARU DULU ===
         const pdfBlobUrl = doc.output("bloburl");
         const previewWindow = window.open(pdfBlobUrl, "_blank");
 
-        // Setelah preview terbuka, kasih pilihan download pakai SweetAlert
         if (previewWindow) {
             Swal.fire({
                 title: "Preview Struk",
@@ -125,7 +128,6 @@ async function downloadStruk(orderId, total, tanggal, phone, items) {
                 }
             });
         }
-
     } catch (err) {
         Swal.fire({
             icon: 'error',
@@ -135,5 +137,4 @@ async function downloadStruk(orderId, total, tanggal, phone, items) {
         });
     }
 }
-
 </script>

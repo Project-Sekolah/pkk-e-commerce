@@ -176,9 +176,17 @@ loading="lazy">
         <a href="<?= BASEURL ?>/discount" class="d-flex align-items-center
         mb-3"><i class="bi bi-tag-fill"></i><span class="ms-2">Discount
         Saya</span></a>
+
+            <?php if (
+              $_SESSION["user"]["role"] === "admin"
+            ): ?>
+              <a href="<?= BASEURL ?>/adminDashboard" class="d-flex align-items-center mb-3"><i class="bi bi-person-fill-check"></i><span class="ms-2">Admin</span></a>
+          <?php endif; ?>
       <?php endif; ?>
       <a href="<?= BASEURL ?>/user/logout" class="d-flex align-items-center mb-3"><i class="bi bi-door-closed-fill" id="logout-link"></i><span class="ms-2">Logout</span></a>
     <?php endif; ?>
+
+
   </div>
 </div>
 
