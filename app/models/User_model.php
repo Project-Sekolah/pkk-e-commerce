@@ -1,7 +1,6 @@
 <?php
 
-class User_model
-{
+class User_model {
   private $table = "users";
   private $db;
 
@@ -9,6 +8,15 @@ class User_model
   {
     $this->db = new Database();
   }
+
+  public function getDefaultAddress($userId)
+  {
+    $sql = "SELECT * FROM user_addresses WHERE user_id = :user_id AND is_default = 1 AND deleted_at IS NULL LIMIT 1";
+    $this->db->query($sql);
+    $this->db->bind(":user_id", $userId);
+    return $this->db->single();
+  }
+
 
   // Ambil semua user
   public function getAllUsers()

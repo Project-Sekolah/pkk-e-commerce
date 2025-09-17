@@ -1,6 +1,5 @@
 <?php
-class Discount_model
-{
+class Discount_model {
   private $db;
 
   public function __construct()

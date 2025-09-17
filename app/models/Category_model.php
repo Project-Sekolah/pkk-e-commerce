@@ -8,8 +8,7 @@
  * - Category retrieval by various parameters
  * - Category validation
  */
-class Category_model
-{
+class Category_model {
     /** @var string Table name for categories */
     private const TABLE = 'categories';
     

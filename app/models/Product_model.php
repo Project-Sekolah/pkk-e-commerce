@@ -1,17 +1,38 @@
 <?php
 
-class Product_model
-{
+class Product_model {
   // ...existing code...
 
-  // Total produk aktif
-  public function getTotalProducts()
+  private $table = "products";
+  private $db;
+
+  public function __construct()
   {
-    $sql = "SELECT COUNT(*) as total FROM products WHERE deleted_at IS NULL AND is_active = 1";
-    $this->db->query($sql);
-    $result = $this->db->single();
-    return $result['total'] ?? 0;
+    $this->db = new Database();
   }
+
+  public function reduceProductStock(array $cartItems): void
+{
+    $sql = "UPDATE products 
+            SET stock = GREATEST(stock - :qty, 0) 
+            WHERE id = :pid AND stock >= :qty";
+    $this->db->query($sql);
+
+    foreach ($cartItems as $item) {
+        $this->db->bind(":qty", $item['quantity']);
+        $this->db->bind(":pid", $item['product_id']);
+        $this->db->execute();
+    }
+}
+
+
+  // Total produk aktif
+  public function getTotalProducts(){
+      $sql = "SELECT COUNT(*) as total FROM products WHERE deleted_at IS NULL AND is_active = 1";
+      $this->db->query($sql);
+      $result = $this->db->single();
+      return $result['total'] ?? 0;
+    }
 
   // 5 produk terlaris berdasarkan jumlah penjualan
   public function getTopSellingProducts($limit = 5)
@@ -29,13 +50,6 @@ class Product_model
     $this->db->query($sql);
     $this->db->bind(':limit', $limit, PDO::PARAM_INT);
     return $this->db->resultSet();
-  }
-  private $table = "products";
-  private $db;
-
-  public function __construct()
-  {
-    $this->db = new Database();
   }
 
   public function getFilteredProductsPaginated(
