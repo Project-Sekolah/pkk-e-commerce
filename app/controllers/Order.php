@@ -65,7 +65,7 @@ public function success() {
         $defaultAddress = $userModel->getDefaultAddress($userId);
         if (!$defaultAddress) {
             Flasher::setFlash('Alamat utama belum diatur!', 'Silakan atur alamat utama di profil.', 'error');
-            header('Location: ' . BASEURL . '/cart');
+            header('Location: ' . BASEURL . '/');
             exit;
         }
         $customerAddress = $defaultAddress['address_line_1'];
@@ -74,7 +74,7 @@ public function success() {
         $orderId = $orderModel->createOrderFromCart($userId, $customerAddress);
         if (!$orderId) {
             Flasher::setFlash('Gagal membuat order!', 'Coba ulangi atau hubungi admin.', 'error');
-            header('Location: ' . BASEURL . '/cart');
+            header('Location: ' . BASEURL . '/');
             exit;
         }
 
