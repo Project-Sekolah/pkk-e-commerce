@@ -1,5 +1,3 @@
-
-
 <div class="main-content d-flex flex-column">
     <div class="d-block d-lg-none w-100 mb-3">
         <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSidebar" aria-controls="offcanvasSidebar">
