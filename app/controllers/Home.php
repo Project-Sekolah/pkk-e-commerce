@@ -20,4 +20,4 @@ class Home extends Controller {
         $this->render(['templates/hero', 'home/index'], $data);
     }
 }
-?>
+
