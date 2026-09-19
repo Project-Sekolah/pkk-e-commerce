@@ -1,5 +1,20 @@
-// const BASEURL = "http://localhost/rajendra-lp-rajif/pkk-e-commerce/public";
-const BASEURL = "https://lunerburg.up.railway.app";
+const BASEURL = window.BASEURL || window.location.origin;
+
+// Auto attach CSRF token to fetch requests
+const _originalFetch = window.fetch;
+window.fetch = function(url, options = {}) {
+    options = options || {};
+    options.headers = options.headers || {};
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    if (token) {
+        if (options.headers instanceof Headers) {
+            if (!options.headers.has('X-CSRF-TOKEN')) options.headers.set('X-CSRF-TOKEN', token);
+        } else {
+            if (!options.headers['X-CSRF-TOKEN']) options.headers['X-CSRF-TOKEN'] = token;
+        }
+    }
+    return _originalFetch(url, options);
+};
 
 const $cartItems = document.getElementById("cart-items");
 const $subtotal = document.getElementById("subtotal");

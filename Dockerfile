@@ -1,37 +1,38 @@
-FROM php:8.2-apache
+FROM php:8.3-apache
 
 # Install PHP extensions
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+RUN apt-get update && apt-get install -y unzip git libzip-dev libpng-dev libjpeg-dev libfreetype6-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install mysqli pdo pdo_mysql zip gd
 
 # Enable mod_rewrite
 RUN a2enmod rewrite
 
-# Copy aplikasi ke container
+# Copy application to container
 COPY . /var/www/html/
 
 # Set working directory
 WORKDIR /var/www/html/
 
-# Install dependencies tambahan untuk composer dan ekstensi zip
-RUN apt-get update && apt-get install -y unzip git libzip-dev \
-    && docker-php-ext-install zip
-
-
 RUN git config --global --add safe.directory /var/www/html
 
-# Install composer dan dependencies
+# Install composer and production dependencies
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
     && php -r "unlink('composer-setup.php');" \
     && composer install --no-dev --optimize-autoloader
 
-# Ubah DocumentRoot ke /public
+# Storage & cache permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Change DocumentRoot to /public
 RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
 
-# Izinkan .htaccess override
+# Allow .htaccess override
 RUN sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
 
-# Tambahkan ServerName
+# ServerName
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
@@ -40,3 +41,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
 EXPOSE 80
 
 CMD ["apache2-foreground"]
+
