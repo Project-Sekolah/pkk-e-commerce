@@ -14,15 +14,26 @@ echo "======================================"
 
 # ============================================================
 # APACHE MPM
-# Pastikan hanya satu MPM yang aktif
+# Pastikan hanya mpm_prefork aktif
 # ============================================================
 
-a2dismod mpm_event 2>/dev/null || true
-a2dismod mpm_worker 2>/dev/null || true
-a2dismod mpm_mpmt 2>/dev/null || true
-a2dismod mpm_prefork 2>/dev/null || true
+rm -f \
+    /etc/apache2/mods-enabled/mpm_event.load \
+    /etc/apache2/mods-enabled/mpm_event.conf \
+    /etc/apache2/mods-enabled/mpm_worker.load \
+    /etc/apache2/mods-enabled/mpm_worker.conf \
+    /etc/apache2/mods-enabled/mpm_mpmt.load \
+    /etc/apache2/mods-enabled/mpm_mpmt.conf \
+    /etc/apache2/mods-enabled/mpm_prefork.load \
+    /etc/apache2/mods-enabled/mpm_prefork.conf
 
-a2enmod mpm_prefork
+ln -s /etc/apache2/mods-available/mpm_prefork.load \
+    /etc/apache2/mods-enabled/mpm_prefork.load
+
+ln -s /etc/apache2/mods-available/mpm_prefork.conf \
+    /etc/apache2/mods-enabled/mpm_prefork.conf
+
+
 a2enmod rewrite
 
 # ============================================================

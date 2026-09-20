@@ -71,18 +71,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 
+# =====================================================
 # ============================================================
 # APACHE MPM
-# Hanya mpm_prefork yang digunakan oleh PHP Apache
+# PHP Apache menggunakan prefork
+# Pastikan HANYA mpm_prefork yang aktif
 # ============================================================
 
-RUN a2dismod mpm_event 2>/dev/null || true \
-    && a2dismod mpm_worker 2>/dev/null || true \
-    && a2dismod mpm_mpmt 2>/dev/null || true \
-    && a2dismod mpm_prefork 2>/dev/null || true \
-    && a2enmod mpm_prefork \
+RUN rm -f \
+        /etc/apache2/mods-enabled/mpm_event.load \
+        /etc/apache2/mods-enabled/mpm_event.conf \
+        /etc/apache2/mods-enabled/mpm_worker.load \
+        /etc/apache2/mods-enabled/mpm_worker.conf \
+        /etc/apache2/mods-enabled/mpm_mpmt.load \
+        /etc/apache2/mods-enabled/mpm_mpmt.conf \
+        /etc/apache2/mods-enabled/mpm_prefork.load \
+        /etc/apache2/mods-enabled/mpm_prefork.conf \
+    && ln -s /etc/apache2/mods-available/mpm_prefork.load \
+        /etc/apache2/mods-enabled/mpm_prefork.load \
+    && ln -s /etc/apache2/mods-available/mpm_prefork.conf \
+        /etc/apache2/mods-enabled/mpm_prefork.conf \
     && a2enmod rewrite
-
 
 # ============================================================
 # LARAVEL APPLICATION
@@ -152,8 +161,7 @@ HEALTHCHECK \
     --timeout=10s \
     --start-period=30s \
     --retries=3 \
-    CMD curl --fail http://localhost:${PORT:-80}/up || exit 1
-
+    CMD sh -c 'curl --fail http://127.0.0.1:${PORT:-80}/up || exit 1'
 
 # ============================================================
 # PORT
