@@ -64,6 +64,75 @@ footer {
     padding: 0.8rem 1rem;
 }
 
+.product-filters {
+    background: rgba(248, 249, 250, 0.86) !important;
+}
+
+.filter-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+}
+
+.filter-hint {
+    color: #8a8f92;
+    font-size: 0.72rem;
+}
+
+.filter-chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.filter-chip {
+    position: relative;
+    margin: 0;
+    cursor: pointer;
+}
+
+.filter-chip-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.filter-chip span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid #d7d9d8;
+    border-radius: 999px;
+    background: #fff;
+    color: #596267;
+    font-size: 0.82rem;
+    transition: 0.2s ease;
+}
+
+.filter-chip:hover span,
+.filter-chip-input:focus-visible + span {
+    border-color: #8b9a6d;
+    color: #46555f;
+}
+
+.filter-chip-input:checked + span {
+    border-color: #46555f;
+    background: #46555f;
+    color: #fff;
+    box-shadow: 0 3px 8px rgba(70, 85, 95, 0.18);
+}
+
+.filter-summary {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    min-height: 100%;
+}
+
 /* ==========================
    Navbar Brand (Lunerburg & Co)
 ========================== */
@@ -363,6 +432,9 @@ footer {
     perspective: 1000px;
     transition: transform 0.3s ease;
     background-color: var(--color-bg-body);
+    border-color: var(--color-border-card) !important;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 .card-3d img {
@@ -379,6 +451,20 @@ footer {
 
 .card-3d:hover img {
     filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.5));
+}
+
+.product-item .card-3d {
+    min-height: 390px;
+}
+
+.product-item .product-img {
+    height: 240px !important;
+    aspect-ratio: 4 / 3;
+}
+
+.admin-orders-table td,
+.admin-orders-table th {
+    white-space: nowrap;
 }
 
 /* ==========================
@@ -733,5 +819,22 @@ textarea#ratingComment {
 
     .collection-box {
         margin: 10px;
+    }
+
+    .filter-summary {
+        justify-content: space-between;
+        padding-top: 0.25rem;
+    }
+
+    .product-item .card-3d {
+        min-height: 0;
+    }
+
+    .product-item .product-img {
+        height: 220px !important;
+    }
+
+    .modal-body {
+        padding: 1rem !important;
     }
 }

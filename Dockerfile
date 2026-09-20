@@ -1,42 +1,179 @@
-FROM php:8.2-apache
+# ============================================================
+# FRONTEND BUILD
+# ============================================================
 
-# Install PHP extensions
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+FROM node:22-alpine AS frontend
 
-# Enable mod_rewrite
-RUN a2enmod rewrite
+WORKDIR /build
 
-# Copy aplikasi ke container
-COPY . /var/www/html/
+COPY package*.json ./
 
-# Set working directory
-WORKDIR /var/www/html/
+RUN npm ci
 
-# Install dependencies tambahan untuk composer dan ekstensi zip
-RUN apt-get update && apt-get install -y unzip git libzip-dev \
-    && docker-php-ext-install zip
+COPY resources ./resources
+COPY public ./public
+COPY vite.config.js ./
+
+RUN npm run build
 
 
-RUN git config --global --add safe.directory /var/www/html
+# ============================================================
+# COMPOSER DEPENDENCIES
+# ============================================================
 
-# Install composer dan dependencies
-RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
-    && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
-    && php -r "unlink('composer-setup.php');" \
-    && composer install --no-dev --optimize-autoloader
+FROM composer:2 AS vendor
 
-# Ubah DocumentRoot ke /public
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+WORKDIR /app
 
-# Izinkan .htaccess override
-RUN sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
+COPY composer.json composer.lock ./
 
-# Tambahkan ServerName
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --no-progress \
+    --prefer-dist \
+    --optimize-autoloader \
+    --no-scripts \
+    --ignore-platform-req=ext-mysqli \
+    --ignore-platform-req=ext-pdo_mysql
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-  CMD curl --fail http://localhost || exit 1
+
+# ============================================================
+# PRODUCTION
+# ============================================================
+
+FROM php:8.4-apache
+
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+
+WORKDIR /var/www/html
+
+
+# ============================================================
+# SYSTEM DEPENDENCIES + PHP EXTENSIONS
+# ============================================================
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        curl \
+        libfreetype6-dev \
+        libjpeg62-turbo-dev \
+        libpng-dev \
+        libzip-dev \
+    && docker-php-ext-configure gd \
+        --with-freetype \
+        --with-jpeg \
+    && docker-php-ext-install -j"$(nproc)" \
+        gd \
+        mysqli \
+        pdo \
+        pdo_mysql \
+        zip \
+    && rm -rf /var/lib/apt/lists/*
+
+
+# =====================================================
+# ============================================================
+# APACHE MPM
+# PHP Apache menggunakan prefork
+# Pastikan HANYA mpm_prefork yang aktif
+# ============================================================
+
+RUN rm -f \
+        /etc/apache2/mods-enabled/mpm_event.load \
+        /etc/apache2/mods-enabled/mpm_event.conf \
+        /etc/apache2/mods-enabled/mpm_worker.load \
+        /etc/apache2/mods-enabled/mpm_worker.conf \
+        /etc/apache2/mods-enabled/mpm_mpmt.load \
+        /etc/apache2/mods-enabled/mpm_mpmt.conf \
+        /etc/apache2/mods-enabled/mpm_prefork.load \
+        /etc/apache2/mods-enabled/mpm_prefork.conf \
+    && ln -s /etc/apache2/mods-available/mpm_prefork.load \
+        /etc/apache2/mods-enabled/mpm_prefork.load \
+    && ln -s /etc/apache2/mods-available/mpm_prefork.conf \
+        /etc/apache2/mods-enabled/mpm_prefork.conf \
+    && a2enmod rewrite
+
+# ============================================================
+# LARAVEL APPLICATION
+# ============================================================
+
+COPY --from=vendor /app/vendor ./vendor
+
+COPY . .
+
+COPY --from=frontend /build/public/build ./public/build
+
+
+# ============================================================
+# PHP CONFIGURATION
+# ============================================================
+
+COPY config/php/uploads.ini \
+    /usr/local/etc/php/conf.d/uploads.ini
+
+
+# ============================================================
+# APACHE DOCUMENT ROOT
+# ============================================================
+
+RUN sed -i \
+        's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' \
+        /etc/apache2/sites-available/000-default.conf \
+    && sed -i \
+        's/AllowOverride None/AllowOverride All/g' \
+        /etc/apache2/apache2.conf \
+    && echo 'ServerName localhost' >> /etc/apache2/apache2.conf
+
+# ============================================================
+# LARAVEL DIRECTORIES
+# ============================================================
+
+RUN mkdir -p \
+        storage/framework/cache \
+        storage/framework/sessions \
+        storage/framework/views \
+        storage/logs \
+        bootstrap/cache \
+    && chown -R www-data:www-data \
+        storage \
+        bootstrap/cache \
+    && chmod -R ug+rwX \
+        storage \
+        bootstrap/cache
+
+
+# ============================================================
+# ENTRYPOINT
+# ============================================================
+
+COPY docker-entrypoint.sh \
+    /usr/local/bin/docker-entrypoint
+
+RUN chmod +x /usr/local/bin/docker-entrypoint
+
+
+# ============================================================
+# HEALTHCHECK
+# ============================================================
+
+HEALTHCHECK \
+    --interval=30s \
+    --timeout=10s \
+    --start-period=30s \
+    --retries=3 \
+    CMD sh -c 'curl --fail http://127.0.0.1:${PORT:-80}/up || exit 1'
+
+# ============================================================
+# PORT
+# ============================================================
 
 EXPOSE 80
+
+
+# ============================================================
+# START CONTAINER
+# ============================================================
+
+ENTRYPOINT ["docker-entrypoint"]
 
 CMD ["apache2-foreground"]
