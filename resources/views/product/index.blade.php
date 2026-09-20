@@ -87,6 +87,7 @@
                              data-bs-toggle="modal"
                              data-bs-target="#productModal"
                              data-id="{{ $product->id }}"
+                             data-userid="{{ $product->user_id }}"
                              data-title="{{ $product->title }}"
                              data-price="{{ number_format($product->price, 0, ',', '.') }}"
                              data-category="{{ $product->category?->name ?? 'Umum' }}"
@@ -107,6 +108,7 @@
                     <div class="card-body d-flex flex-column justify-content-between p-3">
                         <div>
                             <small class="text-muted text-uppercase d-block mb-1">{{ $product->category?->name }}</small>
+                            <a href="{{ route('products.storefront', $product->user_id) }}" class="small text-decoration-none text-success"><i class="bi bi-shop me-1"></i>{{ $product->user?->shop_name ?? $product->user?->full_name }}</a>
                             <h6 class="card-title fw-bold mb-1 text-truncate" title="{{ $product->title }}">
                                 {{ $product->title }}
                             </h6>
@@ -121,9 +123,10 @@
                             <span class="fw-bold text-primary fs-6">
                                 Rp {{ number_format($product->price, 0, ',', '.') }}
                             </span>
-                            <button class="btn btn-sm btn-outline-primary add-to-cart" data-id="{{ $product->id }}">
-                                <i class="bi bi-cart-plus"></i>
-                            </button>
+                            <div class="d-flex gap-2">
+                                <a href="{{ route('products.show', $product->id) }}" class="btn btn-sm btn-outline-dark" title="Lihat detail"><i class="bi bi-eye"></i></a>
+                                <button class="btn btn-sm btn-outline-primary add-to-cart" data-id="{{ $product->id }}"><i class="bi bi-cart-plus"></i></button>
+                            </div>
                         </div>
                     </div>
                 </div>

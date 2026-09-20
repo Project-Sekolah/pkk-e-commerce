@@ -43,15 +43,8 @@
                         @foreach($products as $product)
                             <tr>
                                 <td style="width: 80px;">
-                                    <div class="d-flex flex-wrap gap-1" style="max-width: 150px;">
-                                        @forelse($product->images as $image)
-                                            <img src="{{ $image->image_url }}" alt="{{ $product->title }}"
-                                                 class="rounded" width="42" height="42" style="object-fit: cover;">
-                                        @empty
-                                            <img src="{{ $product->first_image_url }}" alt="{{ $product->title }}"
-                                                 class="rounded" width="60" height="60" style="object-fit: cover;">
-                                        @endforelse
-                                    </div>
+                                    <img src="{{ $product->first_image_url }}" alt="{{ $product->title }}"
+                                         class="rounded" width="60" height="60" style="object-fit: cover;">
                                 </td>
                                 <td>
                                     <div class="fw-bold">{{ $product->title }}</div>

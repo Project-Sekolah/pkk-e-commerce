@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Discount;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
@@ -11,6 +12,14 @@ class HomeController extends Controller
     public function index()
     {
         $categories = Category::where('is_active', true)->get();
+        $discounts = Discount::with(['products' => fn ($query) => $query->where('products.is_active', true)->with('images')])
+            ->where('is_active', true)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->whereHas('products', fn ($query) => $query->where('products.is_active', true))
+            ->orderByDesc('percentage')
+            ->take(5)
+            ->get();
 
         $products = Product::with(['category', 'images', 'user', 'ratings.user'])
             ->withAvg('ratings', 'rating')
@@ -32,6 +41,7 @@ class HomeController extends Controller
         return view('home', [
             'judul' => 'Lunerburg & Co - Home',
             'categories' => $categories,
+            'discounts' => $discounts,
             'products' => $products,
         ]);
     }

@@ -110,6 +110,28 @@
                     </div>
                     <form action="{{ route('order.checkout') }}" method="POST">
                         @csrf
+                        <input type="hidden" name="discount_name" id="checkoutDiscountName" value="">
+                        <div class="mb-3">
+                            <label class="form-label">Alamat Pengiriman</label>
+                            <select name="address_id" class="form-select" required>
+                                @foreach(Auth::user()->addresses as $address)
+                                    <option value="{{ $address->id }}" {{ $address->is_default ? 'selected' : '' }}>
+                                        {{ $address->label ?: 'Alamat' }} - {{ $address->address_line_1 }}, {{ $address->city }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @if(Auth::user()->addresses->isEmpty())
+                                <small class="text-danger">Tambahkan alamat terlebih dahulu di profil.</small>
+                            @endif
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Kurir</label>
+                            <select name="courier" id="checkoutCourier" class="form-select" required>
+                                <option value="jne_reg" data-fee="15000">JNE Reguler - Rp 15.000</option>
+                                <option value="jnt_reg" data-fee="14000">J&T Reguler - Rp 14.000</option>
+                                <option value="sicepat_reg" data-fee="16000">SiCepat Reguler - Rp 16.000</option>
+                            </select>
+                        </div>
                         <div class="form-check mb-3">
                             <input class="form-check-input" type="checkbox" id="agreeTerms" required checked>
                             <label class="form-check-label small" for="agreeTerms">
@@ -236,6 +258,13 @@
                 <i class="bi bi-bag-fill me-2 fs-5"></i><span>Produk</span>
             </a>
             @auth
+                @if(Auth::user()->isSeller())
+                    <a href="{{ route('products.storefront', Auth::user()->id) }}" class="d-flex align-items-center mb-3 text-decoration-none text-dark">
+                        <i class="bi bi-shop me-2 fs-5"></i><span>Toko Saya</span>
+                    </a>
+                @endif
+            @endauth
+            @auth
                 <a href="{{ route('order.history') }}" class="d-flex align-items-center mb-3 text-decoration-none text-dark">
                     <i class="bi bi-hourglass-split me-2 fs-5"></i><span>Riwayat Order</span>
                 </a>
@@ -249,6 +278,9 @@
                 @if(Auth::user()->isSeller())
                     <a href="{{ route('products.seller') }}" class="d-flex align-items-center mb-3 text-decoration-none text-dark">
                         <i class="bi bi-cart-fill me-2 fs-5"></i><span>Produk Saya</span>
+                    </a>
+                    <a href="{{ route('products.sales-report') }}" class="d-flex align-items-center mb-3 text-decoration-none text-dark">
+                        <i class="bi bi-bar-chart-line-fill me-2 fs-5"></i><span>Laporan Penjualan</span>
                     </a>
                     <a href="{{ route('discounts.index') }}" class="d-flex align-items-center mb-3 text-decoration-none text-dark">
                         <i class="bi bi-tag-fill me-2 fs-5"></i><span>Diskon Saya</span>
@@ -295,8 +327,10 @@
                     <div class="row g-4">
                         <div class="col-md-5 d-flex justify-content-center align-items-center">
                             <div class="modal-image-container text-center w-100">
-                                <div id="modalImageGallery" class="d-flex flex-wrap justify-content-center gap-2">
-                                    <img id="modalImage" src="" class="img-fluid rounded shadow-sm modal-image" alt="Product Image" style="max-height: 320px; object-fit: cover;">
+                                <div id="modalImageGallery" class="carousel slide" data-bs-ride="false">
+                                    <div id="modalImageSlides" class="carousel-inner rounded"></div>
+                                    <button class="carousel-control-prev" type="button" data-bs-target="#modalImageGallery" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+                                    <button class="carousel-control-next" type="button" data-bs-target="#modalImageGallery" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
                                 </div>
                                 <div class="price-tag mt-2 fs-5 fw-bold text-primary">
                                     Rp <span id="modalPrice"></span>
@@ -310,11 +344,14 @@
                                 <p class="mb-1"><i class="bi bi-tags-fill me-2"></i><strong>Kategori:</strong> <span id="modalCategory"></span></p>
                                 <p class="mb-1"><i class="bi bi-gender-ambiguous me-2"></i><strong>Gender:</strong> <span id="modalGender"></span></p>
                                 <p class="mb-1"><i class="bi bi-box-seam me-2"></i><strong>Stok:</strong> <span id="modalStock"></span></p>
-                                <p class="mb-1"><i class="bi bi-person-fill me-2"></i><strong>Penjual:</strong> <span id="modalOwnerName"></span></p>
+                                <p class="mb-1"><i class="bi bi-person-fill me-2"></i><strong>Penjual:</strong> <a id="modalOwnerLink" href="#" class="text-success text-decoration-none"><span id="modalOwnerName"></span></a></p>
                                 <p class="mb-1"><i class="bi bi-chat-left-text-fill me-2"></i><strong>Komentar:</strong> <span id="modalRatingCount">0 komentar</span></p>
                             </div>
-                            <p class="mb-1"><strong>Deskripsi:</strong></p>
                             <p id="modalDescription" class="small text-muted mb-3"></p>
+
+                            <a id="modalDetailLink" href="#" class="btn btn-sm btn-outline-dark mb-3">
+                                <i class="bi bi-eye me-1"></i> Lihat Detail Lengkap
+                            </a>
 
                             <div class="product-comments mt-3">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -322,6 +359,7 @@
                                     <span class="small text-muted" id="modalCommentsStatus">Memuat...</span>
                                 </div>
                                 <div id="modalCommentsContainer" class="border-top pt-3"></div>
+                                <div id="modalCommentsPagination" class="d-flex justify-content-between align-items-center mt-3"></div>
                             </div>
 
                             <button id="modalAddToCartBtn" class="btn btn-primary add-to-cart w-100 mb-3" data-id="">

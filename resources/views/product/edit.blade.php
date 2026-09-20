@@ -68,17 +68,17 @@
             <!-- Existing Images -->
             <div class="mb-3">
                 <label class="form-label fw-semibold">Foto Saat Ini</label>
+                <input type="hidden" name="main_image_id" id="mainImageId" value="{{ $product_images->firstWhere('is_primary', true)?->id ?? $product_images->first()?->id }}">
                 <div class="d-flex flex-wrap gap-2">
                     @forelse($product_images as $img)
-                        <div class="position-relative border rounded p-1">
+                        <div class="position-relative border rounded p-1 product-image-choice {{ $img->is_primary ? 'border-primary border-3' : '' }}" data-image-id="{{ $img->id }}">
                             <img src="{{ $img->image_url }}" alt="Img" width="90" height="90" style="object-fit: cover;" class="rounded">
-                            <form action="{{ route('products.image.destroy', $img->id) }}" method="POST" class="delete-product-image-form position-absolute top-0 end-0 m-1">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger p-1" title="Hapus foto" onclick="return confirm('Hapus foto ini?');">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
+                            <button type="button" class="btn btn-sm btn-light w-100 set-primary-image mt-1" data-image-id="{{ $img->id }}">
+                                {{ $img->is_primary ? 'Foto Utama' : 'Jadikan Utama' }}
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger p-1 delete-product-image position-absolute top-0 end-0 m-1" title="Hapus foto" data-delete-url="{{ route('products.image.destroy', $img->id) }}">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </div>
                     @empty
                         <span class="text-muted small">Belum ada foto yang diunggah.</span>
@@ -100,3 +100,17 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.querySelectorAll('.set-primary-image').forEach(button => {
+    button.addEventListener('click', () => {
+        document.getElementById('mainImageId').value = button.dataset.imageId;
+        document.querySelectorAll('.product-image-choice').forEach(card => card.classList.remove('border-primary', 'border-3'));
+        button.closest('.product-image-choice')?.classList.add('border-primary', 'border-3');
+        document.querySelectorAll('.set-primary-image').forEach(item => item.textContent = 'Jadikan Utama');
+        button.textContent = 'Foto Utama';
+    });
+});
+</script>
+@endpush

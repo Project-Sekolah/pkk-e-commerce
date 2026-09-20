@@ -10,6 +10,7 @@ use App\Models\ProductImage;
 use App\Models\ProductRating;
 use App\Models\OrderItem;
 use App\Services\CloudinaryService;
+use App\Services\OrderExpiryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -64,6 +65,51 @@ class ProductController extends Controller
         ]);
     }
 
+    public function storeFront(string $sellerId)
+    {
+        $seller = \App\Models\User::whereIn('role', ['seller', 'admin'])->findOrFail($sellerId);
+        $products = Product::with(['category', 'images', 'user'])
+            ->withAvg('ratings', 'rating')
+            ->withCount('ratings')
+            ->where('user_id', $seller->id)
+            ->where('is_active', true)
+            ->latest()
+            ->paginate($this->perPage);
+        $discounts = Discount::with('products')
+            ->where('user_id', $seller->id)
+            ->where('is_active', true)
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->whereHas('products', fn ($query) => $query->where('products.is_active', true)->where('products.user_id', $seller->id))
+            ->orderByDesc('percentage')
+            ->get();
+
+        return view('product.storefront', compact('seller', 'products', 'discounts'));
+    }
+
+    public function salesReport(OrderExpiryService $expiryService)
+    {
+        $expiryService->expirePendingOrders();
+        $validStatuses = ['paid', 'completed', 'shipped'];
+        $salesQuery = OrderItem::with(['order.user', 'product'])
+            ->whereHas('product', fn ($query) => $query->where('user_id', Auth::id()))
+            ->whereHas('order', function ($query) use ($validStatuses) {
+                $query->whereIn('status', $validStatuses);
+            });
+        $sales = (clone $salesQuery)->latest()->get();
+        $totalOrders = (clone $salesQuery)->distinct('order_id')->count('order_id');
+        $totalItems = (clone $salesQuery)->sum('quantity');
+        $totalRevenue = (clone $salesQuery)->selectRaw('COALESCE(SUM(price * quantity), 0) as revenue')->value('revenue');
+
+        return view('product.sales-report', [
+            'judul' => 'Laporan Penjualan - Lunerburg & Co',
+            'sales' => $sales,
+            'totalOrders' => $totalOrders,
+            'totalItems' => $totalItems,
+            'totalRevenue' => (float) $totalRevenue,
+        ]);
+    }
+
     public function show($id)
     {
         $product = Product::where('is_active', true)
@@ -74,6 +120,14 @@ class ProductController extends Controller
                 $query->whereNotNull('review_text')->where('review_text', '<>', '');
             }])
             ->findOrFail($id);
+
+        $reviewPage = max(1, (int) request()->input('reviews_page', 1));
+        $reviews = $product->ratings()
+            ->with('user')
+            ->whereNotNull('review_text')
+            ->where('review_text', '<>', '')
+            ->latest()
+            ->paginate(10, ['*'], 'reviews_page', $reviewPage);
 
         if (request()->wantsJson() || request()->ajax()) {
             return response()->json([
@@ -86,14 +140,14 @@ class ProductController extends Controller
                 'gender' => $product->gender,
                 'category_name' => $product->category?->name,
                 'owner_name' => $product->user?->full_name ?? $product->user?->username,
+                'owner_id' => $product->user_id,
+                'store_url' => route('products.storefront', $product->user_id),
                 'owner_phone' => $product->user?->phone_number,
                 'images' => $product->images->pluck('image_url'),
                 'average_rating' => round((float) $product->ratings_avg_rating, 1),
                 'total_ratings' => $product->ratings_count,
                 'total_comments' => $product->comments_count,
-                'reviews' => $product->ratings
-                    ->filter(fn($r) => filled($r->review_text))
-                    ->map(fn($r) => [
+                'reviews' => $reviews->getCollection()->map(fn($r) => [
                     'id' => $r->id,
                     'user_id' => $r->user_id,
                     'can_edit' => (string) $r->user_id === (string) Auth::id(),
@@ -103,6 +157,11 @@ class ProductController extends Controller
                     'review_text' => $r->review_text,
                     'created_at' => $r->created_at->format('d M Y'),
                 ])->values(),
+                'reviews_meta' => [
+                    'current_page' => $reviews->currentPage(),
+                    'last_page' => $reviews->lastPage(),
+                    'total' => $reviews->total(),
+                ],
             ]);
         }
 
@@ -245,6 +304,7 @@ class ProductController extends Controller
                     ProductImage::create([
                         'product_id' => $product->id,
                         'image_url' => $imageUrl,
+                        'is_primary' => !$product->images()->exists(),
                     ]);
                 }
             }
@@ -289,6 +349,7 @@ class ProductController extends Controller
             'description' => ['required', 'string'],
             'gender' => ['required', 'in:pria,wanita,all'],
             'discount_id' => ['nullable', 'exists:discounts,id'],
+            'main_image_id' => ['nullable', 'uuid'],
             'images' => ['nullable', 'array', 'max:10'],
             'images.*' => ['nullable', 'image', 'max:10240'],
         ], [
@@ -323,9 +384,17 @@ class ProductController extends Controller
                     ProductImage::create([
                         'product_id' => $product->id,
                         'image_url' => $imageUrl,
+                        'is_primary' => !$product->images()->exists(),
                     ]);
                 }
             }
+        }
+
+        if (!empty($validated['main_image_id'])) {
+            ProductImage::where('product_id', $product->id)->update(['is_primary' => false]);
+            ProductImage::where('product_id', $product->id)
+                ->whereKey($validated['main_image_id'])
+                ->update(['is_primary' => true]);
         }
 
         if (!empty($validated['discount_id'])) {
@@ -368,7 +437,13 @@ class ProductController extends Controller
                 $query->where('user_id', Auth::id());
             }
         })->findOrFail($id);
+        $wasPrimary = $image->is_primary;
+        $productId = $image->product_id;
         $image->delete();
+
+        if ($wasPrimary) {
+            ProductImage::where('product_id', $productId)->latest()->first()?->update(['is_primary' => true]);
+        }
 
         if (request()->expectsJson() || request()->ajax()) {
             return response()->json(['message' => 'Gambar berhasil dihapus.']);
@@ -377,6 +452,20 @@ class ProductController extends Controller
         return back()->with('alert', [
             'type' => 'success',
             'message' => 'Gambar berhasil dihapus.',
+        ]);
+    }
+
+    public function setPrimaryImage($id)
+    {
+        $image = ProductImage::whereHas('product', fn ($query) => $query->where('user_id', Auth::id()))
+            ->findOrFail($id);
+
+        ProductImage::where('product_id', $image->product_id)->update(['is_primary' => false]);
+        $image->update(['is_primary' => true]);
+
+        return back()->with('alert', [
+            'type' => 'success',
+            'message' => 'Foto utama berhasil diubah.',
         ]);
     }
 }

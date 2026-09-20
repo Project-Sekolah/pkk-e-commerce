@@ -51,12 +51,16 @@
                     <p id="paymentTypeValue" class="mb-0 text-muted">{{ $order['payment_type'] }}</p>
                 </div>
                 <div class="col-md-6">
+                    <h6 class="fw-bold mb-1">Kurir:</h6>
+                    <p class="mb-0 text-muted">{{ $order['courier'] ?? 'Belum dipilih' }} (Rp {{ number_format($order['shipping_fee'] ?? 0, 0, ',', '.') }})</p>
+                </div>
+                <div class="col-md-6">
                     <h6 class="fw-bold mb-1">Transaksi Midtrans:</h6>
                     <p id="transactionStatusValue" class="mb-0 text-muted text-capitalize">{{ $order['transaction_status'] ?? 'pending' }}</p>
                 </div>
             </div>
 
-            @if ($order['status'] === 'paid' || ($order['transaction_status'] ?? '') !== 'pending')
+            @if (in_array($order['status'], ['paid', 'completed', 'shipped'], true) || ($order['transaction_status'] ?? '') !== 'pending')
                 <div class="border rounded-3 bg-success-subtle p-3 mb-3">
                     <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
                         <div>
@@ -122,6 +126,7 @@
                 const classes = {
                     pending: 'bg-warning text-dark',
                     paid: 'bg-success',
+                    completed: 'bg-primary',
                     shipped: 'bg-info text-dark',
                     completed: 'bg-primary',
                     cancelled: 'bg-danger',
@@ -149,7 +154,7 @@
                 if (!response.ok) return;
                 const data = await response.json();
                 applyOrderStatus(data);
-                if (data.status === 'paid' || data.transaction_status !== 'pending') {
+                if (['paid', 'completed', 'shipped'].includes(data.status) || data.transaction_status !== 'pending') {
                     const paymentSection = document.getElementById('downloadPaymentProofBtn');
                     if (paymentSection) paymentSection.disabled = false;
                 }

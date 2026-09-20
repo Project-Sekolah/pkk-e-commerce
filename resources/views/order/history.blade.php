@@ -97,6 +97,22 @@ async function downloadStruk(orderId, total, tanggal, phone, items) {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
 
+        const imageToDataUrl = async (url) => {
+            if (!url) return null;
+            try {
+                const response = await fetch(url, { mode: 'cors' });
+                const blob = await response.blob();
+                return await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            } catch (error) {
+                return null;
+            }
+        };
+
         doc.setFontSize(18);
         doc.setFont("helvetica", "bold");
         doc.text("STRUK PEMBAYARAN", 105, 20, { align: "center" });
@@ -109,6 +125,7 @@ async function downloadStruk(orderId, total, tanggal, phone, items) {
 
         const body = (items || []).map(item => [
             item.name,
+            item.store_name || 'Toko',
             item.quantity,
             `Rp ${Number(item.price).toLocaleString("id-ID")}`,
             `Rp ${(item.price * item.quantity).toLocaleString("id-ID")}`
@@ -116,16 +133,34 @@ async function downloadStruk(orderId, total, tanggal, phone, items) {
 
         doc.autoTable({
             startY: 60,
-            head: [["Produk", "Qty", "Harga", "Subtotal"]],
+            head: [["Produk", "Toko", "Qty", "Harga", "Subtotal"]],
             body: body,
             styles: { fontSize: 10 },
             headStyles: { fillColor: [43, 43, 43] },
         });
 
         let finalY = doc.lastAutoTable.finalY + 10;
+        for (const item of items || []) {
+            if (finalY > 260) {
+                doc.addPage();
+                finalY = 20;
+            }
+            const imageData = await imageToDataUrl(item.image);
+            if (imageData) {
+                doc.addImage(imageData, 'JPEG', 20, finalY, 24, 24);
+            }
+            doc.setFontSize(9);
+            doc.setTextColor(60, 60, 60);
+            doc.text(`${item.store_name || 'Toko'} - ${item.name}`, 50, finalY + 8);
+            if (item.product_url) {
+                doc.setTextColor(0, 90, 160);
+                doc.textWithLink('Buka produk', 50, finalY + 16, { url: item.product_url });
+            }
+            finalY += 30;
+        }
         doc.setFontSize(13);
         doc.setFont("helvetica", "bold");
-        doc.text(`TOTAL: Rp ${total}`, 20, finalY);
+        doc.text(`TOTAL: Rp ${total}`, 20, Math.min(finalY + 5, 285));
 
         doc.save(`Struk-Order-${orderId.substring(0, 8)}.pdf`);
     } catch (e) {

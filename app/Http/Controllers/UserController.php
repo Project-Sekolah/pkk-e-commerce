@@ -78,7 +78,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function becomeSeller(Request $request)
+    public function becomeSeller(Request $request, CloudinaryService $cloudinary)
     {
         $user = Auth::user();
 
@@ -92,6 +92,9 @@ class UserController extends Controller
         $validated = $request->validate([
             'current_password' => ['required', 'string'],
             'seller_agreement' => ['accepted'],
+            'shop_name' => ['required', 'string', 'max:255'],
+            'shop_address' => ['required', 'string', 'max:1000'],
+            'shop_document' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'],
         ], [
             'seller_agreement.accepted' => 'Anda wajib menyetujui tanggung jawab sebagai seller.',
         ]);
@@ -119,7 +122,17 @@ class UserController extends Controller
             ]);
         }
 
-        $user->update(['role' => 'seller']);
+        $shopDocument = $user->shop_document;
+        if ($request->hasFile('shop_document')) {
+            $shopDocument = $cloudinary->upload($request->file('shop_document'), 'seller_documents');
+        }
+
+        $user->update([
+            'role' => 'seller',
+            'shop_name' => $validated['shop_name'],
+            'shop_address' => $validated['shop_address'],
+            'shop_document' => $shopDocument,
+        ]);
 
         return back()->with('alert', [
             'type' => 'success',

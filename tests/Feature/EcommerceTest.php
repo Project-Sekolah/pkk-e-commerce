@@ -4,9 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductRating;
 use App\Models\User;
 use App\Models\UserAddress;
 use Database\Seeders\DatabaseSeeder;
+use App\Services\OrderExpiryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -188,6 +190,83 @@ class EcommerceTest extends TestCase
         $response->assertJsonPath('payment_type', 'bank_transfer');
     }
 
+    public function test_settlement_transaction_is_displayed_as_completed(): void
+    {
+        $buyer = User::where('username', 'buyer')->first();
+        $product = Product::first();
+        $order = \App\Models\Order::create([
+            'user_id' => $buyer->id,
+            'customer_address' => 'Jl. Settlement No. 1',
+            'total' => 150000,
+            'status' => 'pending',
+            'transaction_status' => 'settlement',
+        ]);
+        $order->items()->create(['product_id' => $product->id, 'quantity' => 1, 'price' => 150000]);
+
+        $response = $this->actingAs($buyer)->getJson('/order/detail/' . $order->id);
+
+        $response->assertOk();
+        $response->assertJsonPath('status', 'completed');
+        $response->assertJsonPath('payment_status', 'Selesai');
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'completed']);
+    }
+
+    public function test_authenticated_user_can_edit_own_product_comment(): void
+    {
+        $buyer = User::where('username', 'buyer')->first();
+        $product = Product::first();
+        ProductRating::where('user_id', $buyer->id)->where('product_id', $product->id)->delete();
+        $rating = ProductRating::create([
+            'user_id' => $buyer->id,
+            'product_id' => $product->id,
+            'rating' => 4,
+            'review_text' => 'Komentar lama',
+        ]);
+
+        $response = $this->actingAs($buyer)->patchJson('/product/rating/' . $rating->id, [
+            'rating' => 5,
+            'review_text' => 'Komentar baru dengan tanda kutip: "bagus"',
+        ]);
+
+        $response->assertOk();
+        $this->assertDatabaseHas('product_ratings', [
+            'id' => $rating->id,
+            'rating' => 5,
+            'review_text' => 'Komentar baru dengan tanda kutip: "bagus"',
+        ]);
+    }
+
+    public function test_pending_order_older_than_payment_window_expires_and_restores_stock(): void
+    {
+        $buyer = User::where('username', 'buyer')->first();
+        $product = Product::first();
+        $stockBefore = $product->stock;
+
+        $order = \App\Models\Order::create([
+            'user_id' => $buyer->id,
+            'customer_address' => 'Jl. Expired No. 1',
+            'total' => 150000,
+            'status' => 'pending',
+            'expires_at' => now()->subMinute(),
+        ]);
+        $order->items()->create([
+            'product_id' => $product->id,
+            'quantity' => 2,
+            'price' => 75000,
+        ]);
+        $product->decrement('stock', 2);
+
+        $expired = app(OrderExpiryService::class)->expirePendingOrders();
+
+        $this->assertSame(1, $expired);
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'status' => 'cancelled',
+            'transaction_status' => 'expire',
+        ]);
+        $this->assertSame($stockBefore, Product::find($product->id)->stock);
+    }
+
     public function test_authenticated_user_can_submit_product_rating(): void
     {
         $buyer = User::where('username', 'buyer')->first();
@@ -215,12 +294,19 @@ class EcommerceTest extends TestCase
         $response = $this->actingAs($buyer)->post('/user/become-seller', [
             'current_password' => 'password123',
             'seller_agreement' => '1',
+            'shop_name' => 'Toko Buyer Test',
+            'shop_address' => 'Jl. Seller Test No. 1',
         ]);
 
         $response->assertRedirect();
         $this->assertDatabaseHas('users', [
             'id' => $buyer->id,
             'role' => 'seller',
+        ]);
+        $this->assertDatabaseHas('users', [
+            'id' => $buyer->id,
+            'shop_name' => 'Toko Buyer Test',
+            'shop_address' => 'Jl. Seller Test No. 1',
         ]);
     }
 }

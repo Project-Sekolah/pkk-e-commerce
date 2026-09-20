@@ -57,8 +57,20 @@
                 <div class="card shadow-sm border-0 p-4 mb-4">
                     <h5 class="fw-bold mb-2">Menjadi Seller</h5>
                     <p class="text-muted small">Lengkapi profil, foto, alamat utama, dan verifikasi password untuk mulai menjual produk.</p>
-                    <form action="{{ route('user.become-seller') }}" method="POST">
+                    <form action="{{ route('user.become-seller') }}" method="POST" enctype="multipart/form-data">
                         @csrf
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Nama Toko</label>
+                            <input type="text" name="shop_name" class="form-control" required placeholder="Contoh: Toko Resmi Saya">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Alamat Toko</label>
+                            <textarea name="shop_address" class="form-control" rows="2" required placeholder="Alamat operasional toko"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">NPWP atau Dokumen Pendukung (Opsional)</label>
+                            <input type="file" name="shop_document" class="form-control" accept=".jpg,.jpeg,.png,.pdf">
+                        </div>
                         <div class="mb-3">
                             <label class="form-label small fw-semibold">Password Saat Ini</label>
                             <input type="password" name="current_password" class="form-control" required>

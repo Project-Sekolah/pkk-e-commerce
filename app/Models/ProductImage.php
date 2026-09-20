@@ -14,7 +14,13 @@ class ProductImage extends Model
     protected $fillable = [
         'product_id',
         'image_url',
+        'is_primary',
     ];
+
+    protected function casts(): array
+    {
+        return ['is_primary' => 'boolean'];
+    }
 
     public function product(): BelongsTo
     {

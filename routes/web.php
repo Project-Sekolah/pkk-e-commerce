@@ -26,12 +26,16 @@ Route::post('/payments/midtrans/notification', [OrderController::class, 'payment
 
 // Products (Public)
 Route::get('/product', [ProductController::class, 'index'])->name('products.index');
+Route::get('/store/{sellerId}', [ProductController::class, 'storeFront'])->name('products.storefront');
 Route::middleware(['auth', 'role:seller,admin'])
     ->get('/product/seller', [ProductController::class, 'seller'])
     ->name('products.seller');
 Route::middleware(['auth', 'role:seller,admin'])
     ->get('/product/seller/purchase-history', [ProductController::class, 'purchaseHistory'])
     ->name('products.purchase-history');
+Route::middleware(['auth', 'role:seller,admin'])
+    ->get('/product/seller/sales-report', [ProductController::class, 'salesReport'])
+    ->name('products.sales-report');
 Route::middleware(['auth', 'role:seller,admin'])
     ->get('/product/add', [ProductController::class, 'create'])
     ->name('products.create');
@@ -85,6 +89,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/product/update/{id}', [ProductController::class, 'update'])->name('products.update');
         Route::delete('/product/delete/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
         Route::delete('/product/image/{id}', [ProductController::class, 'deleteImage'])->name('products.image.destroy');
+        Route::post('/product/image/{id}/primary', [ProductController::class, 'setPrimaryImage'])->name('products.image.primary');
 
         // Discounts
         Route::get('/discount', [DiscountController::class, 'index'])->name('discounts.index');

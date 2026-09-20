@@ -62,15 +62,16 @@ function applyDiscount() {
     })
         .then(res => res.json())
         .then(data => {
-            if (data.success) {
+            if (data.valid) {
                 document.getElementById("applyDiscountBtn").disabled = true;
                 activeDiscount = {
-                    percentage: parseFloat(data.discount_percentage),
-                    applicableProducts: data.applicable_products
+                    percentage: parseFloat(data.discount?.percentage || 0),
+                    applicableProducts: (data.applicable_products || []).map(String)
                 };
+                document.getElementById('checkoutDiscountName')?.setAttribute('value', data.discount?.name || discountName);
 
                 cart.forEach(item => {
-                    if (activeDiscount.applicableProducts.includes(item.id)) {
+                    if (activeDiscount.applicableProducts.includes(String(item.id))) {
                         item.discount_name = discountName;
                         item.discount_percentage = activeDiscount.percentage;
                     }
@@ -86,7 +87,7 @@ function applyDiscount() {
                 Swal.fire({
                     icon: "success",
                     title: "Diskon berhasil!",
-                    text: `${data.discount_percentage}% off applicable items`
+                    text: `${data.discount?.percentage || 0}% untuk produk yang memenuhi syarat`
                 });
             } else {
                 Swal.fire({
@@ -111,16 +112,14 @@ document.getElementById("applyDiscountBtn")?.addEventListener("click", applyDisc
 
 // Function to format currency
 function formatDollar(num) {
-    return "$" + num.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, "$&, ");
+    return `Rp ${Number(num || 0).toLocaleString('id-ID')}`;
 }
 
 // Function to update display
 function updateDisplay(subtotal, discountAmount = 0) {
-    delivery = subtotal * 0.1;
-    taxes = cart.reduce(
-        (sum, item) => sum + (parseFloat(item.price) || 0) * (item.quantity || 0) * 0.05,
-        0
-    );
+    const courier = document.getElementById('checkoutCourier');
+    delivery = Number(courier?.selectedOptions?.[0]?.dataset.fee || 15000);
+    taxes = 0;
 
     if (!$subtotal || !$delivery || !$taxes || !$discount || !$total) return;
 
@@ -129,7 +128,7 @@ function updateDisplay(subtotal, discountAmount = 0) {
     $taxes.innerText = formatDollar(taxes);
 
     discountAmount = isNaN(discountAmount) ? 0 : discountAmount;
-    $discount.innerText = discountAmount > 0 ? "- " + formatDollar(discountAmount) : "- $0.00";
+    $discount.innerText = discountAmount > 0 ? "- " + formatDollar(discountAmount) : "- Rp 0";
 
     const total = subtotal + delivery + taxes - discountAmount;
     $total.innerText = formatDollar(total);
@@ -282,8 +281,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // Load cart data from server when the page loads
     loadCartFromServer();
 
+    document.getElementById('checkoutCourier')?.addEventListener('change', () => {
+        updateDisplay(calculateSubtotal());
+    });
+
     // Add event listeners to all "Add to Cart" buttons
-    document.querySelectorAll(".add-to-cart").forEach(btn => {
+    document.querySelectorAll(".add-to-cart:not(#modalAddToCartBtn)").forEach(btn => {
         btn.addEventListener("click", () => {
             // Check if the user is logged in
             if (!IS_LOGGED_IN) {
@@ -323,9 +326,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    document.querySelectorAll('.delete-product-image-form').forEach(form => {
-        form.addEventListener('submit', async function (event) {
-            event.preventDefault();
+    document.querySelectorAll('.delete-product-image').forEach(button => {
+        button.addEventListener('click', async function () {
             const result = await Swal.fire({
                 title: 'Hapus foto ini?',
                 text: 'Foto akan dihapus dari produk.',
@@ -337,7 +339,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             if (!result.isConfirmed) return;
 
-            const response = await fetch(form.action, {
+            const response = await fetch(button.dataset.deleteUrl, {
                 method: 'DELETE',
                 headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrfToken() }
             });
@@ -346,7 +348,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            form.closest('.position-relative')?.remove();
+            button.closest('.product-image-choice')?.remove();
             Swal.fire({ icon: 'success', title: 'Foto dihapus', timer: 1200, showConfirmButton: false });
         });
     });
@@ -382,7 +384,6 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("modalGender").textContent = this.dataset.gender;
             document.getElementById("modalDescription").textContent = this.dataset.description || "No description available.";
             document.getElementById("modalStock").textContent = this.dataset.stock;
-            document.getElementById("modalImage").src = this.dataset.image;
         });
     });
 });
@@ -494,7 +495,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 this.dataset.stock;
             document.getElementById("modalRatingCount").textContent =
                 `${this.dataset.commentCount || 0} komentar`;
-            document.getElementById("modalImage").src = this.dataset.image;
         });
     });
 });
@@ -542,6 +542,7 @@ function handleProductModalShow(event) {
 
     // Isi data produk di modal
     setModalText(modal, {
+        id: productId,
         userName,
         userImage,
         title,
@@ -558,29 +559,54 @@ function handleProductModalShow(event) {
     // Set owner phone in modal
     const phoneSpan = document.getElementById("modalOwnerPhone");
     if (phoneSpan){ phoneSpan.textContent = ownerPhone;}
+    const ownerLink = modal.querySelector('#modalOwnerLink');
+    if (ownerLink && button.dataset.userid) ownerLink.href = `${BASEURL}/store/${button.dataset.userid}`;
 
     // Set hidden input di form rating
     modal.querySelector("input[name='product_id']")?.setAttribute("value", productId || "");
     modal.querySelector("input[name='user_id']")?.setAttribute("value", userId || "");
 
+    const modalCartButton = modal.querySelector('#modalAddToCartBtn');
+    if (modalCartButton) {
+        modalCartButton.dataset.id = productId || '';
+        modalCartButton.onclick = async () => {
+            if (!IS_LOGGED_IN) {
+                Swal.fire({ icon: 'warning', title: 'Login diperlukan', text: 'Silakan login untuk memasukkan produk ke keranjang.' });
+                return;
+            }
+            const response = await fetch(`${BASEURL}/Cart/addItem`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ product_id: productId, quantity: 1 })
+            });
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                Swal.fire({ icon: 'error', title: 'Gagal', text: data.message || 'Produk tidak dapat ditambahkan.' });
+                return;
+            }
+            await loadCartFromServer();
+            Swal.fire({ icon: 'success', title: 'Masuk keranjang', timer: 1200, showConfirmButton: false });
+        };
+    }
+
     // Ambil komentar terbaru dari endpoint produk agar popup selalu sinkron.
     loadProductReviews(modal, productId);
 }
 
-async function loadProductReviews(modal, productId) {
+async function loadProductReviews(modal, productId, page = 1) {
     const commentsContainer = modal.querySelector("#modalCommentsContainer");
     const commentsStatus = modal.querySelector("#modalCommentsStatus");
     if (!commentsContainer || !productId) return;
 
     commentsContainer.innerHTML = '<p class="text-muted small">Memuat komentar...</p>';
     try {
-        const response = await fetch(`${BASEURL}/product/${productId}`, {
+        const response = await fetch(`${BASEURL}/product/${productId}?reviews_page=${page}`, {
             headers: { Accept: "application/json" }
         });
         if (!response.ok) throw new Error("Komentar gagal dimuat.");
         const data = await response.json();
         if (commentsStatus) commentsStatus.textContent = `${data.total_comments || 0} komentar`;
-        renderProductReviews(modal, data.reviews || [], productId);
+        renderProductReviews(modal, data.reviews || [], data.reviews_meta || {}, productId);
         const countElement = modal.querySelector("#modalRatingCount");
         if (countElement) countElement.textContent = `${data.total_comments || 0} komentar`;
     } catch (error) {
@@ -608,17 +634,25 @@ function setModalText(modal, data) {
     if (userImage) userImage.src = data.userImage || "/assets/img/default.jpg";
     const gallery = modal.querySelector("#modalImageGallery");
     if (gallery) {
+        const slides = gallery.querySelector("#modalImageSlides");
         const images = (data.images?.length ? data.images : [data.image]).filter(Boolean);
-        gallery.replaceChildren();
+        if (!slides) return;
+        slides.replaceChildren();
         images.forEach((image, index) => {
             const productImage = document.createElement("img");
             productImage.src = image;
             productImage.alt = `${data.title || "Product"} ${index + 1}`;
-            productImage.className = "img-fluid rounded shadow-sm modal-image";
-            productImage.style.cssText = "max-height: 320px; max-width: 100%; object-fit: cover;";
-            gallery.appendChild(productImage);
+            productImage.className = "d-block w-100 modal-image";
+            productImage.style.cssText = "height: 320px; object-fit: cover;";
+            const slide = document.createElement("div");
+            slide.className = `carousel-item${index === 0 ? " active" : ""}`;
+            slide.appendChild(productImage);
+            slides.appendChild(slide);
         });
     }
+
+    const detailLink = modal.querySelector("#modalDetailLink");
+    if (detailLink && data.id) detailLink.href = `${BASEURL}/product/${data.id}`;
 
     const starsHtml = generateStarsHtml(data.rating);
     modal.querySelectorAll(".rating-stars-static").forEach(element => {
@@ -644,7 +678,7 @@ function generateStarsHtml(rating) {
     return stars;
 }
 
-function renderProductReviews(modal, reviewers, productId) {
+function renderProductReviews(modal, reviewers, meta, productId) {
     const commentsContainer = modal.querySelector("#modalCommentsContainer");
     if (!commentsContainer) return;
     commentsContainer.replaceChildren();
@@ -661,7 +695,7 @@ function renderProductReviews(modal, reviewers, productId) {
                 <div class="flex-grow-1">
                     <div class="d-flex justify-content-between gap-2">
                         <strong>${escapeHtml(reviewer.username || 'Anonymous')}</strong>
-                        ${reviewer.can_edit ? `<span class="review-actions"><button type="button" class="btn btn-link btn-sm p-0 me-2 edit-review" data-review-id="${reviewer.id}" data-rating="${reviewer.rating}" data-review-text="${escapeHtml(reviewer.review_text || '')}">Edit</button><button type="button" class="btn btn-link btn-sm p-0 text-danger delete-review" data-review-id="${reviewer.id}">Hapus</button></span>` : ''}
+                        ${reviewer.can_edit ? `<span class="review-actions d-inline-flex gap-1"><button type="button" class="btn btn-sm btn-light border edit-review" title="Edit komentar" aria-label="Edit komentar" data-review-id="${reviewer.id}" data-rating="${reviewer.rating}" data-review-text="${escapeHtml(encodeURIComponent(reviewer.review_text || ''))}"><i class="bi bi-pencil"></i></button><button type="button" class="btn btn-sm btn-light border text-danger delete-review" title="Hapus komentar" aria-label="Hapus komentar" data-review-id="${reviewer.id}"><i class="bi bi-trash"></i></button></span>` : ''}
                     </div>
                     <div class="text-warning rating-stars-static">${stars}</div>
                     <p class="review-comment mb-0">${escapeHtml(reviewer.review_text || '') || '<span class="text-muted">Tanpa komentar tertulis</span>'}</p>
@@ -676,6 +710,27 @@ function renderProductReviews(modal, reviewers, productId) {
     commentsContainer.querySelectorAll(".delete-review").forEach(button => {
         button.addEventListener("click", () => deleteReview(button, modal, productId));
     });
+
+    const pagination = modal.querySelector("#modalCommentsPagination");
+    if (pagination) {
+        pagination.replaceChildren();
+        if ((meta.last_page || 1) > 1) {
+            const previous = document.createElement("button");
+            previous.className = "btn btn-sm btn-outline-secondary";
+            previous.textContent = "Sebelumnya";
+            previous.disabled = meta.current_page <= 1;
+            previous.addEventListener("click", () => loadProductReviews(modal, productId, meta.current_page - 1));
+            const label = document.createElement("span");
+            label.className = "small text-muted";
+            label.textContent = `Halaman ${meta.current_page} dari ${meta.last_page}`;
+            const next = document.createElement("button");
+            next.className = "btn btn-sm btn-outline-secondary";
+            next.textContent = "Berikutnya";
+            next.disabled = meta.current_page >= meta.last_page;
+            next.addEventListener("click", () => loadProductReviews(modal, productId, meta.current_page + 1));
+            pagination.append(previous, label, next);
+        }
+    }
 }
 
 function escapeHtml(value) {
@@ -689,25 +744,47 @@ function csrfToken() {
 }
 
 async function editReview(button, modal, productId) {
+    let currentReviewText = button.dataset.reviewText || "";
+    try {
+        currentReviewText = decodeURIComponent(currentReviewText);
+    } catch (error) {
+        currentReviewText = button.dataset.reviewText || "";
+    }
+
     const result = await Swal.fire({
         title: "Edit komentar",
         input: "textarea",
-        inputValue: button.dataset.reviewText || "",
+        inputValue: currentReviewText,
         inputPlaceholder: "Tulis komentar Anda...",
+        inputAttributes: {
+            autocapitalize: "off",
+            autocorrect: "on",
+            spellcheck: "true"
+        },
+        didOpen: () => {
+            Swal.getInput()?.removeAttribute("readonly");
+            Swal.getInput()?.removeAttribute("disabled");
+            Swal.getInput()?.focus();
+        },
         showCancelButton: true,
         confirmButtonText: "Simpan",
         cancelButtonText: "Batal",
-        inputValidator: value => value.length > 1000 ? "Maksimal 1000 karakter." : undefined
+        inputValidator: value => String(value || '').length > 1000 ? "Maksimal 1000 karakter." : undefined
     });
     if (!result.isConfirmed) return;
 
-    const response = await fetch(`${BASEURL}/product/rating/${button.dataset.reviewId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", Accept: "application/json", "X-CSRF-TOKEN": csrfToken() },
-        body: JSON.stringify({ rating: button.dataset.rating, review_text: result.value })
-    });
-    if (!response.ok) return Swal.fire("Gagal", "Komentar tidak dapat diperbarui.", "error");
-    await loadProductReviews(modal, productId);
+    try {
+        const response = await fetch(`${BASEURL}/product/rating/${button.dataset.reviewId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json", Accept: "application/json", "X-CSRF-TOKEN": csrfToken() },
+            body: JSON.stringify({ rating: Number(button.dataset.rating), review_text: String(result.value || '') })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || "Komentar tidak dapat diperbarui.");
+        await loadProductReviews(modal, productId);
+    } catch (error) {
+        Swal.fire("Gagal", error.message, "error");
+    }
 }
 
 async function deleteReview(button, modal, productId) {

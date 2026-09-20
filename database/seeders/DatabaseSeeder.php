@@ -78,6 +78,12 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Jaket & Luaran', 'slug' => 'jaket-luaran'],
             ['name' => 'Aksesoris', 'slug' => 'aksesoris'],
             ['name' => 'Sepatu', 'slug' => 'sepatu'],
+            ['name' => 'Elektronik', 'slug' => 'elektronik'],
+            ['name' => 'Rumah Tangga', 'slug' => 'rumah-tangga'],
+            ['name' => 'Kesehatan & Kecantikan', 'slug' => 'kesehatan-kecantikan'],
+            ['name' => 'Hobi & Mainan', 'slug' => 'hobi-mainan'],
+            ['name' => 'Makanan & Minuman', 'slug' => 'makanan-minuman'],
+            ['name' => 'Kantor & Sekolah', 'slug' => 'kantor-sekolah'],
         ];
 
         $categories = [];

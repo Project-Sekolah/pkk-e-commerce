@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Discount;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ShippingAddress;
 use App\Services\MidtransService;
+use App\Services\OrderExpiryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,11 +19,42 @@ use Throwable;
 
 class OrderController extends Controller
 {
+    private function syncPaymentStatus(Order $order, MidtransService $midtrans): Order
+    {
+        if ($order->status === 'pending') {
+            $remoteStatus = $midtrans->fetchTransactionStatus($order);
+            if ($remoteStatus) {
+                $order->forceFill([
+                    'transaction_status' => $remoteStatus['transaction_status'] ?? $order->transaction_status,
+                    'payment_type' => $remoteStatus['payment_type'] ?? $order->payment_type,
+                    'fraud_status' => $remoteStatus['fraud_status'] ?? $order->fraud_status,
+                    'payment_payload' => $remoteStatus,
+                ])->save();
+            }
+        }
+
+        $transactionStatus = strtolower((string) $order->transaction_status);
+        $nextStatus = match ($transactionStatus) {
+            'settlement', 'capture' => 'completed',
+            'deny', 'cancel', 'expire', 'failure' => 'cancelled',
+            default => $order->status,
+        };
+
+        if ($nextStatus !== $order->status && $nextStatus !== null) {
+            $order->update([
+                'status' => $nextStatus,
+                'paid_at' => $nextStatus === 'completed' ? ($order->paid_at ?? now()) : $order->paid_at,
+            ]);
+        }
+
+        return $order->refresh();
+    }
+
     private function paymentStatusLabel(Order $order): string
     {
         return match ($order->status ?? 'pending') {
             'pending' => 'Menunggu Pembayaran',
-            'paid' => 'Pembayaran Berhasil',
+            'paid' => 'Selesai',
             'shipped' => 'Sedang Dikirim',
             'completed' => 'Selesai',
             'cancelled' => 'Dibatalkan',
@@ -41,15 +74,17 @@ class OrderController extends Controller
         };
     }
 
-    public function history()
+    public function history(OrderExpiryService $expiryService, MidtransService $midtrans)
     {
+        $expiryService->expirePendingOrders();
         $user = Auth::user();
-        $orders = Order::with(['items.product', 'shippingAddress'])
+        $orders = Order::with(['items.product.user', 'items.product.images', 'shippingAddress'])
             ->where('user_id', $user->id)
             ->latest()
             ->get();
 
-        $formattedOrders = $orders->map(function ($order) {
+        $formattedOrders = $orders->map(function ($order) use ($midtrans) {
+            $order = $this->syncPaymentStatus($order, $midtrans);
             $status = $order->status ?? 'pending';
 
             return [
@@ -65,9 +100,13 @@ class OrderController extends Controller
                 'transaction_status' => $order->transaction_status ?? 'pending',
                 'payment_payload' => $order->payment_payload ?? [],
                 'items' => $order->items->map(fn($item) => [
+                    'product_id' => $item->product_id,
                     'name' => $item->product?->title ?? 'Produk Dihapus',
                     'quantity' => $item->quantity,
                     'price' => (float) $item->price,
+                    'image' => $item->product?->first_image_url,
+                    'store_name' => $item->product?->user?->shop_name ?? $item->product?->user?->full_name ?? 'Toko',
+                    'product_url' => $item->product ? route('products.show', $item->product_id) : null,
                 ])->toArray(),
             ];
         });
@@ -79,11 +118,13 @@ class OrderController extends Controller
         ]);
     }
 
-    public function detail($orderId)
+    public function detail($orderId, OrderExpiryService $expiryService, MidtransService $midtrans)
     {
+        $expiryService->expirePendingOrders();
         $order = Order::with(['items.product', 'shippingAddress'])
             ->where('user_id', Auth::id())
             ->findOrFail($orderId);
+        $order = $this->syncPaymentStatus($order, $midtrans);
 
         $status = $order->status ?? 'pending';
         $formattedOrder = [
@@ -93,6 +134,8 @@ class OrderController extends Controller
             'status_label' => $this->paymentStatusLabel($order),
             'badge_class' => $this->paymentStatusBadgeClass($status),
             'total' => (float) $order->total,
+            'courier' => $order->courier ?? 'Belum dipilih',
+            'shipping_fee' => (float) ($order->shipping_fee ?? 0),
             'customer_address' => $order->customer_address,
             'snap_token' => $order->snap_token,
             'transaction_status' => $order->transaction_status ?? $status,
@@ -123,8 +166,23 @@ class OrderController extends Controller
     {
         $user = Auth::user();
 
-        // 1. Get default address
-        $defaultAddress = $user->defaultAddress ?? $user->addresses()->first();
+        $courierRates = [
+            'jne_reg' => ['label' => 'JNE Reguler', 'fee' => 15000],
+            'jnt_reg' => ['label' => 'J&T Reguler', 'fee' => 14000],
+            'sicepat_reg' => ['label' => 'SiCepat Reguler', 'fee' => 16000],
+        ];
+        $validated = $request->validate([
+            'address_id' => ['nullable', 'uuid'],
+            'courier' => ['nullable', 'in:' . implode(',', array_keys($courierRates))],
+            'discount_name' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        // 1. Get the selected address owned by the current user.
+        $defaultAddress = !empty($validated['address_id'])
+            ? $user->addresses()->findOrFail($validated['address_id'])
+            : ($user->defaultAddress ?? $user->addresses()->first());
+        $selectedCourier = $validated['courier'] ?? 'jne_reg';
+        $shippingFee = $courierRates[$selectedCourier]['fee'];
         if (!$defaultAddress) {
             return redirect()->route('user.profile')->with('alert', [
                 'type' => 'error',
@@ -151,6 +209,16 @@ class OrderController extends Controller
             ]);
         }
 
+        $promoDiscount = null;
+        if (!empty($validated['discount_name'])) {
+            $promoDiscount = Discount::with('products')
+                ->where('name', trim($validated['discount_name']))
+                ->where('is_active', true)
+                ->where('start_date', '<=', now())
+                ->where('end_date', '>=', now())
+                ->first();
+        }
+
         // 2. Validate stock for all items
         foreach ($cartItems as $item) {
             if ($item->product->stock < $item->quantity) {
@@ -161,7 +229,7 @@ class OrderController extends Controller
             }
         }
 
-        $order = DB::transaction(function () use ($user, $defaultAddress, $cart, $cartItems) {
+        $order = DB::transaction(function () use ($user, $defaultAddress, $cart, $cartItems, $selectedCourier, $shippingFee, $courierRates, $promoDiscount) {
             $subtotal = 0;
             $itemsData = [];
 
@@ -171,8 +239,12 @@ class OrderController extends Controller
                 $price = (float) $product->price;
 
                 $bestDiscount = $product->activeDiscounts->sortByDesc('percentage')->first();
-                if ($bestDiscount) {
-                    $price -= ($price * ($bestDiscount->percentage / 100));
+                $discountPercentage = $bestDiscount ? (float) $bestDiscount->percentage : 0;
+                if ($promoDiscount && $promoDiscount->products->contains('id', $product->id)) {
+                    $discountPercentage = max($discountPercentage, (float) $promoDiscount->percentage);
+                }
+                if ($discountPercentage > 0) {
+                    $price -= ($price * ($discountPercentage / 100));
                 }
 
                 $price = round($price);
@@ -192,12 +264,14 @@ class OrderController extends Controller
             $order = Order::create([
                 'user_id' => $user->id,
                 'customer_address' => $defaultAddress->address_line_1 . ', ' . $defaultAddress->city . ' ' . $defaultAddress->postal_code,
-                'total' => $subtotal,
+                'total' => $subtotal + $shippingFee,
+                'courier' => $courierRates[$selectedCourier]['label'],
+                'shipping_fee' => $shippingFee,
                 'status' => 'pending',
             ]);
             $order->update([
                 'midtrans_order_id' => 'LUNER-' . strtoupper(str_replace('-', '', $order->id)),
-                'expires_at' => now()->addHours(2),
+                'expires_at' => now()->addHours(24),
             ]);
 
             foreach ($itemsData as $data) {
@@ -213,7 +287,7 @@ class OrderController extends Controller
                 'postal_code' => $defaultAddress->postal_code,
                 'country' => $defaultAddress->country,
                 'phone_number' => $user->phone_number ?? '-',
-                'is_default' => true,
+                'is_default' => false,
             ]);
 
             // Clear cart
@@ -283,7 +357,7 @@ class OrderController extends Controller
                 'payment_type' => $payload['payment_type'] ?? $lockedOrder->payment_type,
                 'fraud_status' => $payload['fraud_status'] ?? $lockedOrder->fraud_status,
                 'payment_payload' => $payload,
-                'status' => $isPaid ? 'paid' : ($isFailed ? 'cancelled' : $lockedOrder->status),
+                'status' => $isPaid ? 'completed' : ($isFailed ? 'cancelled' : $lockedOrder->status),
                 'paid_at' => $isPaid ? ($lockedOrder->paid_at ?? now()) : $lockedOrder->paid_at,
             ])->save();
 

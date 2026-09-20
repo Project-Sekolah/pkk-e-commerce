@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Midtrans\Config;
 use Midtrans\Notification;
 use Midtrans\Snap;
+use Midtrans\Transaction;
 
 class MidtransService
 {
@@ -69,5 +70,19 @@ class MidtransService
         ]));
 
         return hash_equals($signature, (string) Arr::get($payload, 'signature_key', ''));
+    }
+
+    public function fetchTransactionStatus(Order $order): ?array
+    {
+        if (app()->environment('testing') || !config('services.midtrans.server_key') || !$order->midtrans_order_id) {
+            return null;
+        }
+
+        try {
+            $status = (array) Transaction::status($order->midtrans_order_id);
+            return $status ?: null;
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }

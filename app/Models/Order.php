@@ -18,6 +18,8 @@ class Order extends Model
         'user_id',
         'customer_address',
         'total',
+        'courier',
+        'shipping_fee',
         'status',
         'midtrans_order_id',
         'snap_token',
@@ -33,6 +35,7 @@ class Order extends Model
     {
         return [
             'total' => 'decimal:2',
+            'shipping_fee' => 'decimal:2',
             'payment_payload' => 'array',
             'paid_at' => 'datetime',
             'expires_at' => 'datetime',

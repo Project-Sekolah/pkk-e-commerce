@@ -163,6 +163,7 @@ class CartController extends Controller
                 'name' => $discount->name,
                 'percentage' => (float) $discount->percentage,
             ],
+            'applicable_products' => $discount->products()->where('products.is_active', true)->pluck('products.id')->values(),
         ]);
     }
 }
