@@ -10,6 +10,9 @@
         <a href="{{ route('products.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-lg me-1"></i> Tambah Produk
         </a>
+        <a href="{{ route('products.purchase-history') }}" class="btn btn-outline-dark">
+            <i class="bi bi-clock-history me-1"></i> Riwayat Pembelian
+        </a>
     </div>
 
     @if($products->isEmpty())
@@ -40,8 +43,15 @@
                         @foreach($products as $product)
                             <tr>
                                 <td style="width: 80px;">
-                                    <img src="{{ $product->first_image_url }}" alt="{{ $product->title }}"
-                                         class="rounded" width="60" height="60" style="object-fit: cover;">
+                                    <div class="d-flex flex-wrap gap-1" style="max-width: 150px;">
+                                        @forelse($product->images as $image)
+                                            <img src="{{ $image->image_url }}" alt="{{ $product->title }}"
+                                                 class="rounded" width="42" height="42" style="object-fit: cover;">
+                                        @empty
+                                            <img src="{{ $product->first_image_url }}" alt="{{ $product->title }}"
+                                                 class="rounded" width="60" height="60" style="object-fit: cover;">
+                                        @endforelse
+                                    </div>
                                 </td>
                                 <td>
                                     <div class="fw-bold">{{ $product->title }}</div>

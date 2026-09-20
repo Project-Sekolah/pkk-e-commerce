@@ -15,7 +15,16 @@ class HomeController extends Controller
         $products = Product::with(['category', 'images', 'user', 'ratings.user'])
             ->withAvg('ratings', 'rating')
             ->withCount('ratings')
+            ->withCount(['ratings as comments_count' => function ($query) {
+                $query->whereNotNull('review_text')->where('review_text', '<>', '');
+            }])
+            ->withCount(['orderItems as sold_count' => function ($query) {
+                $query->whereHas('order', fn ($order) => $order->whereIn('status', ['paid', 'shipped', 'completed']));
+            }])
             ->where('is_active', true)
+            ->whereHas('images')
+            ->orderByDesc('sold_count')
+            ->orderByDesc('ratings_avg_rating')
             ->latest()
             ->take(8)
             ->get();

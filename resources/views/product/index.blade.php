@@ -23,39 +23,48 @@
     </div>
 
     <!-- Filters -->
-    <div class="card p-3 mb-4 border-0 shadow-sm bg-light">
+    <div class="card product-filters p-3 mb-4 border-0 shadow-sm bg-light">
         <form action="{{ route('products.index') }}" method="GET">
             <div class="row g-3 align-items-center">
                 <div class="col-md-5">
-                    <label class="form-label small fw-bold">Kategori:</label>
-                    <div class="d-flex flex-wrap gap-2">
+                    <div class="filter-heading">
+                        <span class="form-label small fw-bold mb-0">Kategori</span>
+                        <span class="filter-hint">Pilih satu atau lebih</span>
+                    </div>
+                    <div class="filter-chip-group" role="group" aria-label="Filter kategori">
                         @foreach($categories as $category)
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" name="categories[]" value="{{ $category->slug }}"
+                            <label class="filter-chip">
+                                <input class="filter-chip-input" type="checkbox" name="categories[]" value="{{ $category->slug }}"
                                        id="cat_{{ $category->id }}" {{ in_array($category->slug, $selectedCategories) ? 'checked' : '' }}
                                        onchange="this.form.submit()">
-                                <label class="form-check-label small" for="cat_{{ $category->id }}">{{ $category->name }}</label>
-                            </div>
+                                <span>{{ $category->name }}</span>
+                            </label>
                         @endforeach
                     </div>
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label small fw-bold">Gender:</label>
-                    <div class="d-flex flex-wrap gap-3">
+                    <div class="filter-heading">
+                        <span class="form-label small fw-bold mb-0">Gender</span>
+                        <span class="filter-hint">Pilih gaya</span>
+                    </div>
+                    <div class="filter-chip-group gender-chips" role="group" aria-label="Filter gender">
                         @foreach(['all' => 'Semua', 'pria' => 'Pria', 'wanita' => 'Wanita'] as $val => $label)
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" name="gender[]" value="{{ $val }}"
+                            <label class="filter-chip">
+                                <input class="filter-chip-input" type="checkbox" name="gender[]" value="{{ $val }}"
                                        id="gen_{{ $val }}" {{ in_array($val, $selectedGenders) ? 'checked' : '' }}
                                        onchange="this.form.submit()">
-                                <label class="form-check-label small" for="gen_{{ $val }}">{{ $label }}</label>
-                            </div>
+                                <span>{{ $label }}</span>
+                            </label>
                         @endforeach
                     </div>
                 </div>
 
-                <div class="col-md-3 text-md-end">
-                    <a href="{{ route('products.index') }}" class="btn btn-sm btn-outline-secondary">Reset Filter</a>
+                <div class="col-md-3">
+                    <div class="filter-summary">
+                        <span class="small text-muted"><i class="bi bi-sliders2 me-1"></i>Filter aktif</span>
+                        <a href="{{ route('products.index') }}" class="btn btn-sm btn-outline-secondary">Reset</a>
+                    </div>
                 </div>
             </div>
         </form>
@@ -85,6 +94,9 @@
                              data-gender="{{ ucfirst($product->gender) }}"
                              data-stock="{{ $product->stock }}"
                              data-image="{{ $imgUrl }}"
+                             data-images='@json($product->images->pluck("image_url")->values())'
+                             data-rating-count="{{ $product->ratings_count }}"
+                             data-comment-count="{{ $product->comments_count }}"
                              data-owner="{{ $product->user?->full_name ?? $product->user?->username }}">
                         
                         <span class="position-absolute top-0 start-0 m-2 badge bg-dark text-white text-uppercase small">

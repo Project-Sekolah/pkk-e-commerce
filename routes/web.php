@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\OrderManagementController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Route;
 
 // Public Pages
@@ -17,12 +19,26 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/faq', [PageController::class, 'faq'])->name('faq');
 
+Route::post('/payments/midtrans/notification', [OrderController::class, 'paymentNotification'])
+    ->middleware('throttle:60,1')
+    ->withoutMiddleware(ValidateCsrfToken::class)
+    ->name('payments.midtrans.notification');
+
 // Products (Public)
 Route::get('/product', [ProductController::class, 'index'])->name('products.index');
+Route::middleware(['auth', 'role:seller,admin'])
+    ->get('/product/seller', [ProductController::class, 'seller'])
+    ->name('products.seller');
+Route::middleware(['auth', 'role:seller,admin'])
+    ->get('/product/seller/purchase-history', [ProductController::class, 'purchaseHistory'])
+    ->name('products.purchase-history');
+Route::middleware(['auth', 'role:seller,admin'])
+    ->get('/product/add', [ProductController::class, 'create'])
+    ->name('products.create');
 Route::get('/product/{id}', [ProductController::class, 'show'])->name('products.show');
 
 // Auth Handlers (Native compatibility: /user/login, /user/register, /user/logout)
-Route::post('/user/login', [AuthController::class, 'login'])->name('login');
+Route::post('/user/login', [AuthController::class, 'login'])->middleware('throttle:login')->name('login');
 Route::post('/user/register', [AuthController::class, 'register'])->name('register');
 Route::match(['get', 'post'], '/user/logout', [AuthController::class, 'logout'])->name('logout');
 
@@ -32,6 +48,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/user/profile', [UserController::class, 'profile'])->name('user.profile');
     Route::post('/user/profile/update', [UserController::class, 'updateProfile'])->name('user.profile.update');
     Route::post('/user/profile/password', [UserController::class, 'changePassword'])->name('user.password.update');
+    Route::post('/user/become-seller', [UserController::class, 'becomeSeller'])->name('user.become-seller');
     Route::post('/user/address/add', [UserController::class, 'addAddress'])->name('user.address.add');
     Route::post('/user/address/{id}/default', [UserController::class, 'setDefaultAddress'])->name('user.address.default');
     Route::delete('/user/address/{id}', [UserController::class, 'deleteAddress'])->name('user.address.delete');
@@ -51,6 +68,8 @@ Route::middleware('auth')->group(function () {
 
     // Ratings
     Route::post('/product/addRating', [ProductController::class, 'addRating'])->name('product.rating');
+    Route::patch('/product/rating/{id}', [ProductController::class, 'updateRating'])->name('product.rating.update');
+    Route::delete('/product/rating/{id}', [ProductController::class, 'deleteRating'])->name('product.rating.delete');
 
     // Orders
     Route::get('/order', [OrderController::class, 'history']);
@@ -61,12 +80,10 @@ Route::middleware('auth')->group(function () {
 
     // Seller & Admin Routes
     Route::middleware('role:seller,admin')->group(function () {
-        Route::get('/product/seller', [ProductController::class, 'seller'])->name('products.seller');
-        Route::get('/product/add', [ProductController::class, 'create'])->name('products.create');
         Route::post('/product/store', [ProductController::class, 'store'])->name('products.store');
         Route::get('/product/edit/{id}', [ProductController::class, 'edit'])->name('products.edit');
         Route::post('/product/update/{id}', [ProductController::class, 'update'])->name('products.update');
-        Route::match(['get', 'delete'], '/product/delete/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
+        Route::delete('/product/delete/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
         Route::delete('/product/image/{id}', [ProductController::class, 'deleteImage'])->name('products.image.destroy');
 
         // Discounts
@@ -81,9 +98,11 @@ Route::middleware('auth')->group(function () {
     // Admin Only Routes
     Route::middleware('role:admin')->group(function () {
         Route::get('/adminDashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+        Route::get('/admin/orders', [OrderManagementController::class, 'index'])->name('admin.orders');
+        Route::post('/admin/orders/{id}/status', [OrderManagementController::class, 'updateStatus'])->name('admin.orders.status');
         Route::get('/user/manajemen', [UserManagementController::class, 'index'])->name('admin.users');
-        Route::get('/user/toggleBlock/{id}', [UserManagementController::class, 'toggleBlock'])->name('admin.user.toggleBlock');
+        Route::post('/user/toggleBlock/{id}', [UserManagementController::class, 'toggleBlock'])->name('admin.user.toggleBlock');
         Route::post('/user/updateRole/{id}', [UserManagementController::class, 'updateRole'])->name('admin.user.updateRole');
-        Route::get('/user/softDelete/{id}', [UserManagementController::class, 'softDelete'])->name('admin.user.softDelete');
+        Route::delete('/user/softDelete/{id}', [UserManagementController::class, 'softDelete'])->name('admin.user.softDelete');
     });
 });

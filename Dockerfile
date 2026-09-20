@@ -11,6 +11,9 @@ RUN a2enmod rewrite
 # Copy application to container
 COPY . /var/www/html/
 
+# Apply upload limits inside the PHP runtime as well as the project config.
+COPY config/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+
 # Set working directory
 WORKDIR /var/www/html/
 

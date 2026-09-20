@@ -6,6 +6,10 @@ use Symfony\Component\Console\Input\ArgvInput;
 
 define('LARAVEL_START', microtime(true));
 
+if (PHP_SAPI === 'cli' && is_dir(__DIR__ . '/config/php')) {
+	putenv('PHP_INI_SCAN_DIR=' . __DIR__ . '/config/php');
+}
+
 // Register the Composer autoloader...
 require __DIR__.'/vendor/autoload.php';
 

@@ -31,7 +31,11 @@ class UserController extends Controller
             'full_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
             'phone_number' => ['required', 'string', 'max:20'],
-            'image' => ['nullable', 'image', 'max:3072'],
+            'image' => ['nullable', 'image', 'max:10240'],
+        ], [
+            'image.uploaded' => 'Foto profil gagal diunggah oleh PHP. Pastikan ukuran file di bawah 10MB dan restart server.',
+            'image.image' => 'Foto profil harus berupa gambar JPG, PNG, GIF, BMP, atau WEBP.',
+            'image.max' => 'Ukuran foto profil maksimal 10MB.',
         ]);
 
         if ($request->hasFile('image')) {
@@ -71,6 +75,55 @@ class UserController extends Controller
         return back()->with('alert', [
             'type' => 'success',
             'message' => 'Password berhasil diubah.',
+        ]);
+    }
+
+    public function becomeSeller(Request $request)
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'buyer') {
+            return back()->with('alert', [
+                'type' => 'error',
+                'message' => 'Hanya akun buyer yang dapat mengajukan diri menjadi seller.',
+            ]);
+        }
+
+        $validated = $request->validate([
+            'current_password' => ['required', 'string'],
+            'seller_agreement' => ['accepted'],
+        ], [
+            'seller_agreement.accepted' => 'Anda wajib menyetujui tanggung jawab sebagai seller.',
+        ]);
+
+        $user->load('addresses');
+        $missingVerification = [];
+
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            $missingVerification[] = 'password saat ini benar';
+        }
+        if (!$user->full_name || !$user->email || !$user->phone_number) {
+            $missingVerification[] = 'profil lengkap dengan email dan nomor telepon';
+        }
+        if (!$user->image) {
+            $missingVerification[] = 'foto profil';
+        }
+        if (!$user->addresses->contains('is_default', true)) {
+            $missingVerification[] = 'alamat utama';
+        }
+
+        if ($missingVerification) {
+            return back()->with('alert', [
+                'type' => 'error',
+                'message' => 'Verifikasi belum lengkap: ' . implode(', ', $missingVerification) . '.',
+            ]);
+        }
+
+        $user->update(['role' => 'seller']);
+
+        return back()->with('alert', [
+            'type' => 'success',
+            'message' => 'Verifikasi berhasil. Akun Anda sekarang dapat mengelola produk sebagai seller.',
         ]);
     }
 

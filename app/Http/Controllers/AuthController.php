@@ -21,7 +21,7 @@ class AuthController extends Controller
             ->orWhere('email', $credentials['username'])
             ->first();
 
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+        if (!$user || !$user->is_active || !Hash::check($credentials['password'], $user->password)) {
             return back()->with('alert', [
                 'type' => 'error',
                 'message' => 'Username atau Password salah!',
@@ -38,7 +38,7 @@ class AuthController extends Controller
         Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
 
-        return redirect()->intended('/')->with('alert', [
+        return redirect()->route('home')->with('alert', [
             'type' => 'success',
             'message' => 'Selamat datang kembali, ' . $user->full_name . '!',
         ]);

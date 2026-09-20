@@ -51,7 +51,7 @@ class CartController extends Controller
             return response()->json(['error' => 'Invalid product_id or quantity'], 400);
         }
 
-        $product = Product::findOrFail($productId);
+        $product = Product::where('is_active', true)->findOrFail($productId);
 
         if ($product->stock < $quantity) {
             return response()->json([
@@ -87,7 +87,7 @@ class CartController extends Controller
 
     public function increaseItem(Request $request)
     {
-        $itemId = $request->input('item_id');
+        $itemId = $request->validate(['item_id' => ['required', 'uuid']])['item_id'];
         $cart = $this->getOrCreateUserCart();
         $item = CartItem::where('cart_id', $cart->id)->findOrFail($itemId);
 
@@ -104,7 +104,7 @@ class CartController extends Controller
 
     public function decreaseItem(Request $request)
     {
-        $itemId = $request->input('item_id');
+        $itemId = $request->validate(['item_id' => ['required', 'uuid']])['item_id'];
         $cart = $this->getOrCreateUserCart();
         $item = CartItem::where('cart_id', $cart->id)->findOrFail($itemId);
 
@@ -119,7 +119,7 @@ class CartController extends Controller
 
     public function deleteItem(Request $request)
     {
-        $itemId = $request->input('item_id');
+        $itemId = $request->validate(['item_id' => ['required', 'uuid']])['item_id'];
         $cart = $this->getOrCreateUserCart();
         CartItem::where('cart_id', $cart->id)->where('id', $itemId)->delete();
 

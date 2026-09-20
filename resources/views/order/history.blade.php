@@ -41,12 +41,14 @@
                                 $tgl = date('Y-m-d', strtotime($order['created_at']));
                                 $phone = $user->phone_number ?? '-';
                                 $itemsJson = json_encode($order['items'] ?? []);
+                                $statusClass = $order['badge_class'] ?? 'bg-secondary';
+                                $statusLabel = $order['status_label'] ?? ucfirst($order['status']);
                             @endphp
                             <tr>
                                 <td><code class="text-dark">{{ substr($order['id'], 0, 8) }}...</code></td>
                                 <td>{{ $tgl }}</td>
                                 <td>
-                                    <span class="badge bg-success text-capitalize">{{ $order['status'] }}</span>
+                                    <span class="badge {{ $statusClass }} text-capitalize">{{ $statusLabel }}</span>
                                 </td>
                                 <td class="fw-semibold">Rp {{ $totalFormatted }}</td>
                                 <td>{{ $order['item_count'] }} item</td>

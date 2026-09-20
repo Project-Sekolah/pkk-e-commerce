@@ -8,6 +8,7 @@ use App\Models\Discount;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductRating;
+use App\Models\OrderItem;
 use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,6 +30,9 @@ class ProductController extends Controller
         $query = Product::with(['category', 'images', 'user', 'ratings.user'])
             ->withAvg('ratings', 'rating')
             ->withCount('ratings')
+            ->withCount(['ratings as comments_count' => function ($query) {
+                $query->whereNotNull('review_text')->where('review_text', '<>', '');
+            }])
             ->where('is_active', true);
 
         if (!empty($categorySlugs)) {
@@ -62,9 +66,13 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $product = Product::with(['category', 'images', 'user', 'ratings.user'])
+        $product = Product::where('is_active', true)
+            ->with(['category', 'images', 'user', 'ratings.user'])
             ->withAvg('ratings', 'rating')
             ->withCount('ratings')
+            ->withCount(['ratings as comments_count' => function ($query) {
+                $query->whereNotNull('review_text')->where('review_text', '<>', '');
+            }])
             ->findOrFail($id);
 
         if (request()->wantsJson() || request()->ajax()) {
@@ -82,13 +90,19 @@ class ProductController extends Controller
                 'images' => $product->images->pluck('image_url'),
                 'average_rating' => round((float) $product->ratings_avg_rating, 1),
                 'total_ratings' => $product->ratings_count,
-                'reviews' => $product->ratings->map(fn($r) => [
+                'total_comments' => $product->comments_count,
+                'reviews' => $product->ratings
+                    ->filter(fn($r) => filled($r->review_text))
+                    ->map(fn($r) => [
+                    'id' => $r->id,
+                    'user_id' => $r->user_id,
+                    'can_edit' => (string) $r->user_id === (string) Auth::id(),
                     'username' => $r->user?->full_name ?? $r->user?->username ?? 'Anonymous',
-                    'user_image' => $r->user?->image ?? asset('assets/img/default-avatar.jpg'),
+                    'user_image' => $r->user?->image ?? asset('assets/img/default.jpg'),
                     'rating' => $r->rating,
                     'review_text' => $r->review_text,
                     'created_at' => $r->created_at->format('d M Y'),
-                ]),
+                ])->values(),
             ]);
         }
 
@@ -123,6 +137,30 @@ class ProductController extends Controller
         ]);
     }
 
+    public function updateRating(Request $request, string $id)
+    {
+        $validated = $request->validate([
+            'rating' => ['required', 'integer', 'min:1', 'max:5'],
+            'review_text' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $rating = ProductRating::where('user_id', Auth::id())->findOrFail($id);
+        $rating->update([
+            'rating' => $validated['rating'],
+            'review_text' => $validated['review_text'] ?? null,
+        ]);
+
+        return response()->json(['message' => 'Komentar berhasil diperbarui.']);
+    }
+
+    public function deleteRating(string $id)
+    {
+        $rating = ProductRating::where('user_id', Auth::id())->findOrFail($id);
+        $rating->delete();
+
+        return response()->json(['message' => 'Komentar berhasil dihapus.']);
+    }
+
     public function seller()
     {
         $products = Product::with(['category', 'images'])
@@ -133,6 +171,20 @@ class ProductController extends Controller
         return view('product.seller', [
             'judul' => 'Produk Saya - Lunerburg & Co',
             'products' => $products,
+        ]);
+    }
+
+    public function purchaseHistory()
+    {
+        $sales = OrderItem::with(['order.user', 'product'])
+            ->whereHas('product', fn ($query) => $query->where('user_id', Auth::id()))
+            ->whereHas('order', fn ($query) => $query->whereIn('status', ['paid', 'shipped', 'completed']))
+            ->latest()
+            ->paginate(15);
+
+        return view('product.purchase-history', [
+            'judul' => 'Riwayat Pembelian Produk - Lunerburg & Co',
+            'sales' => $sales,
         ]);
     }
 
@@ -148,6 +200,10 @@ class ProductController extends Controller
 
     public function store(Request $request, CloudinaryService $cloudinary)
     {
+        $uploadLimit = ini_get('upload_max_filesize') ?: 'tidak diketahui';
+        $postLimit = ini_get('post_max_size') ?: 'tidak diketahui';
+        $uploadTempDir = ini_get('upload_tmp_dir') ?: 'default PHP';
+
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'category_id' => ['required', 'exists:categories,id'],
@@ -155,7 +211,12 @@ class ProductController extends Controller
             'stock' => ['required', 'integer', 'min:0'],
             'description' => ['required', 'string'],
             'gender' => ['required', 'in:pria,wanita,all'],
-            'images.*' => ['nullable', 'image', 'max:5120'],
+            'images' => ['nullable', 'array', 'max:10'],
+            'images.*' => ['nullable', 'image', 'max:10240'],
+        ], [
+            'images.*.uploaded' => "Foto gagal diunggah oleh PHP. Batas file: {$uploadLimit}, batas total request: {$postLimit}, folder temporary: {$uploadTempDir}.",
+            'images.*.image' => 'Setiap file harus berupa gambar JPG, PNG, GIF, BMP, atau WEBP.',
+            'images.*.max' => 'Ukuran setiap foto maksimal 10MB.',
         ]);
 
         $baseSlug = Str::slug($validated['title']);
@@ -216,6 +277,9 @@ class ProductController extends Controller
     public function update(Request $request, $id, CloudinaryService $cloudinary)
     {
         $product = Product::where('user_id', Auth::id())->findOrFail($id);
+        $uploadLimit = ini_get('upload_max_filesize') ?: 'tidak diketahui';
+        $postLimit = ini_get('post_max_size') ?: 'tidak diketahui';
+        $uploadTempDir = ini_get('upload_tmp_dir') ?: 'default PHP';
 
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
@@ -225,7 +289,12 @@ class ProductController extends Controller
             'description' => ['required', 'string'],
             'gender' => ['required', 'in:pria,wanita,all'],
             'discount_id' => ['nullable', 'exists:discounts,id'],
-            'images.*' => ['nullable', 'image', 'max:5120'],
+            'images' => ['nullable', 'array', 'max:10'],
+            'images.*' => ['nullable', 'image', 'max:10240'],
+        ], [
+            'images.*.uploaded' => "Foto gagal diunggah oleh PHP. Batas file: {$uploadLimit}, batas total request: {$postLimit}, folder temporary: {$uploadTempDir}.",
+            'images.*.image' => 'Setiap file harus berupa gambar JPG, PNG, GIF, BMP, atau WEBP.',
+            'images.*.max' => 'Ukuran setiap foto maksimal 10MB.',
         ]);
 
         if ($validated['title'] !== $product->title) {
@@ -260,7 +329,7 @@ class ProductController extends Controller
         }
 
         if (!empty($validated['discount_id'])) {
-            $discount = Discount::findOrFail($validated['discount_id']);
+            $discount = Discount::where('user_id', Auth::id())->findOrFail($validated['discount_id']);
             $product->discounts()->syncWithoutDetaching([
                 $discount->id => [
                     'id' => (string) Str::uuid(),
@@ -294,8 +363,16 @@ class ProductController extends Controller
 
     public function deleteImage($id)
     {
-        $image = ProductImage::whereHas('product', fn($q) => $q->where('user_id', Auth::id()))->findOrFail($id);
+        $image = ProductImage::whereHas('product', function ($query) {
+            if (!Auth::user()->isAdmin()) {
+                $query->where('user_id', Auth::id());
+            }
+        })->findOrFail($id);
         $image->delete();
+
+        if (request()->expectsJson() || request()->ajax()) {
+            return response()->json(['message' => 'Gambar berhasil dihapus.']);
+        }
 
         return back()->with('alert', [
             'type' => 'success',

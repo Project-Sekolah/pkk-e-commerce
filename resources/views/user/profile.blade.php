@@ -7,7 +7,7 @@
         <div class="col-lg-4">
             <div class="card shadow-sm border-0 text-center p-4">
                 <div class="position-relative d-inline-block mx-auto mb-3">
-                    <img src="{{ $user->image ? $user->image : asset('assets/img/default-avatar.jpg') }}"
+                    <img src="{{ $user->image ? $user->image : asset('assets/img/default.jpg') }}"
                          alt="{{ $user->full_name }}" class="rounded-circle border shadow-sm" width="120" height="120" style="object-fit: cover;">
                 </div>
                 <h4 class="fw-bold mb-0">{{ $user->full_name }}</h4>
@@ -52,6 +52,27 @@
                     <button type="submit" class="btn btn-primary px-4">Simpan Perubahan</button>
                 </form>
             </div>
+
+            @if($user->role === 'buyer')
+                <div class="card shadow-sm border-0 p-4 mb-4">
+                    <h5 class="fw-bold mb-2">Menjadi Seller</h5>
+                    <p class="text-muted small">Lengkapi profil, foto, alamat utama, dan verifikasi password untuk mulai menjual produk.</p>
+                    <form action="{{ route('user.become-seller') }}" method="POST">
+                        @csrf
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Password Saat Ini</label>
+                            <input type="password" name="current_password" class="form-control" required>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" name="seller_agreement" value="1" id="sellerAgreement" required>
+                            <label class="form-check-label small" for="sellerAgreement">
+                                Saya menyetujui tanggung jawab dan kebijakan sebagai seller.
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-outline-primary">Ajukan Menjadi Seller</button>
+                    </form>
+                </div>
+            @endif
 
             <!-- Ganti Password -->
             <div class="card shadow-sm border-0 p-4 mb-4">

@@ -16,62 +16,12 @@
     </svg>
 </section>
 
-<!-- Kolase Promo -->
-<div class="container py-5">
-    <div class="row g-3">
-        <div class="col-md-6">
-            <div class="collection-box bg-dark position-relative rounded overflow-hidden shadow-sm" style="height: 100%; min-height: 400px;">
-                <img src="{{ asset('assets/img/model1.jpg') }}" alt="Women" class="w-100 h-100" style="object-fit: cover;">
-                <div class="collection-content position-absolute bottom-0 start-0 p-4 text-white" style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); width: 100%;">
-                    <h6 class="text-uppercase tracking-wider">HOT LIST</h6>
-                    <h4 class="fw-bold">WOMEN COLLECTION</h4>
-                    <a href="{{ route('products.index', ['gender' => 'wanita']) }}" class="text-white fw-bold text-decoration-underline">SHOP NOW</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="row g-3">
-                <div class="col-12">
-                    <div class="collection-box bg-light position-relative rounded overflow-hidden shadow-sm" style="height: 220px;">
-                        <img src="{{ asset('assets/img/model4.png') }}" alt="Men" class="w-100 h-100" style="object-fit: cover;">
-                        <div class="collection-content position-absolute bottom-0 start-0 p-3 text-white" style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); width: 100%;">
-                            <h6 class="text-uppercase">HOT LIST</h6>
-                            <h5 class="fw-bold">MEN COLLECTION</h5>
-                            <a href="{{ route('products.index', ['gender' => 'pria']) }}" class="text-white fw-bold text-decoration-underline">SHOP NOW</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="collection-box position-relative rounded overflow-hidden shadow-sm" style="height: 220px;">
-                        <img src="{{ asset('assets/img/model5.jpg') }}" alt="Comfort" class="w-100 h-100" style="object-fit: cover;">
-                        <div class="collection-content position-absolute bottom-0 start-0 p-3 text-white" style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); width: 100%;">
-                            <h6 class="text-uppercase">COMFORT</h6>
-                            <h6 class="fw-bold">COLLECTIONS</h6>
-                            <a href="{{ route('products.index') }}" class="text-white fw-bold text-decoration-underline">SHOP NOW</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="collection-box position-relative rounded overflow-hidden shadow-sm" style="height: 220px;">
-                        <img src="{{ asset('assets/img/model6.jpg') }}" alt="Gifts" class="w-100 h-100" style="object-fit: cover;">
-                        <div class="collection-content position-absolute bottom-0 start-0 p-3 text-white" style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); width: 100%;">
-                            <h6 class="text-uppercase">E-GIFT CARDS</h6>
-                            <small class="d-block mb-1">Berikan hadiah terbaik.</small>
-                            <a href="{{ route('products.index') }}" class="text-white fw-bold text-decoration-underline">DISCOVER MORE</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Popular Products -->
+<!-- Hotlist Comfort: sourced from active products and completed sales -->
 <div class="container py-4" id="produk">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h3 class="fw-bold mb-0">Produk Terpopuler</h3>
-            <p class="text-muted small">Pilihan favorit para pelanggan Lunerburg & Co</p>
+            <h3 class="fw-bold mb-0">Hotlist Comfort</h3>
+            <p class="text-muted small">Produk nyata yang paling banyak dipilih pelanggan kami.</p>
         </div>
         <a href="{{ route('products.index') }}" class="btn btn-outline-dark btn-sm">Lihat Semua Produk &rarr;</a>
     </div>
@@ -99,6 +49,9 @@
                              data-gender="{{ ucfirst($product->gender) }}"
                              data-stock="{{ $product->stock }}"
                              data-image="{{ $imgUrl }}"
+                             data-images='@json($product->images->pluck("image_url")->values())'
+                             data-rating-count="{{ $product->ratings_count }}"
+                             data-comment-count="{{ $product->comments_count }}"
                              data-owner="{{ $product->user?->full_name ?? $product->user?->username }}">
                         
                         <span class="position-absolute top-0 start-0 m-2 badge bg-dark text-white text-uppercase small">

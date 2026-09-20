@@ -56,17 +56,17 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-group">
-                                    <a href="{{ route('admin.user.toggleBlock', $u->id) }}"
-                                       class="btn btn-sm {{ $u->is_blocked ? 'btn-success' : 'btn-warning' }}"
-                                       title="{{ $u->is_blocked ? 'Buka Blokir' : 'Blokir Akun' }}">
-                                        <i class="bi {{ $u->is_blocked ? 'bi-unlock-fill' : 'bi-lock-fill' }}"></i>
-                                    </a>
-                                    <a href="{{ route('admin.user.softDelete', $u->id) }}"
-                                       class="btn btn-sm btn-danger"
-                                       onclick="return confirm('Nonaktifkan akun pengguna ini?');"
-                                       title="Nonaktifkan">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
+                                    <form method="POST" action="{{ route('admin.user.toggleBlock', $u->id) }}" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm {{ $u->is_blocked ? 'btn-success' : 'btn-warning' }}" title="{{ $u->is_blocked ? 'Buka Blokir' : 'Blokir Akun' }}">
+                                            <i class="bi {{ $u->is_blocked ? 'bi-unlock-fill' : 'bi-lock-fill' }}"></i>
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ route('admin.user.softDelete', $u->id) }}" class="d-inline" onsubmit="return confirm('Nonaktifkan akun pengguna ini?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Nonaktifkan"><i class="bi bi-trash"></i></button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>

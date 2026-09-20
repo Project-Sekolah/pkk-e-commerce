@@ -7,9 +7,14 @@
             <h2 class="fw-bold mb-0">Dashboard Admin</h2>
             <p class="text-muted small">Ringkasan operasional dan statistik toko Lunerburg & Co</p>
         </div>
-        <a href="{{ route('admin.users') }}" class="btn btn-outline-dark btn-sm">
-            <i class="bi bi-people-fill me-1"></i> Manajemen Pengguna
-        </a>
+        <div class="d-flex gap-2">
+            <a href="{{ route('admin.orders') }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-receipt me-1"></i> Kelola Pesanan
+            </a>
+            <a href="{{ route('admin.users') }}" class="btn btn-outline-dark btn-sm">
+                <i class="bi bi-people-fill me-1"></i> Pengguna
+            </a>
+        </div>
     </div>
 
     <!-- Stat Cards -->

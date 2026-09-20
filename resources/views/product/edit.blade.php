@@ -72,6 +72,13 @@
                     @forelse($product_images as $img)
                         <div class="position-relative border rounded p-1">
                             <img src="{{ $img->image_url }}" alt="Img" width="90" height="90" style="object-fit: cover;" class="rounded">
+                            <form action="{{ route('products.image.destroy', $img->id) }}" method="POST" class="delete-product-image-form position-absolute top-0 end-0 m-1">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-danger p-1" title="Hapus foto" onclick="return confirm('Hapus foto ini?');">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
                         </div>
                     @empty
                         <span class="text-muted small">Belum ada foto yang diunggah.</span>

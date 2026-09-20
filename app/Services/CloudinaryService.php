@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
-use Cloudinary\Cloudinary;
+use Cloudinary\Uploader;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class CloudinaryService
 {
-    protected ?Cloudinary $cloudinary = null;
+    protected bool $cloudinaryConfigured = false;
 
     public function __construct()
     {
@@ -17,17 +17,23 @@ class CloudinaryService
         $apiKey = config('services.cloudinary.api_key');
         $apiSecret = config('services.cloudinary.api_secret');
 
+        if ((!$cloudName || !$apiKey || !$apiSecret) && config('services.cloudinary.url')) {
+            $cloudinaryUrl = parse_url(config('services.cloudinary.url'));
+            $cloudName = $cloudName ?: ($cloudinaryUrl['host'] ?? null);
+            $apiKey = $apiKey ?: ($cloudinaryUrl['user'] ?? null);
+            $apiSecret = $apiSecret ?: (isset($cloudinaryUrl['pass'])
+                ? rawurldecode($cloudinaryUrl['pass'])
+                : null);
+        }
+
         if ($cloudName && $apiKey && $apiSecret) {
-            $this->cloudinary = new Cloudinary([
-                'cloud' => [
-                    'cloud_name' => $cloudName,
-                    'api_key'    => $apiKey,
-                    'api_secret' => $apiSecret,
-                ],
-                'url' => [
-                    'secure' => true,
-                ],
+            \Cloudinary::config([
+                'cloud_name' => $cloudName,
+                'api_key' => $apiKey,
+                'api_secret' => $apiSecret,
+                'secure' => true,
             ]);
+            $this->cloudinaryConfigured = true;
         }
     }
 
@@ -39,9 +45,9 @@ class CloudinaryService
     {
         $filePath = is_string($file) ? $file : $file->getRealPath();
 
-        if ($this->cloudinary) {
+        if ($this->cloudinaryConfigured) {
             try {
-                $response = $this->cloudinary->uploadApi()->upload($filePath, [
+                $response = Uploader::upload($filePath, [
                     'folder' => $folder,
                 ]);
 
@@ -55,7 +61,7 @@ class CloudinaryService
 
         // Fallback: save to local public disk
         if ($file instanceof UploadedFile) {
-            $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $filename = Str::uuid() . '.' . $file->extension();
             $path = $file->storeAs($folder, $filename, 'public');
             return asset('storage/' . $path);
         }

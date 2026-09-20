@@ -34,6 +34,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    @vite('resources/js/app.js')
+
     <script>
         const BASEURL = "{{ url('/') }}";
         const IS_LOGGED_IN = {{ Auth::check() ? 'true' : 'false' }};
@@ -212,7 +214,7 @@
                         <br>
                         <span class="badge bg-secondary text-uppercase">{{ Auth::user()->role }}</span>
                     </div>
-                    <img src="{{ Auth::user()->image ? Auth::user()->image : asset('assets/img/default-avatar.jpg') }}"
+                    <img src="{{ Auth::user()->image ? Auth::user()->image : asset('assets/img/default.jpg') }}"
                          alt="Foto Profil" class="rounded-circle border" width="48" height="48" style="object-fit: cover;">
                 </div>
                 <div class="mt-3">
@@ -293,7 +295,9 @@
                     <div class="row g-4">
                         <div class="col-md-5 d-flex justify-content-center align-items-center">
                             <div class="modal-image-container text-center w-100">
-                                <img id="modalImage" src="" class="img-fluid rounded shadow-sm modal-image" alt="Product Image" style="max-height: 320px; object-fit: cover;">
+                                <div id="modalImageGallery" class="d-flex flex-wrap justify-content-center gap-2">
+                                    <img id="modalImage" src="" class="img-fluid rounded shadow-sm modal-image" alt="Product Image" style="max-height: 320px; object-fit: cover;">
+                                </div>
                                 <div class="price-tag mt-2 fs-5 fw-bold text-primary">
                                     Rp <span id="modalPrice"></span>
                                 </div>
@@ -307,9 +311,18 @@
                                 <p class="mb-1"><i class="bi bi-gender-ambiguous me-2"></i><strong>Gender:</strong> <span id="modalGender"></span></p>
                                 <p class="mb-1"><i class="bi bi-box-seam me-2"></i><strong>Stok:</strong> <span id="modalStock"></span></p>
                                 <p class="mb-1"><i class="bi bi-person-fill me-2"></i><strong>Penjual:</strong> <span id="modalOwnerName"></span></p>
+                                <p class="mb-1"><i class="bi bi-chat-left-text-fill me-2"></i><strong>Komentar:</strong> <span id="modalRatingCount">0 komentar</span></p>
                             </div>
                             <p class="mb-1"><strong>Deskripsi:</strong></p>
                             <p id="modalDescription" class="small text-muted mb-3"></p>
+
+                            <div class="product-comments mt-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="fw-bold mb-0">Komentar pelanggan</h6>
+                                    <span class="small text-muted" id="modalCommentsStatus">Memuat...</span>
+                                </div>
+                                <div id="modalCommentsContainer" class="border-top pt-3"></div>
+                            </div>
 
                             <button id="modalAddToCartBtn" class="btn btn-primary add-to-cart w-100 mb-3" data-id="">
                                 <i class="bi bi-cart-plus-fill me-1"></i> Tambah ke Keranjang
@@ -344,8 +357,6 @@
 
     <!-- SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ asset('assets/js/main.js') }}?v={{ time() }}"></script>
-
     <!-- SweetAlert Session Handlers -->
     @if(session('alert'))
         <script>
@@ -360,9 +371,34 @@
 
     @if ($errors->any())
         <script>
+            const validationErrors = @json($errors->toArray());
+            const validationErrorText = Object.entries(validationErrors)
+                .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
+                .join('\n');
+            console.error(`[Upload/Validation Error]\n${validationErrorText}`);
+
             Swal.fire({
                 title: "Perhatian",
-                html: "{!! implode('<br>', $errors->all()) !!}",
+                html: Object.values(validationErrors).flat().join('<br>'),
+                icon: "error",
+                confirmButtonText: "OK"
+            });
+        </script>
+    @endif
+
+    @if (session('upload_error'))
+        <script>
+            const uploadError = @json(session('upload_error'));
+            console.error('[Upload/Request Error]', {
+                message: uploadError,
+                status: 413,
+                postMaxSize: @json(ini_get('post_max_size')),
+                uploadMaxFilesize: @json(ini_get('upload_max_filesize'))
+            });
+
+            Swal.fire({
+                title: "Upload gagal",
+                text: uploadError,
                 icon: "error",
                 confirmButtonText: "OK"
             });

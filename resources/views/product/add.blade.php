@@ -57,7 +57,7 @@
             <div class="mb-4">
                 <label class="form-label fw-semibold">Unggah Foto Produk</label>
                 <input type="file" name="images[]" class="form-control" multiple accept="image/*">
-                <small class="text-muted">Bisa memilih lebih dari satu foto sekaligus. Format: JPG, PNG, WEBP (Maks: 5MB per foto).</small>
+                <small class="text-muted">Bisa memilih lebih dari satu foto sekaligus. Format: JPG, PNG, WEBP (Maks: 10MB per foto).</small>
             </div>
 
             <div class="d-flex justify-content-end gap-2">

@@ -19,12 +19,23 @@ class Order extends Model
         'customer_address',
         'total',
         'status',
+        'midtrans_order_id',
+        'snap_token',
+        'payment_type',
+        'transaction_status',
+        'fraud_status',
+        'payment_payload',
+        'paid_at',
+        'expires_at',
     ];
 
     protected function casts(): array
     {
         return [
             'total' => 'decimal:2',
+            'payment_payload' => 'array',
+            'paid_at' => 'datetime',
+            'expires_at' => 'datetime',
         ];
     }
 

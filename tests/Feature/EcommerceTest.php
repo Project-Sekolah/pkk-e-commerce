@@ -107,7 +107,8 @@ class EcommerceTest extends TestCase
 
         $this->assertDatabaseHas('orders', [
             'user_id' => $user->id,
-            'status' => 'paid',
+            'status' => 'pending',
+            'snap_token' => 'test-snap-token',
         ]);
     }
 
@@ -118,5 +119,108 @@ class EcommerceTest extends TestCase
         $response = $this->actingAs($admin)->get('/adminDashboard');
         $response->assertStatus(200);
         $response->assertSee('Dashboard Admin');
+    }
+
+    public function test_seller_can_access_own_products_page(): void
+    {
+        $seller = User::where('username', 'seller')->first();
+
+        $response = $this->actingAs($seller)->get('/product/seller');
+
+        $response->assertStatus(200);
+        $response->assertSee('Kelola Produk Saya');
+    }
+
+    public function test_seller_can_view_paid_purchase_history_for_own_product(): void
+    {
+        $seller = User::where('username', 'seller')->first();
+        $buyer = User::where('username', 'buyer')->first();
+        $product = Product::where('user_id', $seller->id)->firstOrFail();
+
+        $order = \App\Models\Order::create([
+            'user_id' => $buyer->id,
+            'customer_address' => 'Jl. Test No. 1, Bandung 40111',
+            'total' => 150000,
+            'status' => 'paid',
+        ]);
+        $order->items()->create([
+            'product_id' => $product->id,
+            'quantity' => 2,
+            'price' => 75000,
+        ]);
+
+        $response = $this->actingAs($seller)->get('/product/seller/purchase-history');
+
+        $response->assertOk();
+        $response->assertSee($product->title);
+        $response->assertSee($buyer->full_name);
+        $response->assertSee('Dibayar');
+    }
+
+    public function test_order_detail_ajax_returns_payment_metadata(): void
+    {
+        $user = User::where('username', 'buyer')->first();
+        $product = Product::first();
+
+        $order = \App\Models\Order::create([
+            'user_id' => $user->id,
+            'customer_address' => 'Jl. Test No. 1, Bandung 40111',
+            'total' => 150000,
+            'status' => 'pending',
+            'midtrans_order_id' => 'LUNER-TEST123',
+            'snap_token' => 'test-snap-token',
+            'transaction_status' => 'pending',
+            'payment_type' => 'bank_transfer',
+        ]);
+
+        $order->items()->create([
+            'product_id' => $product->id,
+            'quantity' => 1,
+            'price' => 150000,
+        ]);
+
+        $response = $this->actingAs($user)->getJson('/order/detail/' . $order->id, ['Accept' => 'application/json']);
+
+        $response->assertOk();
+        $response->assertJsonPath('status', 'pending');
+        $response->assertJsonPath('payment_status', 'Menunggu Pembayaran');
+        $response->assertJsonPath('transaction_status', 'pending');
+        $response->assertJsonPath('payment_type', 'bank_transfer');
+    }
+
+    public function test_authenticated_user_can_submit_product_rating(): void
+    {
+        $buyer = User::where('username', 'buyer')->first();
+        $product = Product::first();
+
+        $response = $this->actingAs($buyer)->post('/product/addRating', [
+            'product_id' => $product->id,
+            'rating' => 5,
+            'review_text' => 'Produk sesuai dan kualitasnya bagus.',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('product_ratings', [
+            'user_id' => $buyer->id,
+            'product_id' => $product->id,
+            'rating' => 5,
+        ]);
+    }
+
+    public function test_buyer_can_become_seller_after_required_verification(): void
+    {
+        $buyer = User::where('username', 'buyer')->first();
+        $buyer->update(['image' => 'https://example.com/profile.jpg']);
+
+        $response = $this->actingAs($buyer)->post('/user/become-seller', [
+            'current_password' => 'password123',
+            'seller_agreement' => '1',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('users', [
+            'id' => $buyer->id,
+            'role' => 'seller',
+        ]);
     }
 }
