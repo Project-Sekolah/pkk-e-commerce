@@ -3,7 +3,7 @@
     "dockerfile": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "apache2-foreground"
-  },
-  "healthcheckPath": "/"
+    "healthcheckPath": "/up",
+    "healthcheckTimeout": 30
+  }
 }
