@@ -121,7 +121,7 @@ class OrderController extends Controller
     public function detail($orderId, OrderExpiryService $expiryService, MidtransService $midtrans)
     {
         $expiryService->expirePendingOrders();
-        $order = Order::with(['items.product', 'shippingAddress'])
+        $order = Order::with(['items.product.user', 'items.product.images', 'shippingAddress'])
             ->where('user_id', Auth::id())
             ->findOrFail($orderId);
         $order = $this->syncPaymentStatus($order, $midtrans);
@@ -143,6 +143,12 @@ class OrderController extends Controller
             'payment_type' => $order->payment_type ?? 'Belum dipilih',
             'payment_payload' => $order->payment_payload ?? [],
             'expires_at' => $order->expires_at?->format('d M Y H:i'),
+            'items' => $order->items->map(fn ($item) => [
+                'name' => $item->product?->title ?? 'Produk Dihapus',
+                'quantity' => $item->quantity,
+                'price' => (float) $item->price,
+                'store_name' => $item->product?->user?->shop_name ?? $item->product?->user?->full_name ?? 'Toko',
+            ])->values(),
         ];
 
         $orderItems = $order->items->map(fn($item) => [
@@ -164,6 +170,7 @@ class OrderController extends Controller
 
     public function checkout(Request $request, MidtransService $midtrans)
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         $courierRates = [
@@ -347,6 +354,7 @@ class OrderController extends Controller
         DB::transaction(function () use ($order, $payload) {
             $lockedOrder = Order::lockForUpdate()->findOrFail($order->id);
             $wasCancelled = $lockedOrder->status === 'cancelled';
+            $canRestoreStock = $lockedOrder->status === 'pending';
             $newStatus = $payload['transaction_status'] ?? 'pending';
             $isPaid = in_array($newStatus, ['settlement', 'capture'], true)
                 && (($newStatus !== 'capture') || ($payload['fraud_status'] ?? 'accept') === 'accept');
@@ -361,7 +369,7 @@ class OrderController extends Controller
                 'paid_at' => $isPaid ? ($lockedOrder->paid_at ?? now()) : $lockedOrder->paid_at,
             ])->save();
 
-            if ($isFailed && !$wasCancelled) {
+            if ($isFailed && !$wasCancelled && $canRestoreStock) {
                 foreach ($lockedOrder->items()->lockForUpdate()->get() as $item) {
                     Product::whereKey($item->product_id)->lockForUpdate()->increment('stock', $item->quantity);
                 }

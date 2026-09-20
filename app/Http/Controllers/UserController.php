@@ -13,7 +13,9 @@ class UserController extends Controller
 {
     public function profile()
     {
-        $user = Auth::user()->load('addresses');
+        /** @var User $user */
+        $user = Auth::user();
+        $user->load('addresses');
 
         return view('user.profile', [
             'judul' => 'Profil Saya',
@@ -24,6 +26,7 @@ class UserController extends Controller
 
     public function updateProfile(Request $request, CloudinaryService $cloudinary)
     {
+        /** @var User $user */
         $user = Auth::user();
 
         $validated = $request->validate([
@@ -59,6 +62,7 @@ class UserController extends Controller
             'confirm_password' => ['required', 'same:new_password'],
         ]);
 
+        /** @var User $user */
         $user = Auth::user();
 
         if (!Hash::check($validated['current_password'], $user->password)) {
@@ -80,6 +84,7 @@ class UserController extends Controller
 
     public function becomeSeller(Request $request, CloudinaryService $cloudinary)
     {
+        /** @var User $user */
         $user = Auth::user();
 
         if ($user->role !== 'buyer') {
@@ -152,6 +157,7 @@ class UserController extends Controller
             'is_default' => ['nullable', 'boolean'],
         ]);
 
+        /** @var User $user */
         $user = Auth::user();
         $isDefault = $request->boolean('is_default') || $user->addresses()->count() === 0;
 
@@ -177,6 +183,7 @@ class UserController extends Controller
 
     public function setDefaultAddress($id)
     {
+        /** @var User $user */
         $user = Auth::user();
         $address = $user->addresses()->findOrFail($id);
 
@@ -191,6 +198,7 @@ class UserController extends Controller
 
     public function deleteAddress($id)
     {
+        /** @var User $user */
         $user = Auth::user();
         $address = $user->addresses()->findOrFail($id);
         $wasDefault = $address->is_default;

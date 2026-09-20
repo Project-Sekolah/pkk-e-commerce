@@ -211,7 +211,7 @@ class EcommerceTest extends TestCase
         $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'completed']);
     }
 
-    public function test_authenticated_user_can_edit_own_product_comment(): void
+    public function test_authenticated_user_can_delete_own_product_comment(): void
     {
         $buyer = User::where('username', 'buyer')->first();
         $product = Product::first();
@@ -220,20 +220,13 @@ class EcommerceTest extends TestCase
             'user_id' => $buyer->id,
             'product_id' => $product->id,
             'rating' => 4,
-            'review_text' => 'Komentar lama',
+            'review_text' => 'Komentar yang akan dihapus',
         ]);
 
-        $response = $this->actingAs($buyer)->patchJson('/product/rating/' . $rating->id, [
-            'rating' => 5,
-            'review_text' => 'Komentar baru dengan tanda kutip: "bagus"',
-        ]);
+        $response = $this->actingAs($buyer)->deleteJson('/product/rating/' . $rating->id);
 
         $response->assertOk();
-        $this->assertDatabaseHas('product_ratings', [
-            'id' => $rating->id,
-            'rating' => 5,
-            'review_text' => 'Komentar baru dengan tanda kutip: "bagus"',
-        ]);
+        $this->assertDatabaseMissing('product_ratings', ['id' => $rating->id]);
     }
 
     public function test_pending_order_older_than_payment_window_expires_and_restores_stock(): void

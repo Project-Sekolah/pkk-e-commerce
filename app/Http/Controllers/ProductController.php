@@ -196,22 +196,6 @@ class ProductController extends Controller
         ]);
     }
 
-    public function updateRating(Request $request, string $id)
-    {
-        $validated = $request->validate([
-            'rating' => ['required', 'integer', 'min:1', 'max:5'],
-            'review_text' => ['nullable', 'string', 'max:1000'],
-        ]);
-
-        $rating = ProductRating::where('user_id', Auth::id())->findOrFail($id);
-        $rating->update([
-            'rating' => $validated['rating'],
-            'review_text' => $validated['review_text'] ?? null,
-        ]);
-
-        return response()->json(['message' => 'Komentar berhasil diperbarui.']);
-    }
-
     public function deleteRating(string $id)
     {
         $rating = ProductRating::where('user_id', Auth::id())->findOrFail($id);
@@ -417,8 +401,10 @@ class ProductController extends Controller
 
     public function destroy($id)
     {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
         $product = Product::where('user_id', Auth::id())
-            ->orWhere(fn($q) => Auth::user()->isAdmin() ? $q : $q->whereNull('id'))
+            ->orWhere(fn($q) => $user->isAdmin() ? $q : $q->whereNull('id'))
             ->findOrFail($id);
 
         CartItem::where('product_id', $product->id)->delete();
@@ -432,8 +418,10 @@ class ProductController extends Controller
 
     public function deleteImage($id)
     {
-        $image = ProductImage::whereHas('product', function ($query) {
-            if (!Auth::user()->isAdmin()) {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $image = ProductImage::whereHas('product', function ($query) use ($user) {
+            if (!$user->isAdmin()) {
                 $query->where('user_id', Auth::id());
             }
         })->findOrFail($id);

@@ -72,7 +72,6 @@ Route::middleware('auth')->group(function () {
 
     // Ratings
     Route::post('/product/addRating', [ProductController::class, 'addRating'])->name('product.rating');
-    Route::patch('/product/rating/{id}', [ProductController::class, 'updateRating'])->name('product.rating.update');
     Route::delete('/product/rating/{id}', [ProductController::class, 'deleteRating'])->name('product.rating.delete');
 
     // Orders

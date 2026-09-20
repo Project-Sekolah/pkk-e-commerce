@@ -95,7 +95,9 @@ $(document).ready(function() {
 async function downloadStruk(orderId, total, tanggal, phone, items) {
     try {
         const { jsPDF } = window.jspdf;
+        if (!jsPDF) throw new Error('Library PDF belum termuat. Muat ulang halaman dan coba lagi.');
         const doc = new jsPDF();
+        if (typeof doc.autoTable !== 'function') throw new Error('Komponen tabel PDF belum termuat. Muat ulang halaman dan coba lagi.');
 
         const imageToDataUrl = async (url) => {
             if (!url) return null;
@@ -113,15 +115,21 @@ async function downloadStruk(orderId, total, tanggal, phone, items) {
             }
         };
 
+        const imageFormat = (dataUrl) => dataUrl?.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+
+        doc.setFillColor(43, 43, 43);
+        doc.rect(0, 0, 210, 28, 'F');
+        doc.setTextColor(255, 255, 255);
         doc.setFontSize(18);
         doc.setFont("helvetica", "bold");
-        doc.text("STRUK PEMBAYARAN", 105, 20, { align: "center" });
+        doc.text("STRUK PEMBAYARAN", 105, 18, { align: "center" });
 
+        doc.setTextColor(40, 40, 40);
         doc.setFontSize(11);
         doc.setFont("helvetica", "normal");
-        doc.text(`ID Transaksi : ${orderId}`, 20, 35);
-        doc.text(`Nomor HP     : ${phone || "-"}`, 20, 42);
-        doc.text(`Tanggal       : ${tanggal}`, 20, 49);
+        doc.text(`ID Transaksi: ${orderId}`, 20, 40);
+        doc.text(`Nomor HP: ${phone || "-"}`, 20, 47);
+        doc.text(`Tanggal: ${tanggal}`, 20, 54);
 
         const body = (items || []).map(item => [
             item.name,
@@ -132,7 +140,7 @@ async function downloadStruk(orderId, total, tanggal, phone, items) {
         ]);
 
         doc.autoTable({
-            startY: 60,
+            startY: 65,
             head: [["Produk", "Toko", "Qty", "Harga", "Subtotal"]],
             body: body,
             styles: { fontSize: 10 },
@@ -147,7 +155,7 @@ async function downloadStruk(orderId, total, tanggal, phone, items) {
             }
             const imageData = await imageToDataUrl(item.image);
             if (imageData) {
-                doc.addImage(imageData, 'JPEG', 20, finalY, 24, 24);
+                doc.addImage(imageData, imageFormat(imageData), 20, finalY, 24, 24);
             }
             doc.setFontSize(9);
             doc.setTextColor(60, 60, 60);
@@ -160,7 +168,12 @@ async function downloadStruk(orderId, total, tanggal, phone, items) {
         }
         doc.setFontSize(13);
         doc.setFont("helvetica", "bold");
+        doc.setTextColor(20, 20, 20);
         doc.text(`TOTAL: Rp ${total}`, 20, Math.min(finalY + 5, 285));
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(100, 100, 100);
+        doc.text('Dokumen ini dibuat otomatis oleh Lunerburg & Co.', 105, 292, { align: 'center' });
 
         doc.save(`Struk-Order-${orderId.substring(0, 8)}.pdf`);
     } catch (e) {

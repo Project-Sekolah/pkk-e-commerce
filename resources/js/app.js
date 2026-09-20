@@ -695,7 +695,7 @@ function renderProductReviews(modal, reviewers, meta, productId) {
                 <div class="flex-grow-1">
                     <div class="d-flex justify-content-between gap-2">
                         <strong>${escapeHtml(reviewer.username || 'Anonymous')}</strong>
-                        ${reviewer.can_edit ? `<span class="review-actions d-inline-flex gap-1"><button type="button" class="btn btn-sm btn-light border edit-review" title="Edit komentar" aria-label="Edit komentar" data-review-id="${reviewer.id}" data-rating="${reviewer.rating}" data-review-text="${escapeHtml(encodeURIComponent(reviewer.review_text || ''))}"><i class="bi bi-pencil"></i></button><button type="button" class="btn btn-sm btn-light border text-danger delete-review" title="Hapus komentar" aria-label="Hapus komentar" data-review-id="${reviewer.id}"><i class="bi bi-trash"></i></button></span>` : ''}
+                        ${reviewer.can_edit ? `<span class="review-actions d-inline-flex gap-1"><button type="button" class="btn btn-sm btn-light border text-danger delete-review" title="Hapus komentar" aria-label="Hapus komentar" data-review-id="${reviewer.id}"><i class="bi bi-trash"></i></button></span>` : ''}
                     </div>
                     <div class="text-warning rating-stars-static">${stars}</div>
                     <p class="review-comment mb-0">${escapeHtml(reviewer.review_text || '') || '<span class="text-muted">Tanpa komentar tertulis</span>'}</p>
@@ -704,9 +704,6 @@ function renderProductReviews(modal, reviewers, meta, productId) {
         commentsContainer.insertAdjacentHTML("beforeend", commentHtml);
     });
 
-    commentsContainer.querySelectorAll(".edit-review").forEach(button => {
-        button.addEventListener("click", () => editReview(button, modal, productId));
-    });
     commentsContainer.querySelectorAll(".delete-review").forEach(button => {
         button.addEventListener("click", () => deleteReview(button, modal, productId));
     });
@@ -741,50 +738,6 @@ function escapeHtml(value) {
 
 function csrfToken() {
     return document.querySelector('meta[name="csrf-token"]')?.content || '';
-}
-
-async function editReview(button, modal, productId) {
-    let currentReviewText = button.dataset.reviewText || "";
-    try {
-        currentReviewText = decodeURIComponent(currentReviewText);
-    } catch (error) {
-        currentReviewText = button.dataset.reviewText || "";
-    }
-
-    const result = await Swal.fire({
-        title: "Edit komentar",
-        input: "textarea",
-        inputValue: currentReviewText,
-        inputPlaceholder: "Tulis komentar Anda...",
-        inputAttributes: {
-            autocapitalize: "off",
-            autocorrect: "on",
-            spellcheck: "true"
-        },
-        didOpen: () => {
-            Swal.getInput()?.removeAttribute("readonly");
-            Swal.getInput()?.removeAttribute("disabled");
-            Swal.getInput()?.focus();
-        },
-        showCancelButton: true,
-        confirmButtonText: "Simpan",
-        cancelButtonText: "Batal",
-        inputValidator: value => String(value || '').length > 1000 ? "Maksimal 1000 karakter." : undefined
-    });
-    if (!result.isConfirmed) return;
-
-    try {
-        const response = await fetch(`${BASEURL}/product/rating/${button.dataset.reviewId}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json", Accept: "application/json", "X-CSRF-TOKEN": csrfToken() },
-            body: JSON.stringify({ rating: Number(button.dataset.rating), review_text: String(result.value || '') })
-        });
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(data.message || "Komentar tidak dapat diperbarui.");
-        await loadProductReviews(modal, productId);
-    } catch (error) {
-        Swal.fire("Gagal", error.message, "error");
-    }
 }
 
 async function deleteReview(button, modal, productId) {
